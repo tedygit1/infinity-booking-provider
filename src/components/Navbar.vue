@@ -22,7 +22,9 @@
       <li>
         <router-link to="/contact" class="link" :class="{ active: $route.name === 'Contact' }">Contact</router-link>
       </li>
-      <li>
+
+      <!-- Auth Buttons -->
+      <li v-if="!isLoggedIn">
         <router-link
           to="/login"
           class="login-btn"
@@ -31,13 +33,34 @@
           Login / Sign Up
         </router-link>
       </li>
+      <li v-else>
+        <button class="login-btn" @click="logout">Logout</button>
+      </li>
     </ul>
   </nav>
 </template>
 
 <script>
+import { userStore } from "@/store/user";
+import { useRouter } from "vue-router";
+import { toast } from "vue-sonner";
+
 export default {
   name: 'Navbar',
+  setup() {
+    const router = useRouter();
+
+    const logout = () => {
+      userStore.logout();
+      toast.success("✅ Logged out successfully");
+      router.push({ name: "Login" });
+    };
+
+    return {
+      logout,
+      isLoggedIn: !!userStore.user
+    };
+  },
 };
 </script>
 
@@ -77,7 +100,7 @@ export default {
   display: flex;
   gap: 2rem;
   list-style: none;
-  margin-right: 1rem; /* slight margin to keep from right edge */
+  margin-right: 1rem;
 }
 
 .link {
@@ -96,7 +119,7 @@ export default {
   font-weight: 600;
 }
 
-/* === Login Button === */
+/* === Login / Logout Button === */
 .login-btn {
   background: #ffcc00;
   color: black !important;
@@ -105,7 +128,9 @@ export default {
   font-weight: 600;
   text-decoration: none;
   transition: background 0.3s ease, transform 0.2s;
-  margin-left: 0.8rem; /* adds breathing room from other links */
+  margin-left: 0.8rem;
+  border: none;
+  cursor: pointer;
 }
 
 .login-btn:hover {

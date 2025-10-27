@@ -21,10 +21,7 @@
 </template>
 
 <script>
-import pensionImage from '../assets/placeholder.jpg';
-import barImage from '../assets/placeholder.jpg';
-import restaurantImage from '../assets/placeholder.jpg';
-import salonImage from '../assets/placeholder.jpg';
+
 
 export default {
   name: 'ProviderDetails',

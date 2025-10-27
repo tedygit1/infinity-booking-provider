@@ -41,8 +41,8 @@
       <!-- ===== Contact Info ===== -->
       <div class="footer-section contact">
         <h3>Contact Us</h3>
-        <p><i class="fas fa-envelope"></i> support@csplatform.com</p>
-        <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+        <p><i class="fas fa-envelope"></i> info@csplatform.com</p>
+        <p><i class="fas fa-phone"></i> +251964883260</p>
         <p><i class="fas fa-globe"></i> Available Worldwide</p>
       </div>
     </div>

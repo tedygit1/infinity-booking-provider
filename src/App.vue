@@ -2,24 +2,21 @@
   <div id="app">
     <Navbar />
     <router-view />
-    <Footer /> <!-- ✅ Footer added -->
+    <Footer />
+
+    <Toaster position="top-right" rich-colors />
   </div>
 </template>
 
 <script>
-import Navbar from './components/Navbar.vue'
-import Footer from './components/Footer.vue' // ✅ Import the Footer
+import Navbar from "@/components/Navbar.vue";
+import Footer from "@/components/Footer.vue";
 
 export default {
-  name: 'App',
-  components: { Navbar, Footer } // ✅ Register it here
-}
+  name: "App",
+  components: {
+    Navbar,
+    Footer
+  }
+};
 </script>
-
-<style>
-body {
-  margin: 0;
-  font-family: 'Poppins', sans-serif;
-  background-color: #f9f9f9;
-}
-</style>
