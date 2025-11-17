@@ -15,7 +15,7 @@
     </div>
 
     <div class="profile-content">
-      <!-- Left: Profile Image -->
+      <!-- Left: Profile Image (Always editable) -->
       <div class="profile-picture-wrapper">
         <div class="profile-picture" @click="triggerFileInput">
           <img v-if="profileImage" :src="profileImage" alt="Profile" />
@@ -23,38 +23,56 @@
           <button class="edit-icon"><i class="fa-solid fa-pen"></i></button>
           <input type="file" ref="fileInput" @change="onFileChange" accept="image/*" />
         </div>
+        <div v-if="uploadingPhoto" class="uploading-overlay">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+        </div>
       </div>
 
       <!-- Right: Profile Fields -->
       <div class="profile-info">
         <h3>Personal Information</h3>
         <div class="field"><label>Full Name:</label><input v-model="fullname" :disabled="!editMode" /></div>
-        <div class="field"><label>Email:</label><input v-model="email" :disabled="!editMode" /></div>
+        <div class="field"><label>Email:</label><input v-model="email" disabled /></div>
         <div class="field"><label>Phone:</label><input v-model="phonenumber" :disabled="!editMode" /></div>
         <div class="field"><label>Location:</label><input v-model="location" :disabled="!editMode" /></div>
         <div class="field"><label>FIN:</label><input v-model="FIN" :disabled="!editMode" /></div>
         <div class="field"><label>Work Experience:</label><textarea v-model="workExperience" :disabled="!editMode" rows="3"></textarea></div>
         
-        <!-- Certificate (Read-only) -->
+        <!-- Service Categories -->
+        <div class="field">
+          <label>Service Categories:</label>
+          <input 
+            v-model="categoriesText" 
+            disabled 
+            placeholder="No categories added"
+          />
+        </div>
+        
         <div v-if="certificate" class="field">
           <label>Certificate:</label>
           <a :href="certificate" target="_blank" class="certificate-link">View Certificate</a>
         </div>
 
-        <!-- Save Button -->
-        <button v-if="editMode" class="save-btn" @click="saveProfile">
-          <i class="fa-solid fa-floppy-disk"></i> Save Changes
+        <button v-if="editMode" class="save-btn" @click="saveProfileFields" :disabled="saving">
+          <i v-if="saving" class="fa-solid fa-spinner fa-spin"></i>
+          <i v-else class="fa-solid fa-floppy-disk"></i>
+          {{ saving ? 'Saving...' : 'Save Changes' }}
         </button>
-
-        <!-- Status Info -->
-        <div v-if="providerStatus !== 'confirmed'" class="status-info">
-          <i class="fa-solid fa-circle-info"></i>
-          <p>Your account is <strong>{{ providerStatus }}</strong>. 
-            You'll be able to create services once approved by admin.
-          </p>
-        </div>
       </div>
     </div>
+
+    <!-- Toast Notifications -->
+    <transition-group name="toast-slide" tag="div" class="toast-container">
+      <div
+        v-for="toast in toasts"
+        :key="toast.id"
+        class="toast"
+        :class="`toast--${toast.type}`"
+      >
+        <i :class="getToastIcon(toast.type)"></i>
+        <span>{{ toast.message }}</span>
+      </div>
+    </transition-group>
   </div>
 </template>
 
@@ -62,13 +80,17 @@
 import http from "@/api/index.js";
 
 export default {
+  name: 'ProfileSection',
   props: {
-    provider: { type: Object, required: true, default: () => ({}) }
+    provider: { 
+      type: Object, 
+      required: true, 
+      default: () => ({}) 
+    }
   },
 
   data() {
     return {
-      // Profile fields
       fullname: '',
       email: '',
       phonenumber: '',
@@ -76,89 +98,139 @@ export default {
       FIN: '',
       workExperience: '',
       certificate: '',
-      
-      // Image
       profileImage: null,
-      imageFile: null,
-      
-      // UI
       editMode: false,
+      uploadingPhoto: false,
+      saving: false,
+      categoriesText: '',
+      toasts: []
     };
   },
 
   computed: {
     providerStatus() {
-      return this.provider.status || 'pending';
+      return this.provider?.providerProfile?.status || this.provider?.status || 'pending';
     }
   },
 
   watch: {
     provider: {
       handler(newVal) {
+        if (!newVal) return;
+        const profile = newVal.providerProfile || {};
         this.fullname = newVal.fullname || '';
         this.email = newVal.email || '';
-        this.phonenumber = newVal.phonenumber || '';
-        this.location = newVal.location || '';
-        this.FIN = newVal.FIN || '';
-        this.workExperience = newVal.workExperience || '';
-        this.certificate = newVal.certificate || '';
-        this.profileImage = newVal.profileImage || newVal.avatar || null;
+        this.phonenumber = profile.phonenumber || '';
+        this.location = profile.location || '';
+        this.FIN = profile.FIN || '';
+        this.workExperience = profile.workExperience || '';
+        this.certificate = profile.certificate || '';
+        this.profileImage = newVal.profilePhoto || null;
+        const categoriesFromServices = newVal.services?.map(s => s.category || s.categoryName).filter(Boolean) || [];
+        this.categoriesText = categoriesFromServices.join(', ') || '';
       },
       immediate: true
     }
   },
 
   methods: {
-    triggerFileInput() {
-      if (this.editMode) this.$refs.fileInput.click();
+    showToast(message, type = 'info') {
+      const id = Date.now() + Math.random();
+      this.toasts.push({ id, message, type });
+      setTimeout(() => {
+        this.toasts = this.toasts.filter(t => t.id !== id);
+      }, 4000);
     },
 
-    onFileChange(event) {
-      const file = event.target.files[0];
-      if (file && file.type.match('image.*')) {
-        this.imageFile = file;
-        const reader = new FileReader();
-        reader.onload = e => this.profileImage = e.target.result;
-        reader.readAsDataURL(file);
+    getToastIcon(type) {
+      const icons = {
+        success: 'fa-solid fa-circle-check',
+        error: 'fa-solid fa-circle-exclamation',
+        info: 'fa-solid fa-circle-info'
+      };
+      return icons[type] || icons.info;
+    },
+
+    triggerFileInput() {
+      this.$refs.fileInput.click();
+    },
+
+    async onFileChange(event) {
+      const file = event.target.files?.[0];
+      if (!file || !file.type.startsWith('image/')) {
+        this.showToast('Please select a valid image file (JPEG/PNG).', 'error');
+        return;
+      }
+      event.target.value = '';
+
+      const reader = new FileReader();
+      reader.onload = e => this.profileImage = e.target.result;
+      reader.readAsDataURL(file);
+
+      this.uploadingPhoto = true;
+      try {
+        const fd = new FormData();
+        fd.append("photo", file);
+
+        const res = await http.patch('/users/profile-photo/upload', fd, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+
+        if (res.data?.profilePhoto) {
+          this.profileImage = res.data.profilePhoto;
+          this.$emit('profileUpdated');
+          this.showToast('✅ Profile photo updated successfully!', 'success');
+        } else {
+          throw new Error('No photo URL returned');
+        }
+      } catch (err) {
+        console.error('Photo upload failed:', err);
+        this.profileImage = this.provider.profilePhoto || null;
+        const msg = err.response?.data?.message || 'Failed to upload photo. Please try again.';
+        this.showToast(msg, 'error');
+      } finally {
+        this.uploadingPhoto = false;
       }
     },
 
-    async saveProfile() {
+    // ==========================
+    // 💾 UPDATE PROFILE USING /users/{id} (ONLY CHANGE HERE)
+    // ==========================
+    async saveProfileFields() {
       if (!this.fullname?.trim()) {
-        alert("Full name is required.");
+        this.showToast('Full name is required.', 'error');
         return;
       }
 
+      // ✅ Get your ID (from provider prop)
+      const providerId = this.provider?._id;
+      if (!providerId) {
+        this.showToast('User ID missing.', 'error');
+        return;
+      }
+
+      this.saving = true;
       try {
-        const providerId = this.provider._id;
-        
-        // Upload image if selected
-        if (this.imageFile) {
-          const fd = new FormData();
-          fd.append("photo", this.imageFile);
-          await http.patch(`/users/${providerId}/upload-photo`, fd, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          });
-        }
-
-        // Save profile
         const payload = {
-          fullname: this.fullname,
-          email: this.email,
-          phonenumber: this.phonenumber,
-          location: this.location,
-          FIN: this.FIN,
-          workExperience: this.workExperience,
+          fullname: this.fullname.trim(),
+          phonenumber: this.phonenumber?.trim(),
+          location: this.location?.trim(),
+          FIN: this.FIN?.trim(),
+          workExperience: this.workExperience?.trim()
         };
-        await http.put("/users/profile", payload);
 
-        alert("✅ Profile updated!");
+        // ✅ ONLY CHANGE: Use /users/{id} — not /users/profile
+        await http.patch(`/users/${providerId}`, payload);
+
+        this.showToast('✅ Profile updated successfully!', 'success');
         this.editMode = false;
         this.$emit('profileUpdated');
-
       } catch (err) {
-        const msg = err.response?.data?.message || "Failed to update profile";
-        alert(`❌ ${msg}`);
+        console.error('Profile update failed:', err);
+        const msg = err.response?.data?.message || 'Failed to update profile. Please try again.';
+        this.showToast(msg, 'error');
+      } finally {
+        this.saving = false;
       }
     }
   }
@@ -166,6 +238,7 @@ export default {
 </script>
 
 <style scoped>
+/* ===== PROFILE SECTION ===== */
 .profile-section {
   max-width: 900px;
   margin: 0 auto;
@@ -174,6 +247,7 @@ export default {
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   font-family: 'Inter', sans-serif;
+  position: relative;
 }
 
 .profile-header {
@@ -197,7 +271,7 @@ export default {
   align-items: center;
 }
 
-.notif-btn, .edit-btn {
+.edit-btn {
   background: none;
   border: none;
   cursor: pointer;
@@ -212,7 +286,7 @@ export default {
   transition: all 0.2s;
 }
 
-.notif-btn:hover, .edit-btn:hover {
+.edit-btn:hover {
   background: #f1f5f9;
   color: #0f172a;
 }
@@ -235,6 +309,7 @@ export default {
 
 .profile-picture-wrapper {
   flex: 0 0 180px;
+  position: relative;
 }
 
 .profile-picture {
@@ -287,6 +362,21 @@ export default {
   display: none;
 }
 
+.uploading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 160px;
+  height: 160px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  color: #22c55e;
+}
+
 .profile-info {
   flex: 1;
   min-width: 300px;
@@ -337,6 +427,13 @@ export default {
   min-height: 80px;
 }
 
+.field input:disabled,
+.field textarea:disabled {
+  background: #f8fafc;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
 .save-btn {
   background: #22c55e;
   color: white;
@@ -352,21 +449,17 @@ export default {
   transition: all 0.2s;
 }
 
-.save-btn:hover {
+.save-btn:hover:not(:disabled) {
   background: #16a34a;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
-.status-info {
-  margin-top: 20px;
-  padding: 16px;
-  background: #eff6ff;
-  border-radius: 10px;
-  color: #1e40af;
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
+.save-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .certificate-link {
@@ -374,7 +467,58 @@ export default {
   text-decoration: underline;
 }
 
-/* Responsive */
+/* Toast Styles */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 5000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-width: 350px;
+  pointer-events: all;
+}
+
+.toast--success {
+  background: linear-gradient(120deg, #16a34a, #22c55e);
+}
+
+.toast--error {
+  background: linear-gradient(120deg, #dc2626, #ef4444);
+}
+
+.toast i {
+  font-size: 1.2rem;
+}
+
+.toast-slide-enter-active,
+.toast-slide-leave-active {
+  transition: all 0.3s ease;
+}
+.toast-slide-enter-from {
+  transform: translateX(100%);
+  opacity: 0;
+}
+.toast-slide-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .profile-section {
     padding: 20px;

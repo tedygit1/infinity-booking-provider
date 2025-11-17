@@ -1,3 +1,4 @@
+// src/router/index.js
 import { createRouter, createWebHistory } from "vue-router";
 
 // Layout
@@ -11,25 +12,23 @@ import HowItWorks from "@/pages/HowItWorks.vue";
 import ProvidersPage from "@/pages/Providers.vue";
 
 // Auth pages
-import Login from "@/pages/auth/Login.vue";
-import Register from "@/pages/auth/Register.vue";
-import ForgotPassword from "@/pages/auth/ForgotPassword.vue";
+import Login from "@/pages/Auth/Login.vue";       // ✅ Match folder case: Auth (capital A)
+import Register from "@/pages/Auth/Register.vue";
+import ForgotPassword from "@/pages/Auth/ForgotPassword.vue";
 import AuthTest from "@/pages/AuthTest.vue";
+import ResetPassword from "@/pages/Auth/ResetPassword.vue";
 
-// Provider Dashboard + children
-import Dashboard from "@/pages/providers/Dashboard.vue";
-import HomeDashboard from "@/pages/providers/HomeDashboard.vue";
-import ProfileSection from "@/pages/providers/ProfileSection.vue";
-
-// ✅ Correct Services path (folder created)
-import ServicesSection from "@/pages/providers/Services/ServicesSection.vue";
-
-import BookingsSection from "@/pages/providers/BookingsSection.vue";
-import EarningsSection from "@/pages/providers/EarningsSection.vue";
-import MessagesSection from "@/pages/providers/MessagesSection.vue";
-import AnalyticsSection from "@/pages/providers/AnalyticsSection.vue";
-import ReviewsSection from "@/pages/providers/ReviewsSection.vue";
-import SettingsSection from "@/pages/providers/SettingsSection.vue";
+// Provider Dashboard
+import Dashboard from "@/pages/Providers/Dashboard.vue";
+import HomeDashboard from "@/pages/Providers/HomeDashboard.vue";
+import ProfileSection from "@/pages/Providers/ProfileSection.vue";
+import ServicesSection from "@/pages/Providers/Services/ServicesSection.vue";
+import BookingsSection from "@/pages/Providers/BookingsSection.vue";
+import EarningsSection from "@/pages/Providers/EarningsSection.vue";
+import MessagesSection from "@/pages/Providers/MessagesSection.vue";
+import AnalyticsSection from "@/pages/Providers/AnalyticsSection.vue";
+import ReviewsSection from "@/pages/Providers/ReviewsSection.vue";
+import SettingsSection from "@/pages/Providers/SettingsSection.vue";
 
 // Footer pages
 import HelpCenter from "@/pages/Footer/HelpCenter.vue";
@@ -38,17 +37,9 @@ import TermsOfService from "@/pages/Footer/TermsOfService.vue";
 import Feedback from "@/pages/Footer/Feedback.vue";
 
 const routes = [
-  // --------------------------------------
-  // 🔹 Minimal Auth Test  (No layout)
-  // --------------------------------------
-  { path: "/auth-test", name: "AuthTest", component: AuthTest, meta: { layout: false } },
+  { path: "/auth-test", name: "AuthTest", component: AuthTest },
 
-  // --------------------------------------
-  // 🌐 Public Pages (with MainLayout)
-  // --------------------------------------
   {
-
-  
     path: "/",
     component: MainLayout,
     children: [
@@ -56,13 +47,11 @@ const routes = [
       { path: "about", name: "About", component: About },
       { path: "contact", name: "Contact", component: Contact },
       { path: "how-it-works", name: "HowItWorks", component: HowItWorks },
-      { path: "Providers", name: "Providers", component: ProvidersPage },
+      { path: "providers", name: "Providers", component: ProvidersPage }, // ✅ lowercase
       { path: "login", name: "Login", component: Login },
       { path: "register", name: "Register", component: Register },
       { path: "forgot-password", name: "ForgotPassword", component: ForgotPassword },
-       { path: "/reset-password/:token",
-  component: () => import("@/pages/auth/ResetPassword.vue")
-},
+      { path: "reset-password/:token", name: "ResetPassword", component: ResetPassword },
 
       // Footer pages
       { path: "help-center", name: "HelpCenter", component: HelpCenter },
@@ -72,9 +61,7 @@ const routes = [
     ],
   },
 
-  // --------------------------------------
-  // 🛠️ Provider Dashboard (Protected)
-  // --------------------------------------
+  // Provider Dashboard
   {
     path: "/provider",
     component: Dashboard,
@@ -84,6 +71,7 @@ const routes = [
       { path: "home", name: "ProviderHome", component: HomeDashboard },
       { path: "profile", name: "ProviderProfile", component: ProfileSection },
       { path: "services", name: "ProviderServices", component: ServicesSection },
+      { path: "services/:id", name: "ServiceDetails", component: () => import("@/pages/Providers/Services/ServiceDetails.vue") }, // ✅ ADDED
       { path: "bookings", name: "ProviderBookings", component: BookingsSection },
       { path: "earnings", name: "ProviderEarnings", component: EarningsSection },
       { path: "messages", name: "ProviderMessages", component: MessagesSection },
@@ -93,13 +81,10 @@ const routes = [
     ],
   },
 
-  // Catch-all 404 redirect
+  // 404 fallback
   { path: "/:pathMatch(.*)*", redirect: "/" },
 ];
 
-// --------------------------------------
-// ✅ ROUTER SETUP
-// --------------------------------------
 const router = createRouter({
   history: createWebHistory(),
   routes,
@@ -109,19 +94,15 @@ const router = createRouter({
   },
 });
 
-// --------------------------------------
-// ✅ AUTH GUARD
-// --------------------------------------
+// Auth guard
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem("provider_token");
   const provider = localStorage.getItem("loggedProvider");
 
-  // ✅ If route needs provider & no login → redirect to login
   if (to.meta.requiresProvider && (!token || !provider)) {
     return next({ name: "Login" });
   }
 
-  // ✅ Prevent logged-in providers from accessing Login/Register
   if ((to.name === "Login" || to.name === "Register") && token && provider) {
     return next({ name: "ProviderHome" });
   }

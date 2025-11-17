@@ -1,62 +1,72 @@
 <!-- src/pages/Providers/Dashboard.vue -->
 <template>
   <div class="dashboard-container">
-    <!-- Sidebar -->
-    <aside class="dashboard-sidebar">
-      <div class="sidebar-top">
-        <h2 class="sidebar-title">Provider Dashboard</h2>
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+      <button @click="toggleSidebar" class="hamburger-btn" aria-label="Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <h1 class="mobile-title">Provider Hub</h1>
+      <div class="header-spacer"></div>
+    </header>
 
-        <!-- Welcome Message -->
-        <div class="welcome-message" v-if="provider">
-          Welcome back, {{ provider.fullname || 'Provider' }} 👋
+    <!-- Sidebar -->
+    <aside
+      class="dashboard-sidebar"
+      :class="{ 'sidebar-open': sidebarOpen }"
+    >
+      <div class="sidebar-inner">
+        <div class="logo-section">
+          <div class="logo-icon">💼</div>
+          <h2 class="sidebar-title">Provider Hub</h2>
         </div>
 
-        <ul class="sidebar-menu">
-          <li @click="goTo('home')" :class="{ active: activeTab === 'home' }">
-            <i class="fa-solid fa-house"></i> Home
-          </li>
-          <li @click="goTo('profile')" :class="{ active: activeTab === 'profile' }">
-            <i class="fa-solid fa-user"></i> My Profile
-          </li>
-          <li @click="goTo('services')" :class="{ active: activeTab === 'services' }">
-            <i class="fa-solid fa-briefcase"></i> My Services
-          </li>
-          <li @click="goTo('bookings')" :class="{ active: activeTab === 'bookings' }">
-            <i class="fa-solid fa-calendar-check"></i> Bookings
-          </li>
-          <li @click="goTo('earnings')" :class="{ active: activeTab === 'earnings' }">
-            <i class="fa-solid fa-wallet"></i> Earnings
-          </li>
-          <li @click="goTo('messages')" :class="{ active: activeTab === 'messages' }">
-            <i class="fa-solid fa-envelope"></i> Messages
-          </li>
-          <li @click="goTo('analytics')" :class="{ active: activeTab === 'analytics' }">
-            <i class="fa-solid fa-chart-line"></i> Analytics
-          </li>
-          <li @click="goTo('reviews')" :class="{ active: activeTab === 'reviews' }">
-            <i class="fa-solid fa-star"></i> Reviews
-          </li>
-          <li @click="goTo('settings')" :class="{ active: activeTab === 'settings' }">
-            <i class="fa-solid fa-gear"></i> Settings
-          </li>
-        </ul>
+        <div class="welcome-card" v-if="provider">
+          <i class="fa-solid fa-circle-user user-icon"></i>
+          <div class="welcome-text">
+            <div class="welcome-label">Welcome back,</div>
+            <div class="welcome-name">{{ provider.fullname || 'Provider' }}</div>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <ul class="sidebar-menu">
+            <li
+              v-for="(item, key) in menuItems"
+              :key="key"
+              @click="goTo(key)"
+              :class="{ active: activeTab === key }"
+            >
+              <i :class="item.icon"></i>
+              <span>{{ item.label }}</span>
+            </li>
+          </ul>
+        </nav>
       </div>
 
-      <div class="sidebar-bottom">
+      <div class="sidebar-footer">
         <button @click="logout" :disabled="loggingOut" class="logout-btn">
           <i class="fa-solid fa-right-from-bracket"></i>
-          <span v-if="!loggingOut">Logout</span>
-          <span v-else>Logging out...</span>
+          <span>{{ loggingOut ? 'Logging out...' : 'Logout' }}</span>
         </button>
       </div>
     </aside>
 
-    <!-- Main Dynamic Content -->
+    <!-- Overlay -->
+    <div v-if="sidebarOpen" class="mobile-overlay" @click="toggleSidebar"></div>
+
+    <!-- Main Content -->
     <main class="dashboard-main">
-      <component 
-        :is="currentView" 
-        :provider="provider" 
+      <!-- Fallback content to prevent blank screen -->
+      <div v-if="!currentView" class="fallback-content">
+        <h2>🏡 Dashboard Loaded!</h2>
+        <p>Select a tab from the menu.</p>
+      </div>
+      <component
+        :is="currentView"
+        :provider="provider"
         @profileUpdated="handleProfileUpdated"
+        v-else
       />
     </main>
   </div>
@@ -82,6 +92,19 @@ const router = useRouter();
 const activeTab = ref("home");
 const loggingOut = ref(false);
 const provider = ref(null);
+const sidebarOpen = ref(false);
+
+const menuItems = {
+  home: { label: "Home", icon: "fa-solid fa-house" },
+  profile: { label: "My Profile", icon: "fa-solid fa-user" },
+  services: { label: "My Services", icon: "fa-solid fa-briefcase" },
+  bookings: { label: "Bookings", icon: "fa-solid fa-calendar-check" },
+  earnings: { label: "Earnings", icon: "fa-solid fa-wallet" },
+  messages: { label: "Messages", icon: "fa-solid fa-envelope" },
+  analytics: { label: "Analytics", icon: "fa-solid fa-chart-line" },
+  reviews: { label: "Reviews", icon: "fa-solid fa-star" },
+  settings: { label: "Settings", icon: "fa-solid fa-gear" },
+};
 
 const viewMap = {
   home: HomeDashboard,
@@ -99,192 +122,299 @@ const currentView = computed(() => viewMap[activeTab.value]);
 
 function goTo(tab) {
   activeTab.value = tab;
+  sidebarOpen.value = false;
+}
+
+function toggleSidebar() {
+  sidebarOpen.value = !sidebarOpen.value;
 }
 
 async function logout() {
   loggingOut.value = true;
-  localStorage.removeItem("provider_token");
-  localStorage.removeItem("loggedProvider");
-  localStorage.removeItem("provider_id");
+  localStorage.clear();
   await router.push({ name: "Login" });
   loggingOut.value = false;
 }
 
+// ✅ FIXED: Force fresh profile fetch (bypass 304 cache)
 async function fetchProvider() {
   const token = localStorage.getItem("provider_token");
-  if (!token) {
-    console.warn("No token found. Redirecting to login...");
-    return router.push({ name: "Login" });
-  }
+  if (!token) return router.push({ name: "Login" });
 
   try {
-    const res = await http.get("/users/profile");
-    provider.value = res.data;
+    const res = await http.get("/users/profile", {
+      headers: {
+        "Cache-Control": "no-cache", // 👈 Bypass browser cache
+      },
+    });
     
-    // Ensure provider_id is always saved
+    // ✅ Log full data to verify all fields (phonenumber, location, etc.)
+    console.log("✅ Fresh profile data:", res.data);
+    
+    provider.value = res.data;
     if (res.data._id) {
       localStorage.setItem("provider_id", res.data._id);
     }
   } catch (err) {
     console.error("Profile load failed:", err.response?.data || err.message);
-    localStorage.removeItem("provider_token");
-    localStorage.removeItem("provider_id");
-    localStorage.removeItem("loggedProvider");
+    localStorage.clear();
     router.push({ name: "Login" });
   }
-}
-
-async function handleProfileUpdated() {
-  // Refresh provider data after profile update
-  await fetchProvider();
 }
 
 onMounted(() => {
   fetchProvider();
 });
+
+function handleProfileUpdated() {
+  fetchProvider(); // Refresh after update
+}
 </script>
 
 <style scoped>
+/* ===== BASE ===== */
 .dashboard-container {
   display: flex;
-  height: 100vh;
-  overflow: hidden;
-  font-family: "Poppins", sans-serif;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f8fafc;
+  font-family: 'Poppins', sans-serif;
+  overflow-x: hidden;
 }
 
-.dashboard-sidebar {
-  width: 260px;
-  background: linear-gradient(180deg, #0056cc, #0077ff);
-  color: white;
+/* ===== MOBILE HEADER ===== */
+.mobile-header {
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
-  padding: 1.8rem 1rem;
+  align-items: center;
+  padding: 1rem 1.2rem;
+  background: linear-gradient(90deg, #0066cc, #0088ff);
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.hamburger-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.7rem;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 8px;
+}
+
+.hamburger-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.mobile-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.header-spacer {
+  width: 28px;
+}
+
+/* ===== SIDEBAR ===== */
+.dashboard-sidebar {
   position: fixed;
   top: 0;
   left: 0;
-  bottom: 0;
-  box-shadow: 3px 0 15px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 300px;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 4px 0 25px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  z-index: 90;
+  transform: translateX(-100%);
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-.sidebar-top {
+.dashboard-sidebar.sidebar-open {
+  transform: translateX(0);
+}
+
+.sidebar-inner {
+  flex: 1;
   overflow-y: auto;
+  padding: 1.5rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 1.6rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.logo-icon {
+  font-size: 1.9rem;
 }
 
 .sidebar-title {
-  text-align: center;
-  font-size: 1.7rem;
-  margin-bottom: 1.2rem;
-  font-weight: 700;
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0;
+  background: linear-gradient(90deg, #0066cc, #00a8ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.welcome-message {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
-  text-align: center;
-  color: #fff;
-  padding: 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+.welcome-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(230, 245, 255, 0.7);
+  border-radius: 16px;
+  padding: 1.1rem;
+  margin: 1.2rem 0 1.6rem;
+  border: 1px solid rgba(200, 230, 255, 0.8);
+}
+
+.user-icon {
+  font-size: 1.7rem;
+  color: #0077cc;
+}
+
+.welcome-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.welcome-label {
+  font-size: 0.87rem;
+  color: #4a6cb7;
+  font-weight: 500;
+}
+
+.welcome-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #005599;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Nav */
+.sidebar-nav {
+  flex: 1;
 }
 
 .sidebar-menu {
   list-style: none;
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
 }
 
 .sidebar-menu li {
-  padding: 0.8rem 1.2rem;
-  border-radius: 8px;
-  margin: 0.4rem 0;
+  padding: 1rem 1.4rem;
+  border-radius: 16px;
   cursor: pointer;
-  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-weight: 500;
+  gap: 16px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #2c3e50;
+  transition: all 0.25s ease;
 }
 
 .sidebar-menu li i {
-  width: 20px;
+  width: 24px;
   text-align: center;
+  font-size: 1.2rem;
+  color: #4a6cb7;
 }
 
-.sidebar-menu li.active,
 .sidebar-menu li:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(0, 119, 255, 0.1);
+  color: #0066cc;
   transform: translateX(4px);
 }
 
-.sidebar-bottom {
-  margin-top: auto;
-  text-align: center;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+.sidebar-menu li.active {
+  background: linear-gradient(90deg, #0066cc, #0095ff);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+}
+
+.sidebar-menu li.active i {
+  color: white;
+}
+
+/* Footer */
+.sidebar-footer {
+  padding: 1.2rem 1.2rem 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .logout-btn {
-  background: #ff4d4f;
-  color: #fff;
-  padding: 0.9rem 1.2rem;
-  border-radius: 10px;
+  background: linear-gradient(90deg, #ff3b3b, #ff6b6b);
+  color: white;
+  padding: 0.95rem;
   border: none;
-  cursor: pointer;
-  font-weight: 700;
+  border-radius: 16px;
   width: 100%;
+  font-weight: 700;
+  font-size: 1.05rem;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  transition: all 0.2s;
-  font-size: 1rem;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(255, 60, 60, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .logout-btn:hover:not(:disabled) {
-  background: #ff1a1a;
   transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 60, 60, 0.4);
 }
 
-.logout-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+/* Overlay */
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 80;
 }
 
+/* Main Content */
 .dashboard-main {
   flex: 1;
-  margin-left: 260px;
+  padding: 1.8rem 1.4rem 2rem;
+  padding-top: 80px;
   background: #f8fafc;
-  padding: 2rem;
-  height: 100vh;
-  overflow-y: auto;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
-  .dashboard-sidebar {
-    width: 80px;
-  }
-  
-  .sidebar-title,
-  .welcome-message,
-  .sidebar-menu li:not(.active) span,
-  .sidebar-menu li:not(.active) i {
-    display: none;
-  }
-  
-  .sidebar-menu li {
-    justify-content: center;
-    padding: 0.8rem;
-  }
-  
-  .sidebar-menu li i {
-    font-size: 1.2rem;
-  }
-  
-  .dashboard-main {
-    margin-left: 80px;
-  }
+/* Fallback */
+.fallback-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 18px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  text-align: center;
 }
 </style>

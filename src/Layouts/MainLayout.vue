@@ -1,31 +1,29 @@
+<!-- src/Layouts/MainLayout.vue -->
 <template>
-  <div>
-    <Navbar v-if="showLayout" />           <!-- only show if layout enabled -->
-    <main :style="{ marginTop: showLayout ? '80px' : '0' }">
+  <div class="main-layout">
+    <Navbar />
+    <main class="main-content">
+      <!-- ✅ THIS WAS MISSING! -->
       <router-view />
     </main>
-    <Footer v-if="showLayout" />
+    <Footer />
   </div>
 </template>
 
-<script>
-import Navbar from "@/components/Navbar.vue";
-import Footer from "@/components/Footer.vue";
-
-export default {
-  name: "MainLayout",
-  components: { Navbar, Footer },
-  computed: {
-    showLayout() {
-      // Hide layout for routes with meta: { layout: false }
-      return this.$route.meta.layout !== false;
-    },
-  },
-};
+<script setup>
+import Navbar from '@/components/Navbar.vue';
+import Footer from '@/components/Footer.vue';
 </script>
 
 <style scoped>
-main {
-  min-height: calc(100vh - 120px); /* leave space for Navbar/Footer if visible */
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+.main-content {
+  flex: 1;
+  width: 100%;
 }
 </style>

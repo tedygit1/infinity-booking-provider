@@ -1,178 +1,440 @@
+<!-- src/pages/ContactPage.vue -->
 <template>
   <div class="contact-page font-poppins">
-
     <!-- Hero Section -->
     <section class="hero-section">
       <div class="hero-overlay"></div>
       <div class="hero-content">
-        <h1>Partner with Infinity-Booking</h1>
-        <p>Join our platform to grow your services, reach more customers, and manage bookings efficiently.</p>
-        
+        <h1 class="hero-title">Partner with Infinity-Booking</h1>
+        <p class="hero-text">
+          Grow your business, reach more customers, and manage bookings — all in one powerful platform.
+        </p>
+        <router-link to="/login" class="cta-btn">🚀 Get Started as a Provider</router-link>
       </div>
     </section>
 
-    <!-- Info & Provider Form -->
+    <!-- Info Section -->
     <section class="info-section">
-      <div class="grid-container">
-        
+      <div class="container">
         <!-- Info Cards -->
         <div class="info-cards">
-          <div class="info-card">
-            <h2>Grow Your Services</h2>
-            <p>Reach customers across cities and regions, manage bookings, and build a strong reputation online.</p>
+          <!-- Why Partner -->
+          <div class="info-card highlight">
+            <i class="fas fa-rocket icon"></i>
+            <h2>Why Partner With Us?</h2>
+            <ul class="benefits-list">
+              <li>✅ Instant visibility to thousands of customers</li>
+              <li>✅ Free profile setup & onboarding</li>
+              <li>✅ Secure payments & dispute resolution</li>
+              <li>✅ Real-time booking & calendar sync</li>
+            </ul>
           </div>
+
+          <!-- How It Works -->
           <div class="info-card">
-            <h2>Contact Information</h2>
-            <p><strong>Email:</strong> support@infinity-booking.com</p>
-            <p><strong>Phone:</strong> +1 (555) 123-4567</p>
+            <i class="fas fa-tasks icon"></i>
+            <h2>How to Become a Provider</h2>
+            <ol class="steps-list">
+              <li>✅ Sign up or log in to your account</li>
+              <li>✅ Go to “your Dashboard” → “Become a Provider”</li>
+              <li>✅ Fill out your service details & upload documents</li>
+  
+              <li>✅ Start receiving bookings!</li>
+            </ol>
           </div>
+
+          <!-- Contact Info -->
           <div class="info-card">
-            <h2>Follow Us</h2>
-            <div class="social-icons">
-              <a href="#"><i class="fab fa-facebook"></i></a>
-              <a href="#"><i class="fab fa-twitter"></i></a>
-              <a href="#"><i class="fab fa-instagram"></i></a>
-              <a href="#"><i class="fab fa-linkedin"></i></a>
-              <a href="#"><i class="fab fa-whatsapp"></i></a>
-              <a href="#"><i class="fab fa-telegram"></i></a>
-              <a href="#"><i class="fab fa-youtube"></i></a>
-            </div>
+            <i class="fas fa-headset icon"></i>
+            <h2>Contact Us</h2>
+            <p class="contact-item">
+              <i class="fas fa-envelope"></i> support@infinity-booking.com
+            </p>
+            <p class="contact-item">
+              <i class="fas fa-phone"></i> +251 911 234 567
+            </p>
+            <p class="contact-item">
+              <i class="fas fa-clock"></i> Mon–Fri, 9AM–5PM EAT
+            </p>
           </div>
         </div>
 
-        <!-- Provider Form -->
-        <form class="provider-form" @submit.prevent="handleSubmit">
-          <h2>Become a Provider</h2>
-          <div class="form-group">
-            <input v-model="form.name" type="text" required placeholder=" " />
-            <label>Business / Service Name</label>
+        <!-- Testimonials -->
+        <div class="testimonials">
+          <h2>What Our Providers Say</h2>
+          <div class="testimonial-card">
+            <div class="quote">“Infinity-Booking helped me double my clients in just 3 months!”</div>
+            <div class="author">— Alemu T., Photographer</div>
           </div>
-          <div class="form-group">
-            <input v-model="form.email" type="email" required placeholder=" " />
-            <label>Email Address</label>
+          <div class="testimonial-card">
+            <div class="quote">“The payment system is smooth and reliable. Highly recommend.”</div>
+            <div class="author">— Selamawit K., Tutor</div>
           </div>
-          <div class="form-group">
-            <textarea v-model="form.message" rows="5" placeholder=" "></textarea>
-            <label>Message / Service Details</label>
-          </div>
-          <button type="submit" class="submit-btn">Submit</button>
-        </form>
-
+        </div>
       </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
-      <h2>Ready to Join Infinity-Booking?</h2>
-      <p>Empower your business, expand your reach, and manage your services efficiently.</p>
-      <router-link to="/login" class="cta-btn">📈 Sign Up / Login</router-link>
+    <!-- FAQ Section -->
+    <section class="faq-section">
+      <div class="container">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <div class="faq-list">
+          <div class="faq-item">
+            <div class="faq-question">Who can become a provider?</div>
+            <div class="faq-answer">
+              Any individual or business offering services — from tutors to plumbers to photographers. You must be 18+ and provide valid ID.
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">Is there a fee to join?</div>
+            <div class="faq-answer">
+              No! Registration is free. We charge a small commission only when you receive a booking.
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">How long does approval take?</div>
+            <div class="faq-answer">
+              After Admin has reviewed your documents to fit valid business certificate,you will be confirmed and you start creating your service 
+            </div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-question">Can I edit my profile later?</div>
+            <div class="faq-answer">
+              Yes! You can update your services, photos, pricing, and availability anytime in your dashboard.
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
+    <!-- Final CTA -->
+    <section class="cta-section">
+      <div class="container">
+        <h2 class="cta-title">Ready to Grow Your Business?</h2>
+        <p class="cta-text">
+          Join thousands of providers who trust Infinity-Booking to manage their services and customers.
+        </p>
+        <router-link to="/login" class="cta-btn">📈 Sign Up / Login</router-link>
+      </div>
+    </section>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Contact',
-  data() {
-    return {
-      form: { name: '', email: '', message: '' },
-    };
-  },
-  methods: {
-    handleSubmit() {
-      alert(`Thank you, ${this.form.name}! Our team will contact you soon.`);
-      this.form = { name: '', email: '', message: '' };
-    },
-  },
-};
+<script setup>
+// No script needed — static content
 </script>
 
 <style scoped>
-.contact-page { font-family: 'Poppins', sans-serif; }
+/* Base */
+.contact-page {
+  font-family: "Poppins", sans-serif;
+  overflow-x: hidden;
+}
 
-/* Hero Section */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Hero */
 .hero-section {
-  background: linear-gradient(to right, #3b82f6, #1e40af);
-  text-align: center; padding: 100px 20px;
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
   position: relative;
+  padding: 90px 20px 70px;
+  color: white;
+  text-align: center;
 }
+
 .hero-overlay {
-  position: absolute; top:0; left:0; width:100%; height:100%;
-  background: rgba(0,0,0,0.25); z-index:1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.2);
 }
+
 .hero-content {
-  position: relative; z-index:2; max-width:900px; margin:0 auto;
-  color: #f0f9ff;
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
 }
-.hero-content h1 { font-size:3rem; margin-bottom:1rem; font-weight:700; }
-.hero-content p { font-size:1.2rem; margin-bottom:1.5rem; line-height:1.7; }
+
+.hero-title {
+  font-size: 2.4rem;
+  font-weight: 800;
+  margin-bottom: 1.2rem;
+  line-height: 1.2;
+}
+
+.hero-text {
+  font-size: 1.15rem;
+  line-height: 1.7;
+  opacity: 0.95;
+  max-width: 600px;
+  margin: 0 auto 1.5rem;
+}
+
 .cta-btn {
-  background:#ffd54f; color:black; padding:1rem 2rem; font-weight:600; border-radius:10px; text-decoration:none;
-  transition: transform 0.3s, background 0.3s;
+  display: inline-block;
+  background: #ffd54f;
+  color: #1e3a8a;
+  font-weight: 700;
+  padding: 14px 32px;
+  border-radius: 16px;
+  text-decoration: none;
+  font-size: 1.15rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s ease;
 }
-.cta-btn:hover { transform:scale(1.05); background:#ffe082; }
+
+.cta-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+}
 
 /* Info Section */
-.info-section { background:white; padding:80px 20px; }
-.grid-container { display:flex; flex-wrap:wrap; gap:40px; justify-content:center; max-width:1200px; margin:0 auto; }
-.info-cards { display:flex; flex-direction:column; gap:30px; flex:1; min-width:280px; }
+.info-section {
+  background: #f8fafc;
+  padding: 70px 0;
+}
+
+.info-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 28px;
+  margin-bottom: 40px;
+}
+
 .info-card {
-  background:white; padding:25px; border-radius:20px; box-shadow:0 6px 15px rgba(0,0,0,0.1);
-  transition:transform 0.3s, box-shadow 0.3s;
-}
-.info-card:hover { transform:translateY(-8px); box-shadow:0 12px 25px rgba(0,0,0,0.15); }
-.info-card h2 { color:#3b82f6; margin-bottom:10px; font-size:1.5rem; font-weight:700; }
-.info-card p { color:#555; font-size:1rem; line-height:1.6; }
-
-/* Social Icons */
-.social-icons { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
-.social-icons a {
-  display:inline-flex; align-items:center; justify-content:center; width:50px; height:50px;
-  border-radius:50%; background:#f0f9ff; color:#3b82f6; font-size:1.5rem;
-  transition: all 0.3s;
-}
-.social-icons a:hover {
-  transform: translateY(-5px) scale(1.1); color:white; background:#3b82f6;
+  background: white;
+  border-radius: 22px;
+  padding: 30px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+  transition: all 0.3s ease;
 }
 
-/* Form Styles */
-.provider-form { flex:1; background:#f0f9ff; padding:30px; border-radius:25px; box-shadow:0 6px 15px rgba(0,0,0,0.1); transition:transform 0.3s, box-shadow 0.3s; }
-.provider-form:hover { transform:translateY(-5px); box-shadow:0 12px 25px rgba(0,0,0,0.15); }
-.provider-form h2 { text-align:center; color:#3b82f6; margin-bottom:20px; font-size:2rem; font-weight:700; }
-.provider-form input, .provider-form textarea {
-  width:100%; border:1px solid #ccc; border-radius:10px; padding:12px; margin-bottom:20px; outline:none;
-  transition: all 0.3s;
+.info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
 }
-.provider-form input:focus, .provider-form textarea:focus { border-color:#3b82f6; box-shadow:0 0 10px rgba(59,130,246,0.3); }
-.form-group { position:relative; }
-.form-group label {
-  position:absolute; left:15px; top:12px; background:#f0f9ff; padding:0 5px; color:#777;
-  pointer-events:none; transition:0.3s;
+
+.info-card.highlight {
+  border-top: 4px solid #3b82f6;
 }
-.provider-form input:focus + label,
-.provider-form input:not(:placeholder-shown) + label,
-.provider-form textarea:focus + label,
-.provider-form textarea:not(:placeholder-shown) + label {
-  top:-10px; left:10px; font-size:0.85rem; color:#3b82f6;
+
+.icon {
+  font-size: 2rem;
+  color: #3b82f6;
+  margin-bottom: 16px;
 }
-.submit-btn {
-  width:100%; background:#3b82f6; color:white; padding:12px; font-weight:600; border-radius:10px; cursor:pointer;
-  transition:all 0.3s;
+
+.info-card h2 {
+  font-size: 1.5rem;
+  color: #1e3a8a;
+  margin: 0 0 16px;
+  font-weight: 700;
 }
-.submit-btn:hover { background:#1e40af; transform:scale(1.03); }
+
+.benefits-list,
+.steps-list {
+  list-style: none;
+  padding: 0;
+  text-align: left;
+}
+
+.benefits-list li,
+.steps-list li {
+  margin-bottom: 10px;
+  color: #4b5563;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.steps-list li::before {
+  content: counter(item) ". ";
+  font-weight: bold;
+  color: #3b82f6;
+}
+
+.steps-list {
+  counter-reset: item;
+}
+
+.steps-list li {
+  counter-increment: item;
+}
+
+/* Contact Items */
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+  color: #4b5563;
+  font-size: 1rem;
+}
+
+.contact-item i {
+  color: #3b82f6;
+  width: 20px;
+  text-align: center;
+}
+
+/* Testimonials */
+.testimonials {
+  margin-top: 40px;
+}
+
+.testimonials h2 {
+  text-align: center;
+  color: #1e3a8a;
+  font-size: 1.8rem;
+  margin-bottom: 24px;
+  font-weight: 700;
+}
+
+.testimonial-card {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+  margin-bottom: 20px;
+}
+
+.quote {
+  font-style: italic;
+  color: #2d3748;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.author {
+  font-weight: 600;
+  color: #1e3a8a;
+  font-size: 0.95rem;
+}
+
+/* FAQ Section */
+.faq-section {
+  background: white;
+  padding: 70px 0;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 2.1rem;
+  color: #1e3a8a;
+  margin-bottom: 2rem;
+  font-weight: 700;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.faq-item {
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 20px;
+  transition: all 0.2s ease;
+}
+
+.faq-item:hover {
+  background: #eef6ff;
+  transform: translateX(4px);
+}
+
+.faq-question {
+  font-weight: 700;
+  color: #1e3a8a;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.faq-answer {
+  color: #4b5563;
+  font-size: 1rem;
+  line-height: 1.6;
+}
 
 /* CTA Section */
 .cta-section {
-  background: linear-gradient(to right, #3b82f6, #1e40af);
-  text-align:center; padding:100px 20px; color:white;
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  padding: 80px 20px;
+  text-align: center;
+  color: white;
 }
-.cta-section h2 { font-size:3rem; font-weight:700; margin-bottom:20px; }
-.cta-section p { font-size:1.2rem; margin-bottom:30px; }
 
-/* Responsive */
-@media(max-width:768px) {
-  .grid-container { flex-direction:column; }
-  .social-icons { justify-content:center; }
+.cta-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+
+.cta-text {
+  font-size: 1.15rem;
+  max-width: 700px;
+  margin: 0 auto 2rem;
+  opacity: 0.95;
+  line-height: 1.7;
+}
+
+.cta-btn {
+  display: inline-block;
+  background: #ffd54f;
+  color: #1e3a8a;
+  font-weight: 700;
+  padding: 14px 32px;
+  border-radius: 16px;
+  text-decoration: none;
+  font-size: 1.15rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  transition: all 0.25s ease;
+}
+
+.cta-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-text,
+  .cta-text {
+    font-size: 1.05rem;
+  }
+
+  .info-cards,
+  .container {
+    grid-template-columns: 1fr !important;
+    padding: 0 16px;
+  }
+
+  .cta-btn {
+    width: 100%;
+    max-width: 320px;
+    padding: 16px;
+  }
+
+  .faq-question {
+    font-size: 1rem;
+  }
+}
+
+/* Accessibility */
+.cta-btn:focus {
+  outline: 2px solid #ffd54f;
+  outline-offset: 4px;
 }
 </style>

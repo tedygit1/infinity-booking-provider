@@ -1,9 +1,10 @@
 // src/api/index.js
 import axios from "axios";
 
-// ✅ CORRECT BASE URL — no spaces, includes /infinity-booking
+// ✅ Use /api — Vite proxy handles the rest (dev + production-ready)
 const http = axios.create({
-  baseURL: "https://infinity-booking-backend1.onrender.com/infinity-booking",
+  baseURL: "/api", // 👈 All requests go to /api/* → proxied to backend
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -25,13 +26,12 @@ http.interceptors.request.use(
 http.interceptors.response.use(
   (response) => response,
   (error) => {
-    // 🔍 Log full error details for debugging
     console.error("API Error:", {
       url: error.config?.url,
       method: error.config?.method,
       status: error.response?.status,
       data: error.response?.data,
-      message: error.message
+      message: error.message,
     });
 
     return Promise.reject(

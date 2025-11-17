@@ -1,35 +1,23 @@
+<!-- src/components/Navbar.vue -->
 <template>
   <nav class="navbar">
     <div class="logo">
       <router-link to="/" class="logo-text">Infinity-Booking</router-link>
     </div>
 
+    <!-- Desktop Links -->
     <ul class="nav-links">
-      <li>
-        <router-link to="/" class="link" :class="{ active: $route.name === 'Home' }">Home</router-link>
-      </li>
-      <li>
-        <router-link to="/providers" class="link" :class="{ active: $route.name === 'Providers' }">Providers</router-link>
-      </li>
-      <li>
-        <router-link to="/about" class="link" :class="{ active: $route.name === 'About' }">About</router-link>
-      </li>
-      <li>
-        <router-link to="/how-it-works" class="link" :class="{ active: $route.name === 'HowItWorks' }">How It Works</router-link>
-      </li>
-      <li>
-        <router-link to="/contact" class="link" :class="{ active: $route.name === 'Contact' }">Contact</router-link>
-      </li>
-
-      <!-- Auth Button -->
-      <li v-if="!isLoggedIn">
+      <li v-for="item in navItems" :key="item.to">
         <router-link
-          to="/login"
-          class="login-btn"
-          :class="{ active: $route.name === 'Login' }"
+          :to="item.to"
+          class="link"
+          :class="{ active: $route.path === item.to }"
         >
-          Login / Register
+          {{ item.label }}
         </router-link>
+      </li>
+      <li v-if="!isLoggedIn">
+        <router-link to="/login" class="login-btn">Login / Register</router-link>
       </li>
       <li v-else>
         <button class="login-btn" @click="logout">Logout</button>
@@ -37,76 +25,82 @@
     </ul>
 
     <!-- Mobile Hamburger -->
-    <div class="hamburger" @click="toggleMobileMenu">
+    <div class="hamburger" @click="toggleMobileMenu" aria-label="Toggle menu">
       <span :class="{ open: mobileMenuOpen }"></span>
       <span :class="{ open: mobileMenuOpen }"></span>
       <span :class="{ open: mobileMenuOpen }"></span>
     </div>
 
-    <!-- Mobile menu -->
-    <ul v-if="mobileMenuOpen" class="mobile-menu">
-      <li>
-        <router-link to="/" @click="closeMobileMenu">Home</router-link>
-      </li>
-      <li>
-        <router-link to="/providers" @click="closeMobileMenu">Providers</router-link>
-      </li>
-      <li>
-        <router-link to="/about" @click="closeMobileMenu">About</router-link>
-      </li>
-      <li>
-        <router-link to="/how-it-works" @click="closeMobileMenu">How It Works</router-link>
-      </li>
-      <li>
-        <router-link to="/contact" @click="closeMobileMenu">Contact</router-link>
-      </li>
-      <li v-if="!isLoggedIn">
-        <router-link to="/login" @click="closeMobileMenu">Login / Register</router-link>
-      </li>
-      <li v-else>
-        <button @click="logout">Logout</button>
-      </li>
-    </ul>
+    <!-- Mobile Menu Overlay -->
+    <div
+      v-if="mobileMenuOpen"
+      class="mobile-overlay"
+      @click="closeMobileMenu"
+    ></div>
+
+    <!-- Mobile Menu -->
+    <div v-if="mobileMenuOpen" class="mobile-menu">
+      <div class="mobile-menu-inner">
+        <div class="mobile-logo">
+          <router-link to="/" class="logo-text" @click="closeMobileMenu">
+            Infinity-Booking
+          </router-link>
+        </div>
+        <ul>
+          <li v-for="item in navItems" :key="item.to">
+            <router-link
+              :to="item.to"
+              @click="closeMobileMenu"
+            >
+              {{ item.label }}
+            </router-link>
+          </li>
+          <li v-if="!isLoggedIn">
+            <router-link to="/login" @click="closeMobileMenu">
+              Login / Register
+            </router-link>
+          </li>
+          <li v-else>
+            <button @click="logout">Logout</button>
+          </li>
+        </ul>
+      </div>
+    </div>
   </nav>
 </template>
 
-<script>
-import { computed, ref } from "vue";
+<script setup>
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { userStore } from "@/store/user";
 import { toast } from "vue-sonner";
 
-export default {
-  name: "Navbar",
-  setup() {
-    const router = useRouter();
-    const mobileMenuOpen = ref(false);
+const router = useRouter();
+const mobileMenuOpen = ref(false);
 
-    // reactive login state
-    const isLoggedIn = computed(() => !!userStore.user);
+const isLoggedIn = computed(() => !!userStore.user);
 
-    const logout = () => {
-      userStore.logout();
-      toast.success("✅ Logged out successfully");
-      router.push({ path: "/login" });
-    };
+const navItems = [
+  { to: "/", label: "Home" },
+  { to: "/providers", label: "Providers" },
+  { to: "/about", label: "About" },
+  { to: "/how-it-works", label: "How It Works" },
+  { to: "/contact", label: "Contact" },
+];
 
-    const toggleMobileMenu = () => {
-      mobileMenuOpen.value = !mobileMenuOpen.value;
-    };
+const logout = () => {
+  userStore.logout();
+  toast.success("✅ Logged out successfully");
+  router.push({ path: "/login" });
+  closeMobileMenu();
+};
 
-    const closeMobileMenu = () => {
-      mobileMenuOpen.value = false;
-    };
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value;
+};
 
-    return {
-      logout,
-      isLoggedIn,
-      mobileMenuOpen,
-      toggleMobileMenu,
-      closeMobileMenu,
-    };
-  },
+const closeMobileMenu = () => {
+  mobileMenuOpen.value = false;
 };
 </script>
 
@@ -115,82 +109,102 @@ export default {
   position: fixed;
   top: 0;
   width: 100%;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 3rem;
-  z-index: 1000;
-  backdrop-filter: blur(10px);
-  box-sizing: border-box;
-  transition: all 0.3s ease;
+  padding: 1rem 2rem;
+  z-index: 1100;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .logo-text {
-  font-size: 1.8rem;
-  font-weight: bold;
+  font-size: 1.7rem;
+  font-weight: 800;
   color: white;
   text-decoration: none;
-  letter-spacing: 1px;
-  transition: color 0.3s ease;
-}
-
-.logo-text:hover {
-  color: #ffcc00;
+  background: linear-gradient(90deg, #ffcc00, #ffd54f);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .nav-links {
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
   list-style: none;
-  font-size: 1rem;
-  color: white;
+  align-items: center;
 }
 
 .link {
-  color: #ffffff;
-  font-weight: 500;
+  color: #e2e8f0;
   text-decoration: none;
-  transition: color 0.3s ease;
+  font-weight: 500;
+  font-size: 1.02rem;
+  padding: 0.4rem 0;
+  position: relative;
+  transition: color 0.2s;
 }
 
-.link:hover {
+.link::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #ffcc00;
+  transition: width 0.3s ease;
+}
+
+.link:hover,
+.link.active {
   color: #ffcc00;
 }
 
-.active {
-  color: #ffcc00;
-  font-weight: 600;
+.link.active::after,
+.link:hover::after {
+  width: 100%;
 }
 
 .login-btn {
-  background: #ffcc00;
-  color: black !important;
-  padding: 0.5rem 1.2rem;
-  border-radius: 8px;
-  font-weight: 600;
+  background: linear-gradient(90deg, #ffcc00, #ffd54f);
+  color: #1e293b !important;
+  padding: 0.55rem 1.3rem;
+  border-radius: 12px;
+  font-weight: 700;
   text-decoration: none;
-  transition: background 0.3s ease, transform 0.2s;
   border: none;
   cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 10px rgba(255, 204, 0, 0.3);
 }
 
 .login-btn:hover {
-  background: #ffd633;
-  transform: scale(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(255, 204, 0, 0.4);
 }
 
-/* Mobile Hamburger */
+/* Hamburger */
 .hamburger {
   display: none;
   flex-direction: column;
   gap: 5px;
   cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.hamburger:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .hamburger span {
-  width: 25px;
+  width: 26px;
   height: 3px;
   background: white;
   border-radius: 2px;
@@ -209,45 +223,87 @@ export default {
   transform: rotate(-45deg) translate(6px, -6px);
 }
 
-/* Mobile menu */
+/* Mobile Overlay */
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1050;
+}
+
+/* Mobile Menu */
 .mobile-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 100%;
+  max-width: 320px;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.97);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 1060;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.mobile-menu-inner {
+  padding: 2rem 1.5rem;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  background: rgba(0, 0, 0, 0.95);
-  position: absolute;
-  top: 100%;
-  right: 0;
-  width: 200px;
-  padding: 1rem;
-  gap: 1rem;
-  z-index: 999;
 }
 
-.mobile-menu li {
+.mobile-logo {
+  margin-bottom: 2.5rem;
+}
+
+.mobile-logo .logo-text {
+  font-size: 1.8rem;
+}
+
+.mobile-menu ul {
   list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  flex: 1;
 }
 
-.mobile-menu a,
-.mobile-menu button {
-  color: white;
+.mobile-menu li a,
+.mobile-menu li button {
+  color: #e2e8f0;
   text-decoration: none;
-  font-weight: 500;
+  font-size: 1.2rem;
+  font-weight: 600;
   background: none;
   border: none;
   cursor: pointer;
+  padding: 0.6rem 0;
+  transition: color 0.2s;
+  width: fit-content;
 }
 
-.mobile-menu a:hover,
-.mobile-menu button:hover {
+.mobile-menu li a:hover,
+.mobile-menu li button:hover {
   color: #ffcc00;
 }
 
+/* Responsive */
 @media (max-width: 768px) {
   .nav-links {
     display: none;
   }
   .hamburger {
     display: flex;
+  }
+  .mobile-menu {
+    transform: translateX(0);
   }
 }
 </style>
