@@ -4,12 +4,6 @@
     <!-- Visual Section -->
     <div class="auth-image">
       <div class="overlay"></div>
-      <img
-        src="@/assets/log.jpg"
-        alt="Provider managing bookings on Infinity-Booking"
-        class="floating-image"
-        loading="lazy"
-      />
       <div class="image-text">
         <h2>Hey Beloved Provider</h2>
         <p>Login to manage your bookings, grow your services, and connect with clients.</p>
@@ -19,6 +13,12 @@
           <p><i class="fas fa-bolt"></i> Boost your business productivity</p>
         </div>
       </div>
+      <img
+        src="@/assets/log.jpg"
+        alt="Provider managing bookings on Infinity-Booking"
+        class="floating-image"
+        loading="lazy"
+      />
     </div>
 
     <!-- Login Form -->
@@ -113,7 +113,25 @@ async function handleLogin() {
   }
 
   try {
+    console.log('🔍 DEBUG: Starting login process...');
+    console.log('📧 Email:', email);
+    
+    // Test 1: Check what URL we're using
+    console.log('🌐 API Base URL:', http.defaults.baseURL);
+    
+    // Test 2: Check if we're online
+    console.log('📡 Online status:', navigator.onLine);
+    
+    // Test 3: Check the full request URL
+    const fullURL = http.defaults.baseURL + '/auth/login';
+    console.log('🔗 Full request URL:', fullURL);
+
+    console.log('🔄 Making login request...');
+    
     const res = await http.post("/auth/login", { email, password });
+    
+    console.log('✅ Login successful:', res.data);
+    
     const token = res.data?.token;
     const user = res.data?.user;
 
@@ -153,13 +171,22 @@ async function handleLogin() {
       }, 1200);
     }
   } catch (err) {
-    console.error("Login error:", err);
-    loginError.value = err.response?.data?.message || "Wait until your account is reviewed by admin. You will be notified soon about the status of your account.";
+    console.error('❌ Login failed with details:', err);
+    console.error('🔧 Error config:', err.config);
+    console.error('🔧 Error response:', err.response);
+    
+    // More specific error handling
+    if (err.code === 'ECONNABORTED') {
+      loginError.value = "Server is taking too long to respond. Please try again.";
+    } else if (err.message?.includes('Network Error') || !err.response) {
+      loginError.value = "Cannot connect to server. Please check your internet connection.";
+    } else {
+      loginError.value = err.response?.data?.message || "Wait until your account is reviewed by admin. You will be notified soon about the status of your account.";
+    }
   } finally {
     loginLoading.value = false;
   }
 }
-
 function togglePassword() {
   showPassword.value = !showPassword.value;
 }
@@ -171,6 +198,8 @@ function goToRegister() {
 function goToForgotPassword() {
   router.push("/forgot-password");
 }
+
+
 </script>
 
 <style scoped>
@@ -207,7 +236,8 @@ function goToForgotPassword() {
   border-radius: 28px;
   object-fit: cover;
   z-index: 2;
-  opacity: 0.95;
+  opacity: 0.85;
+  position: relative;
 }
 
 .overlay {
@@ -220,51 +250,63 @@ function goToForgotPassword() {
 
 .image-text {
   position: absolute;
-  bottom: 45px;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   color: white;
   text-align: center;
   z-index: 3;
-  max-width: 90%;
-  padding: 0 1rem;
+  width: 90%;
+  max-width: 500px;
+  padding: 2rem;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .image-text h2 {
   font-size: 2.1rem;
   font-weight: 700;
-  margin-bottom: 0.6rem;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, #facc15, #eab308);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.image-text p {
-  font-size: 1.02rem;
+.image-text > p {
+  font-size: 1.1rem;
   opacity: 0.95;
-  margin-top: 1.5rem;
-  line-height: 1.5;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  color: #f8fafc;
+  font-weight: 500;
 }
 
 .motivations {
-  margin-top: 1.4rem;
   text-align: left;
   max-width: 320px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto;
 }
 
 .motivations p {
-  font-size: 0.98rem;
-  color: #f0fdf4;
-  margin: 8px 0;
+  font-size: 1rem;
+  color: #e2e8f0;
+  margin: 12px 0;
   display: flex;
   align-items: center;
-  gap: 10px;
-  line-height: 1.4;
+  gap: 12px;
+  line-height: 1.5;
+  font-weight: 500;
 }
 
 .motivations i {
   color: #facc15;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
+  width: 20px;
+  text-align: center;
 }
 
 .floating-image {
@@ -440,7 +482,7 @@ input:focus {
   .auth-image {
     order: 2;
     width: 100%;
-    height: 280px;
+    height: 380px;
     border-radius: 24px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
   }
@@ -450,12 +492,15 @@ input:focus {
   }
 
   .image-text {
-    bottom: 30px;
-    max-width: 95%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 90%;
+    padding: 1.5rem;
   }
 
   .image-text h2 { font-size: 1.8rem; }
-  .image-text p { font-size: 0.95rem; }
+  .image-text > p { font-size: 1rem; }
+  .motivations p { font-size: 0.95rem; }
 
   .auth-container {
     order: 1;
@@ -472,9 +517,10 @@ input:focus {
 
 @media (max-width: 600px) {
   .auth-page { padding: 1.2rem; gap: 1.6rem; }
-  .auth-image { height: 240px; }
-  .image-text { bottom: 25px; }
+  .auth-image { height: 340px; }
+  .image-text { padding: 1.2rem; }
   .image-text h2 { font-size: 1.6rem; }
+  .image-text > p { font-size: 0.95rem; }
   .auth-container { padding: 2.2rem; }
   .title { font-size: 1.7rem; }
   input { padding: 1.2rem; }
@@ -482,9 +528,10 @@ input:focus {
 }
 
 @media (max-width: 420px) {
-  .auth-image { height: 210px; }
+  .auth-image { height: 300px; }
   .image-text h2 { font-size: 1.45rem; }
-  .image-text p { font-size: 0.9rem; }
+  .image-text > p { font-size: 0.9rem; }
+  .motivations p { font-size: 0.9rem; }
   .auth-container { padding: 2rem; }
   .title { font-size: 1.55rem; }
   .form { gap: 1.2rem; }

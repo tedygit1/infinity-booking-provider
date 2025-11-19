@@ -1,41 +1,73 @@
 // src/api/index.js
 import axios from "axios";
 
-// ✅ Use /api — Vite proxy handles the rest (dev + production-ready)
+// ✅ SMART URL CONFIGURATION
+const getBaseURL = () => {
+  if (import.meta.env.DEV) {
+    console.log("🚀 Development mode: Using proxy /api");
+    return "/api";
+  } else {
+    const productionURL = "https://infinity-booking-backend1-1.onrender.com/infinity-booking";
+    console.log("🌐 Production mode: Using direct URL:", productionURL);
+    return productionURL;
+  }
+};
+
 const http = axios.create({
-  baseURL: "/api", // 👈 All requests go to /api/* → proxied to backend
-  timeout: 10000,
+  baseURL: getBaseURL(),
+  timeout: 15000, // Increased timeout
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// ✅ Attach provider token if available
+// ✅ Enhanced request logging
 http.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("provider_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    console.log(`📤 ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+    
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// ✅ Global error logging
+// ✅ Enhanced error logging
 http.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`✅ ${response.config.method?.toUpperCase()} ${response.config.url} - Success`);
+    return response;
+  },
   (error) => {
-    console.error("API Error:", {
-      url: error.config?.url,
+    console.error("❌ API Error Details:", {
+      fullURL: error.config?.baseURL + error.config?.url,
       method: error.config?.method,
       status: error.response?.status,
-      data: error.response?.data,
+      statusText: error.response?.statusText,
       message: error.message,
+      code: error.code
     });
 
+    if (error.code === 'ECONNABORTED') {
+      return Promise.reject({ 
+        message: "Request timeout. Server is taking too long to respond.",
+        code: 'ECONNABORTED'
+      });
+    }
+
+    if (!error.response) {
+      return Promise.reject({ 
+        message: "Cannot connect to server. Please check your internet connection.",
+        code: 'NETWORK_ERROR'
+      });
+    }
+
     return Promise.reject(
-      error.response?.data || { message: "⚠️ Network or server error" }
+      error.response?.data || { message: "Server error occurred" }
     );
   }
 );

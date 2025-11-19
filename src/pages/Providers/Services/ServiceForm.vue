@@ -80,7 +80,7 @@
         <textarea 
           v-model="local.description" 
           rows="4" 
-          placeholder="Describe what’s included, duration, tools used, etc."
+          placeholder="Describe what's included, duration, tools used, etc."
           :class="{ 'error': !local.description.trim() && showError }"
         ></textarea>
         <div v-if="!local.description.trim() && showError" class="error-message">
@@ -236,15 +236,6 @@
         </div>
         <div v-if="!hasAnyActiveDay && showError" class="error-message">
           Please enable at least one day and add valid working hours
-        </div>
-      </div>
-
-      <!-- HIDDEN LEGACY SLOTS -->
-      <div class="form-row" style="display:none;">
-        <div v-for="(slot, idx) in local.slots" :key="idx" class="slot-row">
-          <input v-model="slot.date" />
-          <input v-model="slot.startTime" />
-          <input v-model="slot.endTime" />
         </div>
       </div>
 
@@ -419,20 +410,30 @@ export default {
       this.$refs.fileInput.value = '';
     },
 
+    // ✅ FIXED: Convert backend slots to form availability correctly
     getDefaultAvailability(slots = []) {
       const availability = {};
       Object.keys(this.daysOfWeek).forEach(dayKey => {
         availability[dayKey] = { active: false, slots: [] };
       });
+      
       if (slots.length > 0) {
-        const convertedSlots = slots.map(s => ({
-          start: s.startTime || "09:00",
-          end: s.endTime || "17:00"
-        }));
-        availability.monday = { active: true, slots: convertedSlots };
+        // ✅ FIXED: Convert backend slots to form availability correctly
+        slots.forEach(slot => {
+          const dayName = slot.slotLabel?.split(' ')[0]?.toLowerCase(); // "Monday Schedule" -> "monday"
+          if (dayName && availability[dayName] && slot.weeklySchedule) {
+            availability[dayName].active = true;
+            availability[dayName].slots = slot.weeklySchedule.map(schedule => ({
+              start: schedule.startTime || "09:00",
+              end: schedule.endTime || "17:00"
+            }));
+          }
+        });
       } else {
+        // Default availability
         availability.monday = { active: true, slots: [{ start: "09:00", end: "17:00" }] };
       }
+      
       return availability;
     },
 
@@ -505,110 +506,152 @@ export default {
       return true;
     },
 
-    // ✅ FIXED: ONLY THIS METHOD CHANGED
- async saveService() {
-  if (!this.validateForm()) {
-    alert("❌ Please fill in all required fields correctly.");
-    return;
-  }
+    // ✅ FIXED: Convert availability to proper DAY-based slots structure
+    convertAvailabilityToSlots() {
+      const slots = [];
+      const daysMap = {
+        monday: 'Monday',
+        tuesday: 'Tuesday', 
+        wednesday: 'Wednesday',
+        thursday: 'Thursday',
+        friday: 'Friday',
+        saturday: 'Saturday',
+        sunday: 'Sunday'
+      };
 
-  this.isSaving = true;
-
-  try {
-    // Get provider ID
-    let providerId = null;
-    try {
-      const loggedProvider = JSON.parse(localStorage.getItem("loggedProvider") || "{}");
-      providerId = loggedProvider._id;
-    } catch (e) {
-      console.warn("Malformed loggedProvider");
-    }
-    if (!providerId) {
-      providerId = localStorage.getItem("provider_id");
-    }
-    if (!providerId) {
-      throw new Error("Provider not authenticated.");
-    }
-
-    // Get category name
-    const selectedCategory = this.categories.find(cat => cat._id === this.local.categoryId);
-    if (!selectedCategory) {
-      throw new Error("Please select a valid category.");
-    }
-    const categoryName = selectedCategory.name;
-
-    // ✅ FIX: Handle banner properly - always use FormData when uploading files
-    if (this.local.bannerFile) {
-      // Use FormData for file upload
-      const formData = new FormData();
-      
-      // Append all service data
-      formData.append('title', this.local.title.trim());
-      formData.append('description', this.local.description.trim());
-      formData.append('totalPrice', this.local.totalPrice.toString());
-      formData.append('bookingPrice', this.local.bookingPrice.toString());
-      formData.append('priceUnit', 'ETB');
-      formData.append('status', this.local.status);
-      formData.append('provider', providerId);
-      formData.append('category', categoryName);
-      formData.append('paymentMethod', this.local.paymentMethod || 'Telebirr');
-      formData.append('subcategoryId', this.local.subcategoryId);
-      formData.append('slots', JSON.stringify(this.local.slots));
-      formData.append('availability', JSON.stringify(this.local.availability));
-      
-      // Append the file
-      formData.append('banner', this.local.bannerFile);
-
-      const url = this.isEdit ? `/services/${this.local._id}` : "/services";
-      const config = {
-        headers: {
-          'Content-Type': 'multipart/form-data'
+      // Create ONE slot per day (not date-based)
+      Object.keys(daysMap).forEach(dayKey => {
+        const dayAvailability = this.local.availability[dayKey];
+        const dayName = daysMap[dayKey];
+        
+        if (dayAvailability && dayAvailability.active && dayAvailability.slots.length > 0) {
+          slots.push({
+            // ✅ FIXED: Use day-based structure, not date-based
+            slotLabel: `${dayName} Schedule`,
+            isActive: true,
+            isBooked: false,
+            weeklySchedule: dayAvailability.slots.map(slot => ({
+              startTime: slot.start,
+              endTime: slot.end
+            }))
+          });
         }
-      };
-      
-      const response = this.isEdit
-        ? await http.put(url, formData, config)
-        : await http.post(url, formData, config);
-      
-      console.log("✅ Service saved with image:", response.data);
-      this.$emit("save", response.data);
-      alert(`✅ ${this.isEdit ? "Service updated!" : "Service created!"}`);
-    } else {
-      // No file upload - use regular JSON
-      const payloadData = {
-        title: this.local.title.trim(),
-        description: this.local.description.trim(),
-        totalPrice: this.local.totalPrice,
-        bookingPrice: this.local.bookingPrice,
-        priceUnit: "ETB",
-        status: this.local.status,
-        provider: providerId,
-        category: categoryName,
-        banner: this.previewImage || "", // Use existing banner URL if available
-        paymentMethod: this.local.paymentMethod || "Telebirr",
-        subcategoryId: this.local.subcategoryId,
-        slots: this.local.slots,
-        availability: this.local.availability
-      };
+      });
 
-      const url = this.isEdit ? `/services/${this.local._id}` : "/services";
-      const response = this.isEdit
-        ? await http.put(url, payloadData)
-        : await http.post(url, payloadData);
-      
-      console.log("✅ Service saved without image:", response.data);
-      this.$emit("save", response.data);
-      alert(`✅ ${this.isEdit ? "Service updated!" : "Service created!"}`);
+      console.log("✅ Converted DAY-based slots for backend:", slots);
+      return slots;
+    },
+
+    // ✅ FIXED: Save service with proper slots structure
+    async saveService() {
+      if (!this.validateForm()) {
+        alert("❌ Please fill in all required fields correctly.");
+        return;
+      }
+
+      this.isSaving = true;
+
+      try {
+        // Get provider ID
+        let providerId = null;
+        try {
+          const loggedProvider = JSON.parse(localStorage.getItem("loggedProvider") || "{}");
+          providerId = loggedProvider._id;
+        } catch (e) {
+          console.warn("Malformed loggedProvider");
+        }
+        if (!providerId) {
+          providerId = localStorage.getItem("provider_id");
+        }
+        if (!providerId) {
+          throw new Error("Provider not authenticated.");
+        }
+
+        // Get category name
+        const selectedCategory = this.categories.find(cat => cat._id === this.local.categoryId);
+        if (!selectedCategory) {
+          throw new Error("Please select a valid category.");
+        }
+        const categoryName = selectedCategory.name;
+
+        // ✅ FIX: Convert availability to proper slots structure
+        const slots = this.convertAvailabilityToSlots();
+
+        // ✅ FIX: Handle banner properly
+        if (this.local.bannerFile) {
+          const formData = new FormData();
+          
+          // Append all service data
+          formData.append('title', this.local.title.trim());
+          formData.append('description', this.local.description.trim());
+          formData.append('totalPrice', this.local.totalPrice.toString());
+          formData.append('bookingPrice', this.local.bookingPrice.toString());
+          formData.append('priceUnit', 'ETB');
+          formData.append('status', this.local.status);
+          formData.append('provider', providerId);
+          formData.append('category', categoryName);
+          formData.append('paymentMethod', this.local.paymentMethod || 'Telebirr');
+          formData.append('subcategoryId', this.local.subcategoryId);
+          
+          // ✅ FIX: Send proper slots structure
+          formData.append('slots', JSON.stringify(slots));
+          formData.append('availability', JSON.stringify(this.local.availability));
+          
+          // Append the file
+          formData.append('banner', this.local.bannerFile);
+
+          const url = this.isEdit ? `/services/${this.local._id}` : "/services";
+          const config = {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          };
+          
+          const response = this.isEdit
+            ? await http.put(url, formData, config)
+            : await http.post(url, formData, config);
+          
+          console.log("✅ Service saved with image:", response.data);
+          this.$emit("save", response.data);
+          alert(`✅ ${this.isEdit ? "Service updated!" : "Service created!"}`);
+        } else {
+          // No file upload - use regular JSON
+          const payloadData = {
+            title: this.local.title.trim(),
+            description: this.local.description.trim(),
+            totalPrice: this.local.totalPrice,
+            bookingPrice: this.local.bookingPrice,
+            priceUnit: "ETB",
+            status: this.local.status,
+            provider: providerId,
+            category: categoryName,
+            banner: this.previewImage || "",
+            paymentMethod: this.local.paymentMethod || "Telebirr",
+            subcategoryId: this.local.subcategoryId,
+            
+            // ✅ FIX: Send proper slots structure
+            slots: slots,
+            availability: this.local.availability
+          };
+
+          const url = this.isEdit ? `/services/${this.local._id}` : "/services";
+          const response = this.isEdit
+            ? await http.put(url, payloadData)
+            : await http.post(url, payloadData);
+          
+          console.log("✅ Service saved without image:", response.data);
+          this.$emit("save", response.data);
+          alert(`✅ ${this.isEdit ? "Service updated!" : "Service created!"}`);
+        }
+
+      } catch (err) {
+        const errorMsg = err.response?.data?.message || err.message || "Failed to save service";
+        console.error("Save error:", err);
+        alert(`❌ ${errorMsg}`);
+      } finally {
+        this.isSaving = false;
+      }
     }
-
-  } catch (err) {
-    const errorMsg = err.response?.data?.message || err.message || "Failed to save service";
-    console.error("Save error:", err);
-    alert(`❌ ${errorMsg}`);
-  } finally {
-    this.isSaving = false;
-  }
-}
   }
 };
 </script>
