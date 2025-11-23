@@ -43,6 +43,7 @@
             <input
               type="checkbox"
               v-model="slotConfig.isActive"
+              @change="updateSlotConfiguration"
             />
             <span class="toggle-label">Active Configuration</span>
           </label>
@@ -51,6 +52,7 @@
             type="text"
             class="slot-label-input"
             placeholder="Configuration Name (e.g., 'Weekly Schedule', 'Holiday Hours')"
+            @blur="updateSlotConfiguration"
           />
         </div>
       </div>
@@ -104,7 +106,7 @@
                 v-for="(timeSlot, slotIndex) in getTimeSlotsForDay(day.key)"
                 :key="slotIndex"
                 class="time-slot-item"
-                :class="{ 'has-error': timeSlot.hasError }"
+                :class="{ 'has-error': timeSlot.hasError, 'updating': timeSlot.updating }"
               >
                 <div class="time-inputs">
                   <input
@@ -112,6 +114,7 @@
                     type="time"
                     class="time-input"
                     @change="validateTimeSlot(timeSlot)"
+                    :disabled="timeSlot.updating"
                   />
                   <span class="time-separator">to</span>
                   <input
@@ -119,6 +122,7 @@
                     type="time"
                     class="time-input"
                     @change="validateTimeSlot(timeSlot)"
+                    :disabled="timeSlot.updating"
                   />
                 </div>
                 <div class="slot-actions">
@@ -126,13 +130,16 @@
                     <input
                       type="checkbox"
                       v-model="timeSlot.isAvailable"
+                      @change="updateSlotAvailability(day.key, slotIndex, timeSlot.isAvailable)"
+                      :disabled="timeSlot.updating"
                     />
                     <span class="toggle-slider"></span>
+                    <i v-if="timeSlot.updating" class="fa-solid fa-spinner fa-spin updating-spinner"></i>
                   </label>
                   <button
                     class="btn-remove-slot"
                     @click="removeTimeSlot(day.key, slotIndex)"
-                    :disabled="getTimeSlotsForDay(day.key).length === 1"
+                    :disabled="getTimeSlotsForDay(day.key).length === 1 || timeSlot.updating"
                     title="Remove time slot"
                   >
                     <i class="fa-solid fa-trash"></i>
@@ -366,7 +373,8 @@ export default {
               endTime: timeSlot.endTime,
               isAvailable: timeSlot.isAvailable !== false,
               hasError: false,
-              errorMessage: ''
+              errorMessage: '',
+              updating: false
             }));
             
             // Set date if available
@@ -380,6 +388,94 @@ export default {
         if (this.dayDates.monday) {
           this.weekStartDate = this.dayDates.monday;
         }
+      }
+    },
+
+    // ✅ FIXED: Update slot availability in real-time with correct request structure
+    async updateSlotAvailability(day, slotIndex, isAvailable) {
+      if (!this.hasExistingSlot) {
+        console.log('ℹ️ No existing slot - availability will be saved with the main save');
+        return;
+      }
+
+      const timeSlot = this.weeklySchedule[day][slotIndex];
+      
+      // Set updating state
+      timeSlot.updating = true;
+
+      try {
+        // Prepare the update data - include slotId in the request body
+        const updateData = {
+          slotId: this.existingSlotId, // Add slotId to request body
+          isAvailable: isAvailable,
+          startTime: timeSlot.startTime,
+          endTime: timeSlot.endTime,
+          day: day,
+          date: this.formatDateForBackend(this.dayDates[day])
+        };
+
+        console.log('🔄 Updating slot availability:', {
+          serviceId: this.serviceId,
+          slotId: this.existingSlotId,
+          day: day,
+          slotIndex: slotIndex,
+          data: updateData
+        });
+
+        // Use the PATCH endpoint to update availability
+        const response = await http.patch(
+          `/services/${this.serviceId}/slots/${this.existingSlotId}/availability`,
+          updateData
+        );
+
+        console.log('✅ Slot availability updated successfully:', response.data);
+        this.setSuccess(`Slot ${isAvailable ? 'enabled' : 'disabled'} successfully!`);
+        
+      } catch (error) {
+        console.error('❌ Error updating slot availability:', error);
+        
+        // Revert the toggle on error
+        timeSlot.isAvailable = !isAvailable;
+        
+        this.handleApiError(error, 'update slot availability');
+      } finally {
+        // Clear updating state
+        timeSlot.updating = false;
+      }
+    },
+
+    // ✅ FIXED: Update slot configuration in real-time
+    async updateSlotConfiguration() {
+      if (!this.hasExistingSlot) {
+        console.log('ℹ️ No existing slot - configuration will be saved with the main save');
+        return;
+      }
+
+      try {
+        const updateData = {
+          slotId: this.existingSlotId, // Include slotId in request body
+          slotLabel: this.slotConfig.slotLabel,
+          isActive: this.slotConfig.isActive
+        };
+
+        console.log('🔄 Updating slot configuration:', {
+          serviceId: this.serviceId,
+          slotId: this.existingSlotId,
+          data: updateData
+        });
+
+        // Use PATCH endpoint to update configuration
+        const response = await http.patch(
+          `/services/${this.serviceId}/slots/${this.existingSlotId}/schedule`,
+          updateData
+        );
+
+        console.log('✅ Slot configuration updated successfully:', response.data);
+        this.setSuccess('Configuration updated successfully!');
+        
+      } catch (error) {
+        console.error('❌ Error updating slot configuration:', error);
+        this.handleApiError(error, 'update configuration');
       }
     },
 
@@ -443,83 +539,84 @@ export default {
       console.log('🆕 Initialized default weekly schedule');
       // Reset to default schedule
       this.weeklySchedule = {
-        monday: [{ startTime: '09:00', endTime: '17:00', isAvailable: true }],
-        tuesday: [{ startTime: '09:00', endTime: '17:00', isAvailable: true }],
-        wednesday: [{ startTime: '09:00', endTime: '17:00', isAvailable: true }],
-        thursday: [{ startTime: '09:00', endTime: '17:00', isAvailable: true }],
-        friday: [{ startTime: '09:00', endTime: '17:00', isAvailable: true }],
-        saturday: [{ startTime: '09:00', endTime: '17:00', isAvailable: true }],
-        sunday: [{ startTime: '09:00', endTime: '17:00', isAvailable: true }]
+        monday: [{ startTime: '09:00', endTime: '17:00', isAvailable: true, updating: false }],
+        tuesday: [{ startTime: '09:00', endTime: '17:00', isAvailable: true, updating: false }],
+        wednesday: [{ startTime: '09:00', endTime: '17:00', isAvailable: true, updating: false }],
+        thursday: [{ startTime: '09:00', endTime: '17:00', isAvailable: true, updating: false }],
+        friday: [{ startTime: '09:00', endTime: '17:00', isAvailable: true, updating: false }],
+        saturday: [{ startTime: '09:00', endTime: '17:00', isAvailable: true, updating: false }],
+        sunday: [{ startTime: '09:00', endTime: '17:00', isAvailable: true, updating: false }]
       };
     },
 
     // ✅ FIXED: Save time slots using correct endpoint
-  async saveTimeSlots() {
-  if (!this.weekStartDate) {
-    this.setError('Please select a week start date');
-    return;
-  }
+    async saveTimeSlots() {
+      if (!this.weekStartDate) {
+        this.setError('Please select a week start date');
+        return;
+      }
 
-  if (!this.validateAllTimeSlots()) {
-    this.setError('Please fix time slot errors before saving');
-    return;
-  }
+      if (!this.validateAllTimeSlots()) {
+        this.setError('Please fix time slot errors before saving');
+        return;
+      }
 
-  this.saving = true;
-  this.errorMessage = '';
+      this.saving = true;
+      this.errorMessage = '';
 
-  try {
-    const requestData = this.prepareRequestData();
+      try {
+        const requestData = this.prepareRequestData();
 
-    console.log('🚀 Saving time slots:', {
-      hasExistingSlot: this.hasExistingSlot,
-      slotId: this.existingSlotId,
-      data: requestData
-    });
+        console.log('🚀 Saving time slots:', {
+          hasExistingSlot: this.hasExistingSlot,
+          slotId: this.existingSlotId,
+          data: requestData
+        });
 
-    let response;
+        let response;
 
-    if (this.hasExistingSlot) {
-      // ✅ FIXED: Use PUT endpoint for existing slots
-      response = await http.put(
-        `/services/${this.serviceId}/slots/${this.existingSlotId}`,
-        requestData
-      );
-      console.log('✅ Time slots UPDATED successfully:', response.data);
-      this.setSuccess('Time slots updated successfully!');
-    } else {
-      // ✅ FIXED: Create new slot with correct data structure
-      response = await http.post(`/services/${this.serviceId}/slots`, requestData);
-      this.existingSlotId = response.data.slotId; // Store the new slot ID
-      console.log('✅ New time slots CREATED successfully:', response.data);
-      this.setSuccess('Time slots created successfully!');
-    }
-    
-    // Emit saved event to refresh parent
-    this.$emit('saved', response.data);
+        if (this.hasExistingSlot) {
+          // ✅ FIXED: Use PUT endpoint for existing slots
+          response = await http.put(
+            `/services/${this.serviceId}/slots/${this.existingSlotId}`,
+            requestData
+          );
+          console.log('✅ Time slots UPDATED successfully:', response.data);
+          this.setSuccess('Time slots updated successfully!');
+        } else {
+          // ✅ FIXED: Create new slot with correct data structure
+          response = await http.post(`/services/${this.serviceId}/slots`, requestData);
+          this.existingSlotId = response.data.slotId; // Store the new slot ID
+          console.log('✅ New time slots CREATED successfully:', response.data);
+          this.setSuccess('Time slots created successfully!');
+        }
+        
+        // Emit saved event to refresh parent
+        this.$emit('saved', response.data);
 
-  } catch (error) {
-    console.error('❌ Error saving time slots:', error);
-    this.handleApiError(error, 'save time slots');
-  } finally {
-    this.saving = false;
-  }
-},
+      } catch (error) {
+        console.error('❌ Error saving time slots:', error);
+        this.handleApiError(error, 'save time slots');
+      } finally {
+        this.saving = false;
+      }
+    },
 
-// ✅ FIXED: Prepare request data with correct structure
-prepareRequestData() {
-  const slotData = this.prepareSlotData();
-  
-  if (this.hasExistingSlot) {
-    // For PUT (updating existing slot), send the slot object directly
-    return slotData;
-  } else {
-    // For POST (creating new slot), wrap in slots array
-    return {
-      slots: [slotData]
-    };
-  }
-},
+    // ✅ FIXED: Prepare request data with correct structure
+    prepareRequestData() {
+      const slotData = this.prepareSlotData();
+      
+      if (this.hasExistingSlot) {
+        // For PUT (updating existing slot), send the slot object directly
+        return slotData;
+      } else {
+        // For POST (creating new slot), wrap in slots array
+        return {
+          slots: [slotData]
+        };
+      }
+    },
+
     // ✅ FIXED: Prepare slot data for backend
     prepareSlotData() {
       const weeklySchedule = [];
@@ -545,6 +642,7 @@ prepareRequestData() {
       });
 
       return {
+        slotId: this.existingSlotId, // Include slotId for updates
         slotLabel: this.slotConfig.slotLabel,
         isActive: this.slotConfig.isActive,
         weeklySchedule: weeklySchedule,
@@ -572,7 +670,7 @@ prepareRequestData() {
     toggleWorkingDay(day, isWorking) {
       if (isWorking) {
         if (!this.weeklySchedule[day] || this.weeklySchedule[day].length === 0) {
-          this.weeklySchedule[day] = [{ startTime: '09:00', endTime: '17:00', isAvailable: true }];
+          this.weeklySchedule[day] = [{ startTime: '09:00', endTime: '17:00', isAvailable: true, updating: false }];
         }
       } else {
         this.weeklySchedule[day] = [];
@@ -589,7 +687,8 @@ prepareRequestData() {
         endTime: '17:00',
         isAvailable: true,
         hasError: false,
-        errorMessage: ''
+        errorMessage: '',
+        updating: false
       });
     },
 
@@ -641,7 +740,12 @@ prepareRequestData() {
       } else if (error.response?.status === 500) {
         errorMsg = 'Server error. Please try again.';
       } else if (error.response?.data?.message) {
-        errorMsg = error.response.data.message;
+        // Handle array of messages or single message
+        if (Array.isArray(error.response.data.message)) {
+          errorMsg = error.response.data.message.join(', ');
+        } else {
+          errorMsg = error.response.data.message;
+        }
       } else if (error.message) {
         errorMsg = error.message;
       }
@@ -943,6 +1047,11 @@ prepareRequestData() {
   align-items: center;
   gap: 12px;
   margin-bottom: 12px;
+  position: relative;
+}
+
+.time-slot-item.updating {
+  opacity: 0.7;
 }
 
 .time-inputs {
@@ -963,6 +1072,11 @@ prepareRequestData() {
 .time-input:focus {
   outline: none;
   border-color: #3b82f6;
+}
+
+.time-input:disabled {
+  background: #f8fafc;
+  cursor: not-allowed;
 }
 
 .time-separator {
@@ -1019,6 +1133,20 @@ input:checked + .toggle-slider {
 
 input:checked + .toggle-slider:before {
   transform: translateX(20px);
+}
+
+input:disabled + .toggle-slider {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.updating-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #3b82f6;
+  font-size: 0.8rem;
 }
 
 .btn-remove-slot {
