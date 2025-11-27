@@ -80,9 +80,9 @@ const mobileMenuOpen = ref(false);
 
 const isLoggedIn = computed(() => !!userStore.user);
 
+// UPDATED: Removed "Providers" from navigation items
 const navItems = [
   { to: "/", label: "Home" },
-  { to: "/providers", label: "Providers" },
   { to: "/about", label: "About" },
   { to: "/how-it-works", label: "How It Works" },
   { to: "/contact", label: "Contact" },

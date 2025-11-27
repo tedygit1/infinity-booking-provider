@@ -197,9 +197,9 @@ export default {
         totalPrice: 0,
         bookingPrice: 0,
         priceUnit: "ETB",
-        status: "draft", // ✅ ALWAYS DRAFT FOR NEW SERVICES
+        status: "draft",
         paymentMethod: "",
-        slots: [] // ✅ EMPTY SLOTS - WILL BE ADDED LATER
+        slots: []
       },
       previewImage: null,
       categories: [],
@@ -315,115 +315,124 @@ export default {
       return true;
     },
 
- async saveService() {
-  if (!this.validateForm()) {
-    alert("❌ Please fill in all required fields correctly.");
-    return;
-  }
-
-  this.isSaving = true;
-
-  try {
-    // Get provider ID
-    let providerId = null;
-    try {
-      const loggedProvider = JSON.parse(localStorage.getItem("loggedProvider") || "{}");
-      providerId = loggedProvider._id;
-    } catch (e) {
-      console.warn("Malformed loggedProvider");
-    }
-    if (!providerId) {
-      providerId = localStorage.getItem("provider_id");
-    }
-    if (!providerId) {
-      throw new Error("Provider not authenticated.");
-    }
-
-    // Get category name
-    const selectedCategory = this.categories.find(cat => cat._id === this.local.categoryId);
-    if (!selectedCategory) {
-      throw new Error("Please select a valid category.");
-    }
-    const categoryName = selectedCategory.name;
-
-    // ✅ CRITICAL: For NEW services, DO NOT send slots at all
-    // For EDIT services, preserve existing slots
-    const serviceData = {
-      title: this.local.title.trim(),
-      description: this.local.description.trim(),
-      totalPrice: this.local.totalPrice,
-      bookingPrice: this.local.bookingPrice,
-      priceUnit: "ETB",
-      status: "draft", // ✅ Always draft for new services
-      provider: providerId,
-      category: categoryName,
-      paymentMethod: this.local.paymentMethod || "Telebirr",
-      subcategoryId: this.local.subcategoryId
-    };
-
-    // ✅ Only include slots for EDIT mode (preserve existing)
-    if (this.isEdit) {
-      serviceData.slots = Array.isArray(this.local.slots) ? this.local.slots : [];
-    }
-    // ✅ For NEW services, NO slots field = truly blank
-
-    // Handle banner upload
-    if (this.local.bannerFile) {
-      const formData = new FormData();
-      
-      // Append all service data
-      Object.keys(serviceData).forEach(key => {
-        if (serviceData[key] !== null && serviceData[key] !== undefined) {
-          formData.append(key, serviceData[key]);
-        }
-      });
-      
-      // Append the file
-      formData.append('banner', this.local.bannerFile);
-
-      const url = this.isEdit ? `/services/${this.local._id}` : "/services";
-      const config = {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      };
-      
-      const response = this.isEdit
-        ? await http.put(url, formData, config)
-        : await http.post(url, formData, config);
-      
-      console.log("✅ Service saved:", response.data);
-      this.$emit("save", response.data);
-      
-    } else {
-      // No file upload - use regular JSON
-      if (!this.isEdit) {
-        // For new services, explicitly set banner to empty string
-        serviceData.banner = "";
+    async saveService() {
+      if (!this.validateForm()) {
+        alert("❌ Please fill in all required fields correctly.");
+        return;
       }
 
-      const url = this.isEdit ? `/services/${this.local._id}` : "/services";
-      const response = this.isEdit
-        ? await http.put(url, serviceData)
-        : await http.post(url, serviceData);
-      
-      console.log("✅ Service saved:", response.data);
-      this.$emit("save", response.data);
+      this.isSaving = true;
+
+      try {
+        // Get provider PID
+        let providerId = null;
+        try {
+          const loggedProvider = JSON.parse(localStorage.getItem("loggedProvider") || "{}");
+          providerId = loggedProvider.pid;
+        } catch (e) {
+          console.warn("Malformed loggedProvider");
+        }
+        if (!providerId) {
+          providerId = localStorage.getItem("provider_id");
+        }
+        if (!providerId) {
+          throw new Error("Provider not authenticated.");
+        }
+
+        // Get category info
+        const selectedCategory = this.categories.find(cat => cat._id === this.local.categoryId);
+        if (!selectedCategory) {
+          throw new Error("Please select a valid category");
+        }
+
+        // Get subcategory data
+        let subcategoryIds = [];
+        let subcategoryNames = [];
+        
+        if (this.local.subcategoryId) {
+          const selectedSubcategory = this.subcategories.find(sub => sub._id === this.local.subcategoryId);
+          if (selectedSubcategory) {
+            subcategoryIds = [selectedSubcategory._id];
+            subcategoryNames = [selectedSubcategory.name];
+          }
+        }
+
+        console.log("🔍 SUBCATEGORY DATA:");
+        console.log("📍 IDs to send:", subcategoryIds);
+        console.log("📍 Names to send:", subcategoryNames);
+
+        // Prepare service data
+        const serviceData = {
+          title: this.local.title.trim(),
+          description: this.local.description.trim(),
+          totalPrice: Number(this.local.totalPrice),
+          bookingPrice: Number(this.local.bookingPrice),
+          category: selectedCategory.name,
+          categoryId: this.local.categoryId,
+          status: "draft",
+          providerId: providerId,
+          subcategoryIds: subcategoryIds,
+          subcategoryNames: subcategoryNames,
+          slots: [],
+          paymentMethod: this.local.paymentMethod || "Telebirr",
+          priceUnit: "ETB",
+          serviceType: "fixed"
+        };
+
+        console.log("📤 COMPLETE DATA:", serviceData);
+
+        let response;
+        const url = this.isEdit ? `/services/${this.local._id}` : "/services";
+
+        // ✅ SOLUTION: Use JSON format (no FormData issues)
+        const config = {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        };
+
+        console.log("🚀 SENDING AS JSON (no banner for testing)");
+        response = this.isEdit
+          ? await http.put(url, serviceData, config)
+          : await http.post(url, serviceData, config);
+
+        console.log("✅ SERVER RESPONSE:", response.data);
+        
+        // Check final result
+        if (response.data.subcategoryIds && response.data.subcategoryIds.length > 0) {
+          console.log("🎉 SUCCESS! Subcategories saved in database:");
+          console.log("   IDs:", response.data.subcategoryIds);
+          console.log("   Names:", response.data.subcategoryNames);
+          alert("✅ Service created WITH subcategories!");
+        } else {
+          console.error("❌ FAILED: Subcategories still empty in database");
+          console.error("   Backend is not saving the subcategory data");
+        }
+        
+        this.$emit("save", response.data);
+
+      } catch (err) {
+        console.error("❌ Save error:", err);
+        
+        if (err.response) {
+          console.error("Error response:", err.response.data);
+        }
+        
+        const errorMsg = err.response?.data?.message || 
+                        err.response?.data?.error || 
+                        err.message || 
+                        "Failed to save service";
+        
+        alert(`❌ ${errorMsg}`);
+      } finally {
+        this.isSaving = false;
+      }
     }
-
-    alert(`✅ ${this.isEdit ? "Service updated!" : "Service created as draft! Add time slots to make it available."}`);
-
-  } catch (err) {
-    const errorMsg = err.response?.data?.message || err.message || "Failed to save service";
-    console.error("Save error:", err);
-    alert(`❌ ${errorMsg}`);
-  } finally {
-    this.isSaving = false;
-  }
-}
   }
 };
 </script>
+
 
 <style scoped>
 /* ===== KEEP ALL YOUR ORIGINAL STYLES ===== */

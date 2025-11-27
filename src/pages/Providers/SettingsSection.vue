@@ -116,10 +116,72 @@
       <div class="setting-card danger">
         <h3><i class="fa-solid fa-exclamation-triangle"></i> Danger Zone</h3>
         <p class="danger-text">
-          Deactivating or deleting your account is permanent. All your data will be removed.
+          Critical actions that affect your account access and data.
         </p>
-        <button class="btn danger" @click="deactivateAccount">Deactivate Account</button>
-        <button class="btn outline-danger" @click="deleteAccount">Permanently Delete Data</button>
+        
+        <!-- Logout Section -->
+        <div class="danger-action">
+          <div class="action-info">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <div>
+              <div class="action-label">Logout</div>
+              <div class="action-description">Sign out from your current session</div>
+            </div>
+          </div>
+          <button 
+            class="btn logout" 
+            @click="confirmLogout"
+            :disabled="loggingOut"
+          >
+            <i class="fa-solid fa-right-from-bracket"></i>
+            {{ loggingOut ? 'Logging out...' : 'Logout' }}
+          </button>
+        </div>
+
+        <!-- Deactivate Account -->
+        <div class="danger-action">
+          <div class="action-info">
+            <i class="fa-solid fa-user-slash"></i>
+            <div>
+              <div class="action-label">Deactivate Account</div>
+              <div class="action-description">Temporarily disable your account</div>
+            </div>
+          </div>
+          <button class="btn outline-danger" @click="deactivateAccount">
+            <i class="fa-solid fa-user-slash"></i>
+            Deactivate
+          </button>
+        </div>
+
+        <!-- Delete Account -->
+        <div class="danger-action">
+          <div class="action-info">
+            <i class="fa-solid fa-trash"></i>
+            <div>
+              <div class="action-label">Delete Account</div>
+              <div class="action-description">Permanently delete all your data</div>
+            </div>
+          </div>
+          <button class="btn danger" @click="deleteAccount">
+            <i class="fa-solid fa-trash"></i>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div v-if="showLogoutModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-icon">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </div>
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to logout from your account?</p>
+        <div class="modal-actions">
+          <button class="btn secondary" @click="showLogoutModal = false">Cancel</button>
+          <button class="btn logout" @click="performLogout">Yes, Logout</button>
+        </div>
       </div>
     </div>
   </div>
@@ -130,6 +192,10 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+
+// Logout state
+const loggingOut = ref(false);
+const showLogoutModal = ref(false);
 
 // Settings state (in real app, load from API)
 const privacy = ref({
@@ -153,6 +219,31 @@ const localization = ref({
   language: "en",
   timezone: "Africa/Addis_Ababa",
 });
+
+// Logout functionality
+const confirmLogout = () => {
+  showLogoutModal.value = true;
+};
+
+const performLogout = async () => {
+  loggingOut.value = true;
+  showLogoutModal.value = false;
+  
+  try {
+    // Clear all authentication data
+    localStorage.removeItem("provider_token");
+    localStorage.removeItem("provider_id");
+    localStorage.removeItem("loggedProvider");
+    
+    // Redirect to login page
+    await router.push({ name: "Login" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    alert("Logout failed. Please try again.");
+  } finally {
+    loggingOut.value = false;
+  }
+};
 
 // Save handlers
 function savePrivacy() {
@@ -192,7 +283,7 @@ function changePassword() {
 
 function deactivateAccount() {
   if (confirm("Are you sure? You can reactivate your account within 30 days.")) {
-    alert("Account deactivated. You’ll receive a confirmation email.");
+    alert("Account deactivation request sent. You'll receive a confirmation email.");
   }
 }
 
@@ -377,16 +468,37 @@ input:checked + .slider:before {
   box-shadow: 0 6px 14px rgba(0, 102, 204, 0.4);
 }
 
-.btn.danger {
-  background: linear-gradient(90deg, #e53e3e, #f56565);
+.btn.secondary {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.btn.secondary:hover {
+  background: #e2e8f0;
+}
+
+.btn.logout {
+  background: linear-gradient(90deg, #dc2626, #ef4444);
   color: white;
-  box-shadow: 0 4px 10px rgba(229, 62, 62, 0.3);
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+}
+
+.btn.logout:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(220, 38, 38, 0.4);
+}
+
+.btn.danger {
+  background: linear-gradient(90deg, #dc2626, #ef4444);
+  color: white;
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
 }
 
 .btn.outline-danger {
   background: transparent;
-  color: #e53e3e;
-  border: 1px solid #e53e3e;
+  color: #dc2626;
+  border: 1px solid #dc2626;
 }
 
 .btn.danger:hover,
@@ -394,23 +506,147 @@ input:checked + .slider:before {
   transform: translateY(-2px);
 }
 
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
 /* Danger Zone */
 .setting-card.danger {
-  border-color: rgba(229, 62, 62, 0.3);
-  background: rgba(255, 245, 245, 0.7);
+  border-color: rgba(220, 38, 38, 0.3);
+  background: rgba(254, 242, 242, 0.7);
 }
 
 .danger-text {
-  color: #e53e3e;
+  color: #dc2626;
   font-size: 0.95rem;
   margin: 0.8rem 0 1.2rem;
   line-height: 1.5;
+  font-weight: 500;
+}
+
+.danger-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(220, 38, 38, 0.1);
+}
+
+.danger-action:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.action-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.action-info i {
+  font-size: 1.2rem;
+  color: #dc2626;
+  width: 24px;
+}
+
+.action-label {
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+}
+
+.action-description {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.modal-icon {
+  font-size: 3rem;
+  color: #dc2626;
+  margin-bottom: 1rem;
+}
+
+.modal-content h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.75rem;
+}
+
+.modal-content p {
+  color: #64748b;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
 }
 
 /* Responsive */
 @media (min-width: 768px) {
   .settings-section {
     padding: 2rem;
+  }
+  
+  .settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .setting-card.danger {
+    grid-column: 1 / -1;
+  }
+  
+  .danger-action {
+    padding: 1.25rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .danger-action {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .danger-action .btn {
+    width: 100%;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
   }
 }
 </style>
