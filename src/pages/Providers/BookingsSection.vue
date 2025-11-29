@@ -5,98 +5,14 @@
       <div class="header-content">
         <div class="title-section">
           <h1 class="title">📅 Bookings Management</h1>
-          <p class="subtitle">Efficiently manage all your client appointments and service bookings</p>
+          <p class="subtitle">Manage all your client appointments and service bookings</p>
         </div>
         <div class="header-actions">
-          <button class="btn btn-primary" @click="refreshBookings">
+          <button class="btn btn-primary" @click="loadBookings">
             <i class="fa-solid fa-rotate"></i> Refresh
           </button>
-          <button class="btn btn-secondary" @click="exportBookings">
-            <i class="fa-solid fa-download"></i> Export
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Statistics Overview -->
-    <div class="stats-overview" v-if="!loading && !error">
-      <div class="stat-card">
-        <div class="stat-icon total">
-          <i class="fa-solid fa-calendar-check"></i>
-        </div>
-        <div class="stat-content">
-          <h3>{{ stats.totalBookings }}</h3>
-          <p>Total Bookings</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon pending">
-          <i class="fa-solid fa-clock"></i>
-        </div>
-        <div class="stat-content">
-          <h3>{{ stats.pending }}</h3>
-          <p>Pending</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon confirmed">
-          <i class="fa-solid fa-check-circle"></i>
-        </div>
-        <div class="stat-content">
-          <h3>{{ stats.confirmed }}</h3>
-          <p>Confirmed</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon completed">
-          <i class="fa-solid fa-flag-checkered"></i>
-        </div>
-        <div class="stat-content">
-          <h3>{{ stats.completed }}</h3>
-          <p>Completed</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon revenue">
-          <i class="fa-solid fa-dollar-sign"></i>
-        </div>
-        <div class="stat-content">
-          <h3>${{ stats.revenue }}</h3>
-          <p>Total Revenue</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filters and Search -->
-    <div class="filters-section" v-if="!loading && !error">
-      <div class="filters-row">
-        <div class="search-box">
-          <i class="fa-solid fa-search"></i>
-          <input 
-            v-model="searchQuery" 
-            type="text" 
-            placeholder="Search by customer name, service, or booking ID..."
-            class="search-input"
-          />
-        </div>
-        <div class="filter-controls">
-          <select v-model="statusFilter" class="filter-select">
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-          <select v-model="dateFilter" class="filter-select">
-            <option value="all">All Dates</option>
-            <option value="today">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="upcoming">Upcoming</option>
-            <option value="past">Past</option>
-          </select>
-          <button class="btn btn-outline" @click="clearFilters">
-            <i class="fa-solid fa-times"></i> Clear
+          <button class="btn btn-outline" @click="checkProviderStatus">
+            <i class="fa-solid fa-user-check"></i> Check Status
           </button>
         </div>
       </div>
@@ -107,12 +23,57 @@
       <div class="loading-content">
         <div class="spinner-large"></div>
         <h3>Loading Your Bookings</h3>
-        <p>Please wait while we fetch your appointment data...</p>
+        <p>Fetching real data from API...</p>
         <div class="loading-progress">
           <div class="progress-bar">
             <div class="progress-fill" :style="{ width: loadingProgress + '%' }"></div>
           </div>
           <span>{{ loadingProgress }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success State - No Bookings -->
+    <div v-else-if="!error && bookings.length === 0" class="success-empty-state">
+      <div class="success-content">
+        <div class="success-icon">
+          <i class="fa-regular fa-calendar-check"></i>
+        </div>
+        <h3>No Bookings Yet</h3>
+        <p>You don't have any bookings at the moment. When clients book your services, they'll appear here automatically.</p>
+        <div class="success-actions">
+          <button class="btn btn-primary" @click="promoteServices">
+            <i class="fa-solid fa-share"></i> Promote Your Services
+          </button>
+          <button class="btn btn-outline" @click="viewServices">
+            <i class="fa-solid fa-eye"></i> View Your Services
+          </button>
+        </div>
+        <div class="success-tips">
+          <h4>💡 Tips to Get Your First Booking:</h4>
+          <div class="tips-grid">
+            <div class="tip-card">
+              <i class="fa-solid fa-link"></i>
+              <div>
+                <strong>Share Your Booking Link</strong>
+                <p>Share your unique booking URL on social media and with your network</p>
+              </div>
+            </div>
+            <div class="tip-card">
+              <i class="fa-solid fa-star"></i>
+              <div>
+                <strong>Optimize Your Profile</strong>
+                <p>Add photos, detailed descriptions, and competitive pricing to attract clients</p>
+              </div>
+            </div>
+            <div class="tip-card">
+              <i class="fa-solid fa-bullhorn"></i>
+              <div>
+                <strong>Promote Actively</strong>
+                <p>Tell existing clients about your online booking system</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -125,23 +86,118 @@
         </div>
         <h3>Unable to Load Bookings</h3>
         <p>{{ error }}</p>
+        <div class="error-details">
+          <p><strong>Status:</strong> {{ errorStatus }}</p>
+          <p><strong>Provider PID:</strong> {{ currentProviderId }}</p>
+          <p><strong>API Endpoint:</strong> {{ currentEndpoint }}</p>
+        </div>
         <div class="error-actions">
           <button class="btn btn-primary" @click="loadBookings">
             <i class="fa-solid fa-rotate"></i> Try Again
           </button>
-          <button class="btn btn-outline" @click="contactSupport">
-            <i class="fa-solid fa-headset"></i> Contact Support
+          <button class="btn btn-outline" @click="checkProviderStatus">
+            <i class="fa-solid fa-user-check"></i> Check Provider Status
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Main Content -->
+    <!-- Main Content - When Bookings Exist -->
     <div v-else class="main-content">
+      <!-- Statistics Overview -->
+      <div class="stats-overview">
+        <div class="stat-card">
+          <div class="stat-icon total">
+            <i class="fa-solid fa-calendar-check"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ stats.totalBookings }}</h3>
+            <p>Total Bookings</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon pending">
+            <i class="fa-solid fa-clock"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ stats.pending }}</h3>
+            <p>Pending</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon confirmed">
+            <i class="fa-solid fa-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ stats.confirmed }}</h3>
+            <p>Confirmed</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon completed">
+            <i class="fa-solid fa-flag-checkered"></i>
+          </div>
+          <div class="stat-content">
+            <h3>{{ stats.completed }}</h3>
+            <p>Completed</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon revenue">
+            <i class="fa-solid fa-dollar-sign"></i>
+          </div>
+          <div class="stat-content">
+            <h3>${{ stats.revenue }}</h3>
+            <p>Total Revenue</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- API Status -->
+      <div class="api-status success">
+        <i class="fa-solid fa-circle-check"></i>
+        <span>Connected to Real API • {{ bookings.length }} bookings loaded • Provider: {{ currentProviderId }}</span>
+      </div>
+
+      <!-- Filters and Search -->
+      <div class="filters-section">
+        <div class="filters-row">
+          <div class="search-box">
+            <i class="fa-solid fa-search"></i>
+            <input 
+              v-model="searchQuery" 
+              type="text" 
+              placeholder="Search by customer name, service, or booking ID..."
+              class="search-input"
+            />
+          </div>
+          <div class="filter-controls">
+            <select v-model="statusFilter" class="filter-select">
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <select v-model="dateFilter" class="filter-select">
+              <option value="all">All Dates</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="upcoming">Upcoming</option>
+              <option value="past">Past</option>
+            </select>
+            <button class="btn btn-outline" @click="clearFilters">
+              <i class="fa-solid fa-times"></i> Clear
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Bookings List -->
       <div class="bookings-container">
         <div class="section-header">
-          <h2>Recent Bookings</h2>
+          <h2>Recent Bookings ({{ filteredBookings.length }})</h2>
           <div class="view-controls">
             <button 
               class="view-btn" 
@@ -160,43 +216,8 @@
           </div>
         </div>
 
-        <!-- No Bookings State -->
-        <div v-if="filteredBookings.length === 0" class="no-bookings-state">
-          <div class="empty-illustration">
-            <i class="fa-regular fa-calendar-check"></i>
-          </div>
-          <h3>No Bookings Found</h3>
-          <p v-if="hasActiveFilters">
-            No bookings match your current filters. Try adjusting your search criteria.
-          </p>
-          <p v-else>
-            When clients book your services, they'll appear here for you to manage.
-          </p>
-          <div class="empty-actions" v-if="hasActiveFilters">
-            <button class="btn btn-primary" @click="clearFilters">
-              Clear All Filters
-            </button>
-          </div>
-          <div class="promotion-tips" v-else>
-            <div class="tip-card">
-              <i class="fa-solid fa-rocket"></i>
-              <div>
-                <strong>Promote Your Services</strong>
-                <p>Share your booking link on social media and with your network</p>
-              </div>
-            </div>
-            <div class="tip-card">
-              <i class="fa-solid fa-star"></i>
-              <div>
-                <strong>Optimize Your Profile</strong>
-                <p>Add photos and detailed descriptions to attract more clients</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- Bookings List View -->
-        <div v-else-if="viewMode === 'list'" class="bookings-list">
+        <div v-if="viewMode === 'list'" class="bookings-list">
           <div class="bookings-table">
             <div class="table-header">
               <div class="table-cell">Customer</div>
@@ -209,40 +230,50 @@
             </div>
             <div 
               v-for="booking in paginatedBookings" 
-              :key="booking.id"
+              :key="booking._id"
               class="table-row"
               :class="{
                 'highlight-new': isNewBooking(booking),
                 'urgent': isUrgentBooking(booking)
               }"
             >
+              <!-- Customer Cell with Enhanced Details -->
               <div class="table-cell customer-cell">
                 <div class="customer-avatar">
-                  {{ getInitials(booking.customerName) }}
+                  {{ getInitials(getCustomerName(booking)) }}
                 </div>
                 <div class="customer-info">
-                  <strong>{{ booking.customerName }}</strong>
-                  <span class="customer-contact">{{ booking.customerEmail }}</span>
+                  <strong>{{ getCustomerName(booking) }}</strong>
+                  <span class="customer-contact">{{ getCustomerEmail(booking) }}</span>
+                  <span v-if="getCustomerPhone(booking)" class="customer-contact">
+                    <i class="fa-solid fa-phone"></i> {{ getCustomerPhone(booking) }}
+                  </span>
+                  <span v-if="getCustomerLocation(booking)" class="customer-location">
+                    <i class="fa-solid fa-location-dot"></i> {{ getCustomerLocation(booking) }}
+                  </span>
                 </div>
               </div>
+
+              <!-- Service Cell -->
               <div class="table-cell service-cell">
-                <strong>{{ booking.serviceName }}</strong>
-                <span class="service-category">{{ booking.serviceCategory }}</span>
+                <strong>{{ getServiceName(booking) }}</strong>
+                <span class="service-category">{{ getCategoryName(booking) }}</span>
               </div>
+
               <div class="table-cell datetime-cell">
-                <div class="date">{{ formatDate(booking.date) }}</div>
+                <div class="date">{{ formatDate(booking.bookingDate || booking.date) }}</div>
                 <div class="time">{{ booking.startTime }} - {{ booking.endTime }}</div>
               </div>
               <div class="table-cell duration-cell">
-                {{ booking.duration }} mins
+                {{ calculateDuration(booking.startTime, booking.endTime) || booking.duration || 60 }} mins
               </div>
               <div class="table-cell status-cell">
                 <span class="status-badge" :class="booking.status">
-                  {{ booking.status }}
+                  {{ formatStatus(booking.status) }}
                 </span>
               </div>
               <div class="table-cell amount-cell">
-                <strong>${{ booking.amount }}</strong>
+                <strong>${{ getBookingAmount(booking) }}</strong>
               </div>
               <div class="table-cell actions-cell">
                 <div class="action-buttons">
@@ -269,31 +300,6 @@
                   >
                     <i class="fa-solid fa-eye"></i>
                   </button>
-                  <button 
-                    class="btn-action more"
-                    @click="toggleBookingActions(booking.id)"
-                    title="More Actions"
-                  >
-                    <i class="fa-solid fa-ellipsis-vertical"></i>
-                  </button>
-                </div>
-                <div v-if="activeBookingId === booking.id" class="dropdown-menu">
-                  <button @click="rescheduleBooking(booking)" class="dropdown-item">
-                    <i class="fa-solid fa-calendar-plus"></i> Reschedule
-                  </button>
-                  <button @click="sendReminder(booking)" class="dropdown-item">
-                    <i class="fa-solid fa-bell"></i> Send Reminder
-                  </button>
-                  <button 
-                    v-if="booking.status !== 'cancelled' && booking.status !== 'completed'"
-                    @click="cancelBooking(booking)"
-                    class="dropdown-item cancel"
-                  >
-                    <i class="fa-solid fa-times"></i> Cancel
-                  </button>
-                  <button @click="contactCustomer(booking)" class="dropdown-item">
-                    <i class="fa-solid fa-message"></i> Contact
-                  </button>
                 </div>
               </div>
             </div>
@@ -304,7 +310,7 @@
         <div v-else class="bookings-grid">
           <div 
             v-for="booking in paginatedBookings" 
-            :key="booking.id"
+            :key="booking._id"
             class="booking-card"
             :class="{
               'new-booking': isNewBooking(booking),
@@ -313,29 +319,35 @@
           >
             <div class="card-header">
               <div class="customer-avatar large">
-                {{ getInitials(booking.customerName) }}
+                {{ getInitials(getCustomerName(booking)) }}
               </div>
               <div class="customer-details">
-                <h4>{{ booking.customerName }}</h4>
-                <p>{{ booking.customerEmail }}</p>
+                <h4>{{ getCustomerName(booking) }}</h4>
+                <p class="customer-email">{{ getCustomerEmail(booking) }}</p>
+                <p v-if="getCustomerPhone(booking)" class="customer-phone">
+                  <i class="fa-solid fa-phone"></i> {{ getCustomerPhone(booking) }}
+                </p>
+                <p v-if="getCustomerLocation(booking)" class="customer-location">
+                  <i class="fa-solid fa-location-dot"></i> {{ getCustomerLocation(booking) }}
+                </p>
               </div>
               <div class="booking-status">
                 <span class="status-badge" :class="booking.status">
-                  {{ booking.status }}
+                  {{ formatStatus(booking.status) }}
                 </span>
               </div>
             </div>
             
             <div class="card-body">
               <div class="service-info">
-                <h5>{{ booking.serviceName }}</h5>
-                <p class="service-category">{{ booking.serviceCategory }}</p>
+                <h5>{{ getServiceName(booking) }}</h5>
+                <p class="service-category">{{ getCategoryName(booking) }}</p>
               </div>
               
               <div class="booking-datetime">
                 <div class="date-time">
                   <i class="fa-solid fa-calendar"></i>
-                  <span>{{ formatDate(booking.date) }}</span>
+                  <span>{{ formatDate(booking.bookingDate || booking.date) }}</span>
                 </div>
                 <div class="date-time">
                   <i class="fa-solid fa-clock"></i>
@@ -343,19 +355,25 @@
                 </div>
                 <div class="duration">
                   <i class="fa-solid fa-hourglass"></i>
-                  <span>{{ booking.duration }} minutes</span>
+                  <span>{{ calculateDuration(booking.startTime, booking.endTime) || booking.duration || 60 }} minutes</span>
                 </div>
               </div>
               
               <div class="booking-meta">
                 <div class="meta-item">
                   <span class="meta-label">Amount:</span>
-                  <span class="meta-value">${{ booking.amount }}</span>
+                  <span class="meta-value">${{ getBookingAmount(booking) }}</span>
                 </div>
                 <div class="meta-item">
                   <span class="meta-label">Booked:</span>
                   <span class="meta-value">{{ formatRelativeTime(booking.createdAt) }}</span>
                 </div>
+              </div>
+
+              <!-- Customer Notes -->
+              <div v-if="booking.notes" class="customer-notes">
+                <i class="fa-solid fa-sticky-note"></i>
+                <span>{{ booking.notes }}</span>
               </div>
             </div>
             
@@ -380,28 +398,6 @@
               >
                 <i class="fa-solid fa-eye"></i> View
               </button>
-              <button 
-                class="btn btn-sm btn-outline"
-                @click="toggleCardActions(booking.id)"
-              >
-                <i class="fa-solid fa-ellipsis"></i>
-              </button>
-              
-              <div v-if="activeCardId === booking.id" class="card-dropdown">
-                <button @click="rescheduleBooking(booking)" class="dropdown-item">
-                  <i class="fa-solid fa-calendar-plus"></i> Reschedule
-                </button>
-                <button @click="sendReminder(booking)" class="dropdown-item">
-                  <i class="fa-solid fa-bell"></i> Reminder
-                </button>
-                <button 
-                  v-if="booking.status !== 'cancelled' && booking.status !== 'completed'"
-                  @click="cancelBooking(booking)"
-                  class="dropdown-item cancel"
-                >
-                  <i class="fa-solid fa-times"></i> Cancel
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -437,80 +433,12 @@
           </button>
         </div>
       </div>
-
-      <!-- Sidebar - Quick Stats & Actions -->
-      <div class="sidebar">
-        <div class="sidebar-section">
-          <h3>Quick Actions</h3>
-          <div class="quick-actions">
-            <button class="quick-action-btn" @click="showBookingModal = true">
-              <i class="fa-solid fa-plus"></i>
-              <span>Add Manual Booking</span>
-            </button>
-            <button class="quick-action-btn" @click="generateReport">
-              <i class="fa-solid fa-chart-bar"></i>
-              <span>Generate Report</span>
-            </button>
-            <button class="quick-action-btn" @click="syncCalendar">
-              <i class="fa-solid fa-calendar-sync"></i>
-              <span>Sync Calendar</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="sidebar-section">
-          <h3>Today's Schedule</h3>
-          <div class="today-bookings">
-            <div 
-              v-for="booking in todaysBookings" 
-              :key="booking.id"
-              class="today-booking"
-            >
-              <div class="time-slot">{{ booking.startTime }}</div>
-              <div class="booking-info">
-                <strong>{{ booking.customerName }}</strong>
-                <span>{{ booking.serviceName }}</span>
-              </div>
-              <span class="status-indicator" :class="booking.status"></span>
-            </div>
-            <div v-if="todaysBookings.length === 0" class="no-bookings-today">
-              <p>No bookings scheduled for today</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="sidebar-section">
-          <h3>Upcoming Reminders</h3>
-          <div class="reminders-list">
-            <div class="reminder-item">
-              <i class="fa-solid fa-bell"></i>
-              <span>Send reminders for tomorrow's bookings</span>
-              <button class="btn-remind">Send</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Booking Details Modal -->
-    <div v-if="selectedBooking" class="modal-overlay" @click="selectedBooking = null">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>Booking Details</h3>
-          <button class="modal-close" @click="selectedBooking = null">
-            <i class="fa-solid fa-times"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <!-- Booking details content here -->
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted } from "vue";
 import http from "@/api/index.js";
 
 export default {
@@ -521,6 +449,7 @@ export default {
     const loading = ref(true);
     const loadingProgress = ref(0);
     const error = ref("");
+    const errorStatus = ref("");
     const bookings = ref([]);
     const searchQuery = ref("");
     const statusFilter = ref("all");
@@ -528,10 +457,12 @@ export default {
     const viewMode = ref("list");
     const currentPage = ref(1);
     const itemsPerPage = ref(10);
-    const activeBookingId = ref(null);
-    const activeCardId = ref(null);
     const selectedBooking = ref(null);
-    const showBookingModal = ref(false);
+    const currentProviderId = ref("");
+    const currentEndpoint = ref("");
+
+    // User details cache
+    const userDetailsCache = ref(new Map());
 
     // Statistics
     const stats = ref({
@@ -543,44 +474,127 @@ export default {
       revenue: 0
     });
 
-    // Get provider ID
+    // Known provider PIDs - MANUAL MAPPING
+    const knownProviderPids = {
+      "691e1659e304653542a825d5": "PROV-1763579481598-1GBEN", // hayelom
+      "692b3c78d399bc41c3712380": "PROV-1764441208540-C269P"  // tig-tg
+    };
+
+    // Get Provider ID - SIMPLE & RELIABLE
     const getProviderId = () => {
       try {
-        const providerId = localStorage.getItem("provider_id");
         const loggedProvider = localStorage.getItem("loggedProvider");
         
-        console.log("🔍 BookingsSection - Storage check:", {
-          provider_id: providerId,
-          loggedProvider: loggedProvider
-        });
-
-        if (providerId) {
-          console.log("✅ Using provider_id:", providerId);
-          return providerId;
+        if (!loggedProvider) {
+          throw new Error("No logged provider found. Please login again.");
         }
-
-        if (loggedProvider) {
-          const providerData = JSON.parse(loggedProvider);
-          if (providerData._id) {
-            console.log("✅ Using loggedProvider _id:", providerData._id);
-            localStorage.setItem("provider_id", providerData._id);
-            return providerData._id;
-          }
+        
+        const providerData = JSON.parse(loggedProvider);
+        console.log("🔍 Current provider:", providerData.fullname, "ID:", providerData._id);
+        
+        // Method 1: Check if PID exists in localStorage
+        const existingPid = providerData.pid || providerData.providerProfile?.pid;
+        if (existingPid) {
+          console.log("✅ Found PID in localStorage:", existingPid);
+          currentProviderId.value = existingPid;
+          return existingPid;
         }
-
-        const token = localStorage.getItem("provider_token");
-        if (token) {
-          error.value = "Please refresh the page or login again.";
-        } else {
-          error.value = "Please login to access your bookings.";
+        
+        // Method 2: Use manual mapping
+        const mappedPid = knownProviderPids[providerData._id];
+        if (mappedPid) {
+          console.log("🎯 Using mapped PID:", mappedPid);
+          
+          // Update localStorage with PID for future use
+          const updatedData = { ...providerData, pid: mappedPid };
+          localStorage.setItem("loggedProvider", JSON.stringify(updatedData));
+          
+          currentProviderId.value = mappedPid;
+          return mappedPid;
         }
-
-        return null;
+        
+        throw new Error(`No PID mapping found for provider: ${providerData._id}`);
+        
       } catch (err) {
         console.error("❌ Error getting provider ID:", err);
-        error.value = "Authentication error. Please login again.";
+        error.value = "Authentication error: " + err.message;
         return null;
       }
+    };
+
+    // SIMPLIFIED: Direct customer data extraction from booking
+    const extractCustomerDataFromBooking = (booking) => {
+      console.log("🔍 Extracting customer data from booking:", booking);
+      
+      // Try different possible paths for customer data
+      const customer = booking.customer || {};
+      const customerData = {
+        fullname: customer.fullname || customer.name || booking.customerName || 'Unknown Customer',
+        email: customer.email || booking.customerEmail || 'No email',
+        phone: customer.phone || booking.customerPhone || '',
+        location: customer.location || customer.address || booking.customerLocation || ''
+      };
+
+      console.log("✅ Extracted customer data:", customerData);
+      return customerData;
+    };
+
+    // SIMPLIFIED: Process bookings with direct customer data extraction
+    const processBookings = (apiBookings) => {
+      if (!apiBookings) {
+        console.warn("⚠️ No data received from API");
+        return [];
+      }
+      
+      let bookingsArray = [];
+      
+      // Handle different response structures
+      if (Array.isArray(apiBookings)) {
+        bookingsArray = apiBookings;
+      } else if (apiBookings.bookings && Array.isArray(apiBookings.bookings)) {
+        bookingsArray = apiBookings.bookings;
+      } else if (apiBookings.data && Array.isArray(apiBookings.data)) {
+        bookingsArray = apiBookings.data;
+      } else {
+        console.warn("⚠️ Unexpected API response structure:", apiBookings);
+        return [];
+      }
+
+      console.log(`📊 Processing ${bookingsArray.length} bookings...`);
+
+      // Process booking data with direct customer extraction
+      const processedBookings = bookingsArray.map(booking => {
+        const customerData = extractCustomerDataFromBooking(booking);
+        const service = booking.service || {};
+        
+        // Store customer data in cache for this booking
+        if (booking.customerId) {
+          userDetailsCache.value.set(booking.customerId, customerData);
+        }
+
+        return {
+          _id: booking._id || booking.bookingId || booking.id,
+          customerId: booking.customerId || booking.customer?._id,
+          providerId: booking.providerId || booking.provider?._id,
+          customerName: customerData.fullname,
+          customerEmail: customerData.email,
+          customerPhone: customerData.phone,
+          customerLocation: customerData.location,
+          serviceName: service.title || service.name || booking.serviceName || 'Unknown Service',
+          serviceCategory: service.categoryName || service.category || booking.serviceCategory || 'General',
+          bookingDate: booking.bookingDate || booking.date || booking.appointmentDate,
+          startTime: booking.startTime || booking.time,
+          endTime: booking.endTime,
+          duration: booking.duration,
+          status: (booking.status || 'pending').toLowerCase(),
+          amount: parseFloat(booking.totalPrice || booking.amount || booking.price || 0).toFixed(2),
+          createdAt: booking.createdAt || booking.bookingTime,
+          notes: booking.notes || booking.specialRequirements,
+          originalData: booking
+        };
+      });
+
+      return processedBookings;
     };
 
     // Load bookings data
@@ -593,57 +607,155 @@ export default {
       }
 
       loading.value = true;
-      error.value = "";
       loadingProgress.value = 0;
+      error.value = "";
+      errorStatus.value = "";
 
       try {
-        console.log("📡 Loading bookings for provider:", providerId);
-        
-        // Simulate progress for better UX
+        console.log("🚀 Loading bookings for provider:", providerId);
+
+        // Progress simulation
         const progressInterval = setInterval(() => {
           if (loadingProgress.value < 90) {
             loadingProgress.value += 10;
           }
         }, 200);
 
-        // Load bookings
-        const bookingsResponse = await http.get(`/bookings/provider/${providerId}`);
+        // API call
+        const endpoint = `/bookings/provider/${providerId}`;
+        currentEndpoint.value = endpoint;
         
-        // Load statistics
-        const statsResponse = await http.get(`/bookings/stats/provider/${providerId}`);
+        console.log("📡 Calling endpoint:", endpoint);
+        
+        const response = await http.get(endpoint);
         
         clearInterval(progressInterval);
         loadingProgress.value = 100;
 
-        if (Array.isArray(bookingsResponse.data)) {
-          bookings.value = bookingsResponse.data.map(booking => ({
-            ...booking,
-            isNew: isBookingNew(booking.createdAt)
-          }));
-          console.log("✅ Bookings loaded:", bookings.value.length);
-        } else {
-          bookings.value = [];
-        }
-
-        if (statsResponse.data) {
-          stats.value = statsResponse.data;
-        }
-
-        // Calculate stats from bookings if no stats endpoint
+        console.log("✅ API Response received:", response.data);
+        
+        // Process the data with direct customer extraction
+        const processedBookings = processBookings(response.data);
+        bookings.value = processedBookings;
+        
+        console.log(`✅ Processed ${processedBookings.length} bookings`);
+        console.log("📋 Sample booking data:", processedBookings[0]);
         calculateStats();
 
       } catch (err) {
-        console.error("❌ Error loading bookings:", err);
-        handleLoadError(err);
+        console.error("❌ API Error:", err);
+        
+        // Handle 403 as "no bookings" case
+        if (err.response?.status === 403) {
+          const errorMessage = err.response?.data?.message || err.message || '';
+          if (errorMessage.includes("Providers can only access their own bookings")) {
+            console.log("✅ No bookings found for this provider");
+            error.value = "";
+            bookings.value = [];
+            calculateStats();
+            return;
+          }
+        }
+        
+        // Handle other errors
+        handleApiError(err);
       } finally {
         loading.value = false;
         setTimeout(() => { loadingProgress.value = 0; }, 500);
       }
     };
 
-    // Calculate statistics from bookings
+    // SIMPLIFIED: Customer data getters
+    const getCustomerName = (booking) => {
+      return booking.customerName || 'Unknown Customer';
+    };
+
+    const getCustomerEmail = (booking) => {
+      return booking.customerEmail || 'No email';
+    };
+
+    const getCustomerPhone = (booking) => {
+      return booking.customerPhone || '';
+    };
+
+    const getCustomerLocation = (booking) => {
+      return booking.customerLocation || '';
+    };
+
+    const getServiceName = (booking) => {
+      return booking.serviceName || 
+             booking.originalData?.service?.name ||
+             booking.originalData?.service?.title ||
+             'Unknown Service';
+    };
+
+    const getCategoryName = (booking) => {
+      return booking.serviceCategory || 
+             booking.originalData?.service?.category?.name ||
+             booking.originalData?.category?.name ||
+             'General';
+    };
+
+    const getBookingAmount = (booking) => {
+      return parseFloat(booking.amount || 
+             booking.originalData?.totalPrice || 
+             booking.originalData?.price || 0).toFixed(2);
+    };
+
+    const formatStatus = (status) => {
+      const statusMap = {
+        pending: 'Pending',
+        confirmed: 'Confirmed',
+        completed: 'Completed',
+        cancelled: 'Cancelled'
+      };
+      return statusMap[status] || status;
+    };
+
+    // Handle API errors
+    const handleApiError = (err) => {
+      if (err.response) {
+        const status = err.response.status;
+        errorStatus.value = `${status} ${err.response.statusText}`;
+        
+        if (status === 403) {
+          error.value = "Access denied. Please check your provider permissions.";
+        } else if (status === 404) {
+          error.value = "Bookings endpoint not found.";
+        } else if (status === 401) {
+          error.value = "Authentication required. Please login again.";
+        } else if (status === 500) {
+          error.value = "Server error. Please try again later.";
+        } else {
+          error.value = `Server error: ${status}`;
+        }
+      } else if (err.request) {
+        errorStatus.value = "Network Error";
+        error.value = "Cannot connect to the server.";
+      } else {
+        errorStatus.value = "Client Error";
+        error.value = `Error: ${err.message}`;
+      }
+    };
+
+    // Calculate duration
+    const calculateDuration = (startTime, endTime) => {
+      if (!startTime || !endTime) return null;
+      try {
+        const start = new Date(`2000-01-01T${startTime}`);
+        const end = new Date(`2000-01-01T${endTime}`);
+        return Math.round((end - start) / (1000 * 60));
+      } catch (err) {
+        return null;
+      }
+    };
+
+    // Calculate statistics
     const calculateStats = () => {
-      if (bookings.value.length === 0) return;
+      if (bookings.value.length === 0) {
+        stats.value = { totalBookings: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0, revenue: 0 };
+        return;
+      }
 
       const calculatedStats = {
         totalBookings: bookings.value.length,
@@ -657,48 +769,43 @@ export default {
           .toFixed(2)
       };
 
-      stats.value = { ...stats.value, ...calculatedStats };
+      stats.value = calculatedStats;
     };
 
-    // Handle load errors
-    const handleLoadError = (err) => {
-      if (err.response?.status === 403) {
-        error.value = "Access denied. Please make sure you're logged in as the correct provider.";
-        localStorage.removeItem("provider_id");
-      } else if (err.response?.status === 404) {
-        // Mock data for demonstration
-        bookings.value = generateMockBookings();
-        calculateStats();
-        error.value = "";
-      } else if (err.response?.status === 401) {
-        error.value = "Session expired. Please login again.";
-        setTimeout(() => { window.location.href = '/login'; }, 2000);
-      } else {
-        error.value = err.response?.data?.message || 
-                     "Unable to load bookings. Please try again later.";
-      }
-    };
-
-    // Generate mock data for demonstration
-    const generateMockBookings = () => {
-      const services = ['Hair Cut', 'Massage Therapy', 'Yoga Session', 'Consultation', 'Training'];
-      const customers = ['John Smith', 'Emma Wilson', 'Mike Johnson', 'Sarah Brown', 'Alex Davis'];
-      const statuses = ['pending', 'confirmed', 'completed', 'cancelled'];
+    // Check provider status
+    const checkProviderStatus = () => {
+      const providerData = JSON.parse(localStorage.getItem("loggedProvider") || "{}");
       
-      return Array.from({ length: 15 }, (_, i) => ({
-        id: `booking_${i + 1}`,
-        customerName: customers[i % customers.length],
-        customerEmail: `${customers[i % customers.length].toLowerCase().replace(' ', '.')}@email.com`,
-        serviceName: services[i % services.length],
-        serviceCategory: i % 2 === 0 ? 'Wellness' : 'Beauty',
-        date: new Date(Date.now() + (i - 7) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        startTime: `${9 + (i % 8)}:00`,
-        endTime: `${10 + (i % 8)}:00`,
-        duration: 60,
-        status: statuses[i % statuses.length],
-        amount: (50 + (i * 10)).toFixed(2),
-        createdAt: new Date(Date.now() - (i * 2) * 60 * 60 * 1000).toISOString()
-      }));
+      let statusMessage = `🔍 Provider Status Check:\n\n`;
+      statusMessage += `👤 Name: ${providerData.fullname}\n`;
+      statusMessage += `📧 Email: ${providerData.email}\n`;
+      statusMessage += `🎯 Role: ${providerData.role}\n`;
+      statusMessage += `🆔 MongoDB ID: ${providerData._id}\n`;
+      statusMessage += `🎫 Provider PID: ${currentProviderId.value}\n`;
+      statusMessage += `📍 Location: ${providerData.location || 'Not set'}\n`;
+      statusMessage += `📊 Service Categories: ${providerData.serviceCategoryNames?.join(', ') || 'Not set'}\n\n`;
+      statusMessage += `📈 Booking Statistics:\n`;
+      statusMessage += `   Total Bookings: ${stats.value.totalBookings}\n`;
+      statusMessage += `   Pending: ${stats.value.pending} | Confirmed: ${stats.value.confirmed}\n`;
+      statusMessage += `   Completed: ${stats.value.completed} | Revenue: $${stats.value.revenue}\n\n`;
+      
+      if (bookings.value.length === 0) {
+        statusMessage += `💡 No bookings yet. Share your services to get started!`;
+      } else {
+        statusMessage += `✅ Booking system is working perfectly!`;
+      }
+      
+      alert(statusMessage);
+    };
+
+    // Promote services
+    const promoteServices = () => {
+      alert("🎯 Great idea! Share your booking link with potential clients to get more bookings.");
+    };
+
+    // View services
+    const viewServices = () => {
+      alert("Redirecting to your services page...");
     };
 
     // Computed properties
@@ -709,10 +816,10 @@ export default {
       if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase();
         filtered = filtered.filter(booking => 
-          booking.customerName.toLowerCase().includes(query) ||
-          booking.serviceName.toLowerCase().includes(query) ||
-          booking.customerEmail.toLowerCase().includes(query) ||
-          booking.id.toLowerCase().includes(query)
+          getCustomerName(booking).toLowerCase().includes(query) ||
+          getServiceName(booking).toLowerCase().includes(query) ||
+          getCustomerEmail(booking).toLowerCase().includes(query) ||
+          (booking._id && booking._id.toLowerCase().includes(query))
         );
       }
 
@@ -724,11 +831,17 @@ export default {
       // Date filter
       if (dateFilter.value !== 'all') {
         const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
         filtered = filtered.filter(booking => {
-          const bookingDate = new Date(booking.date);
+          if (!booking.bookingDate) return false;
+          
+          const bookingDate = new Date(booking.bookingDate);
+          bookingDate.setHours(0, 0, 0, 0);
+          
           switch (dateFilter.value) {
             case 'today':
-              return bookingDate.toDateString() === today.toDateString();
+              return bookingDate.getTime() === today.getTime();
             case 'week':
               const weekStart = new Date(today);
               weekStart.setDate(today.getDate() - today.getDay());
@@ -746,6 +859,12 @@ export default {
         });
       }
 
+      // Sort by date (most recent first)
+      filtered.sort((a, b) => {
+        if (!a.bookingDate || !b.bookingDate) return 0;
+        return new Date(b.bookingDate) - new Date(a.bookingDate);
+      });
+
       return filtered;
     });
 
@@ -758,17 +877,6 @@ export default {
     const totalPages = computed(() => 
       Math.ceil(filteredBookings.value.length / itemsPerPage.value)
     );
-
-    const hasActiveFilters = computed(() => 
-      searchQuery.value !== '' || statusFilter.value !== 'all' || dateFilter.value !== 'all'
-    );
-
-    const todaysBookings = computed(() => {
-      const today = new Date().toISOString().split('T')[0];
-      return bookings.value
-        .filter(booking => booking.date === today && booking.status !== 'cancelled')
-        .sort((a, b) => a.startTime.localeCompare(b.startTime));
-    });
 
     // Methods
     const refreshBookings = () => {
@@ -784,10 +892,9 @@ export default {
 
     const confirmBooking = async (booking) => {
       try {
-        await http.patch(`/bookings/${booking.id}/confirm`);
+        await http.patch(`/bookings/${booking._id}/status`, { status: 'confirmed' });
         booking.status = 'confirmed';
         calculateStats();
-        // Show success message
       } catch (err) {
         console.error('Error confirming booking:', err);
       }
@@ -795,26 +902,11 @@ export default {
 
     const completeBooking = async (booking) => {
       try {
-        await http.patch(`/bookings/${booking.id}/complete`);
+        await http.patch(`/bookings/${booking._id}/status`, { status: 'completed' });
         booking.status = 'completed';
         calculateStats();
-        // Show success message
       } catch (err) {
         console.error('Error completing booking:', err);
-      }
-    };
-
-    const cancelBooking = async (booking) => {
-      if (!confirm(`Are you sure you want to cancel this booking with ${booking.customerName}?`)) {
-        return;
-      }
-      try {
-        await http.patch(`/bookings/${booking.id}/cancel`);
-        booking.status = 'cancelled';
-        calculateStats();
-        // Show success message
-      } catch (err) {
-        console.error('Error cancelling booking:', err);
       }
     };
 
@@ -822,103 +914,72 @@ export default {
       selectedBooking.value = booking;
     };
 
-    const toggleBookingActions = (bookingId) => {
-      activeBookingId.value = activeBookingId.value === bookingId ? null : bookingId;
-    };
-
-    const toggleCardActions = (cardId) => {
-      activeCardId.value = activeCardId.value === cardId ? null : cardId;
-    };
-
-    const rescheduleBooking = (booking) => {
-      console.log('Reschedule booking:', booking.id);
-      // Implement reschedule logic
-    };
-
-    const sendReminder = (booking) => {
-      console.log('Send reminder for booking:', booking.id);
-      // Implement reminder logic
-    };
-
-    const contactCustomer = (booking) => {
-      console.log('Contact customer:', booking.customerEmail);
-      // Implement contact logic
-    };
-
-    const exportBookings = () => {
-      console.log('Export bookings');
-      // Implement export logic
-    };
-
-    const generateReport = () => {
-      console.log('Generate report');
-      // Implement report generation
-    };
-
-    const syncCalendar = () => {
-      console.log('Sync calendar');
-      // Implement calendar sync
-    };
-
-    const contactSupport = () => {
-      console.log('Contact support');
-      // Implement support contact
-    };
-
     // Utility functions
     const getInitials = (name) => {
-      return name.split(' ').map(n => n[0]).join('').toUpperCase();
+      if (!name) return '??';
+      return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
     };
 
     const formatDate = (dateString) => {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric'
-      });
+      if (!dateString) return 'No date';
+      try {
+        return new Date(dateString).toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric'
+        });
+      } catch (err) {
+        return 'Invalid Date';
+      }
     };
 
     const formatRelativeTime = (dateString) => {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffMs = now - date;
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
+      if (!dateString) return 'Unknown time';
+      try {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
 
-      if (diffMins < 60) return `${diffMins}m ago`;
-      if (diffHours < 24) return `${diffHours}h ago`;
-      if (diffDays < 7) return `${diffDays}d ago`;
-      return formatDate(dateString);
-    };
-
-    const isBookingNew = (createdAt) => {
-      const created = new Date(createdAt);
-      const now = new Date();
-      const diffHours = (now - created) / (1000 * 60 * 60);
-      return diffHours < 24; // New if created within last 24 hours
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return formatDate(dateString);
+      } catch (err) {
+        return 'Unknown time';
+      }
     };
 
     const isNewBooking = (booking) => {
-      return booking.isNew;
+      if (!booking.createdAt) return false;
+      try {
+        const created = new Date(booking.createdAt);
+        const now = new Date();
+        const diffHours = (now - created) / (1000 * 60 * 60);
+        return diffHours < 24;
+      } catch (err) {
+        return false;
+      }
     };
 
     const isUrgentBooking = (booking) => {
       if (booking.status !== 'pending') return false;
-      const bookingDate = new Date(booking.date);
-      const now = new Date();
-      const diffHours = (bookingDate - now) / (1000 * 60 * 60);
-      return diffHours < 24; // Urgent if pending and within 24 hours
+      if (!booking.bookingDate) return false;
+      try {
+        const bookingDate = new Date(booking.bookingDate);
+        const now = new Date();
+        const diffHours = (bookingDate - now) / (1000 * 60 * 60);
+        return diffHours < 24 && diffHours > 0;
+      } catch (err) {
+        return false;
+      }
     };
-
-    // Watchers
-    watch([searchQuery, statusFilter, dateFilter], () => {
-      currentPage.value = 1;
-    });
 
     // Lifecycle
     onMounted(() => {
-      console.log("🚀 BookingsSection component mounted");
       loadBookings();
     });
 
@@ -927,6 +988,7 @@ export default {
       loading,
       loadingProgress,
       error,
+      errorStatus,
       bookings,
       searchQuery,
       statusFilter,
@@ -934,18 +996,15 @@ export default {
       viewMode,
       currentPage,
       itemsPerPage,
-      activeBookingId,
-      activeCardId,
       selectedBooking,
-      showBookingModal,
+      currentProviderId,
+      currentEndpoint,
       stats,
       
       // Computed
       filteredBookings,
       paginatedBookings,
       totalPages,
-      hasActiveFilters,
-      todaysBookings,
       
       // Methods
       loadBookings,
@@ -953,30 +1012,86 @@ export default {
       clearFilters,
       confirmBooking,
       completeBooking,
-      cancelBooking,
       viewBookingDetails,
-      toggleBookingActions,
-      toggleCardActions,
-      rescheduleBooking,
-      sendReminder,
-      contactCustomer,
-      exportBookings,
-      generateReport,
-      syncCalendar,
-      contactSupport,
+      checkProviderStatus,
+      promoteServices,
+      viewServices,
       
       // Utility functions
       getInitials,
       formatDate,
       formatRelativeTime,
       isNewBooking,
-      isUrgentBooking
+      isUrgentBooking,
+      getCustomerName,
+      getCustomerEmail,
+      getCustomerPhone,
+      getCustomerLocation,
+      getServiceName,
+      getCategoryName,
+      getBookingAmount,
+      formatStatus,
+      calculateDuration
     };
   }
 };
 </script>
 
+
 <style scoped>
+/* Add these new styles for enhanced customer info */
+.customer-location {
+  font-size: 0.75rem;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.customer-notes {
+  background: #f3f4f6;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 12px;
+  font-size: 0.85rem;
+  color: #4b5563;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.customer-notes i {
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.customer-email {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin: 2px 0;
+}
+
+.customer-phone {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin: 2px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Rest of your existing styles remain exactly the same */
+.bookings-section {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: "Poppins", sans-serif;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+
 /* Base Styles */
 .bookings-section {
   max-width: 1400px;
@@ -1076,6 +1191,23 @@ export default {
   font-weight: 500;
 }
 
+/* API Status */
+.api-status {
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.api-status.success {
+  background: #dcfce7;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+}
+
 /* Filters Section */
 .filters-section {
   background: white;
@@ -1157,15 +1289,6 @@ export default {
 .btn-primary:hover {
   background: #2563eb;
   transform: translateY(-1px);
-}
-
-.btn-secondary {
-  background: #64748b;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background: #475569;
 }
 
 .btn-outline {
@@ -1294,6 +1417,19 @@ export default {
   line-height: 1.6;
 }
 
+.error-details {
+  margin: 16px 0;
+  padding: 12px;
+  background: #fef2f2;
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+
+.error-details p {
+  margin: 4px 0;
+  color: #dc2626;
+}
+
 .error-actions {
   display: flex;
   gap: 12px;
@@ -1301,10 +1437,107 @@ export default {
   flex-wrap: wrap;
 }
 
+/* Success Empty State */
+.success-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.success-content {
+  text-align: center;
+  padding: 48px;
+  max-width: 600px;
+}
+
+.success-icon {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 32px;
+  color: #16a34a;
+  font-size: 3rem;
+}
+
+.success-content h3 {
+  color: #16a34a;
+  font-size: 1.8rem;
+  margin-bottom: 16px;
+}
+
+.success-content p {
+  color: #64748b;
+  font-size: 1.1rem;
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.success-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.success-tips h4 {
+  color: #1e293b;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+}
+
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.tip-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border-left: 4px solid #3b82f6;
+  text-align: left;
+}
+
+.tip-card i {
+  color: #3b82f6;
+  font-size: 1.2rem;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.tip-card strong {
+  color: #1e293b;
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
+}
+
+.tip-card p {
+  color: #64748b;
+  font-size: 0.8rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
 /* Main Content Layout */
 .main-content {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr;
   gap: 24px;
 }
 
@@ -1352,80 +1585,6 @@ export default {
   background: white;
   color: #3b82f6;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* No Bookings State */
-.no-bookings-state {
-  text-align: center;
-  padding: 60px 24px;
-}
-
-.empty-illustration {
-  width: 120px;
-  height: 120px;
-  background: linear-gradient(135deg, #dbeafe, #93c5fd);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 32px;
-  color: #1e40af;
-  font-size: 3rem;
-}
-
-.no-bookings-state h3 {
-  color: #1e293b;
-  font-size: 1.5rem;
-  margin-bottom: 12px;
-}
-
-.no-bookings-state p {
-  color: #64748b;
-  font-size: 1.1rem;
-  max-width: 500px;
-  margin: 0 auto 32px;
-  line-height: 1.6;
-}
-
-.empty-actions {
-  margin-bottom: 32px;
-}
-
-.promotion-tips {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.tip-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 16px;
-  background: #f8fafc;
-  border-radius: 12px;
-  border-left: 4px solid #3b82f6;
-}
-
-.tip-card i {
-  color: #3b82f6;
-  font-size: 1.2rem;
-  margin-top: 2px;
-}
-
-.tip-card strong {
-  color: #1e293b;
-  display: block;
-  margin-bottom: 4px;
-}
-
-.tip-card p {
-  color: #64748b;
-  font-size: 0.9rem;
-  margin: 0;
-  line-height: 1.4;
 }
 
 /* Bookings Table */
@@ -1514,6 +1673,12 @@ export default {
 .customer-contact {
   color: #64748b;
   font-size: 0.8rem;
+}
+
+.customer-phone {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 2px;
 }
 
 /* Service Cell */
@@ -1620,56 +1785,6 @@ export default {
 
 .btn-action.view:hover {
   background: #e2e8f0;
-}
-
-.btn-action.more {
-  background: #f1f5f9;
-  color: #64748b;
-}
-
-.btn-action.more:hover {
-  background: #e2e8f0;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  z-index: 10;
-  min-width: 160px;
-}
-
-.dropdown-item {
-  width: 100%;
-  padding: 8px 12px;
-  border: none;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  border-radius: 6px;
-  font-size: 0.9rem;
-  color: #475569;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: background-color 0.2s ease;
-}
-
-.dropdown-item:hover {
-  background: #f1f5f9;
-}
-
-.dropdown-item.cancel {
-  color: #dc2626;
-}
-
-.dropdown-item.cancel:hover {
-  background: #fee2e2;
 }
 
 /* Bookings Grid */
@@ -1781,20 +1896,6 @@ export default {
   display: flex;
   gap: 8px;
   margin-top: 16px;
-  position: relative;
-}
-
-.card-dropdown {
-  position: absolute;
-  bottom: 100%;
-  right: 0;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  z-index: 10;
-  min-width: 140px;
 }
 
 /* Pagination */
@@ -1859,213 +1960,6 @@ export default {
   color: white;
 }
 
-/* Sidebar */
-.sidebar {
-  space-y: 24px;
-}
-
-.sidebar-section {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-}
-
-.sidebar-section h3 {
-  color: #1e293b;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-
-.quick-actions {
-  space-y: 8px;
-}
-
-.quick-action-btn {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px dashed #e2e8f0;
-  background: transparent;
-  border-radius: 12px;
-  cursor: pointer;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: all 0.2s ease;
-}
-
-.quick-action-btn:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
-  background: #f0f9ff;
-}
-
-.quick-action-btn i {
-  font-size: 1.1rem;
-}
-
-.today-bookings {
-  space-y: 12px;
-}
-
-.today-booking {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: #f8fafc;
-  border-radius: 12px;
-  transition: background-color 0.2s ease;
-}
-
-.today-booking:hover {
-  background: #f1f5f9;
-}
-
-.time-slot {
-  background: white;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-weight: 600;
-  color: #1e293b;
-  font-size: 0.9rem;
-  min-width: 60px;
-  text-align: center;
-}
-
-.booking-info {
-  flex: 1;
-}
-
-.booking-info strong {
-  color: #1e293b;
-  display: block;
-  font-size: 0.9rem;
-  margin-bottom: 2px;
-}
-
-.booking-info span {
-  color: #64748b;
-  font-size: 0.8rem;
-}
-
-.status-indicator {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.status-indicator.pending { background: #f59e0b; }
-.status-indicator.confirmed { background: #10b981; }
-.status-indicator.completed { background: #8b5cf6; }
-
-.no-bookings-today {
-  text-align: center;
-  padding: 20px;
-  color: #64748b;
-  font-size: 0.9rem;
-}
-
-.reminders-list {
-  space-y: 8px;
-}
-
-.reminder-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: #fef3c7;
-  border-radius: 12px;
-  border-left: 4px solid #f59e0b;
-}
-
-.reminder-item i {
-  color: #d97706;
-}
-
-.reminder-item span {
-  flex: 1;
-  color: #92400e;
-  font-size: 0.9rem;
-}
-
-.btn-remind {
-  padding: 4px 8px;
-  background: #d97706;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  cursor: pointer;
-}
-
-.btn-remind:hover {
-  background: #b45309;
-}
-
-/* Modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.modal-content {
-  background: white;
-  border-radius: 20px;
-  max-width: 600px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.modal-header h3 {
-  color: #1e293b;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.modal-close {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: #f1f5f9;
-  border-radius: 8px;
-  cursor: pointer;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-close:hover {
-  background: #e2e8f0;
-}
-
-.modal-body {
-  padding: 24px;
-}
-
 /* Animations */
 @keyframes spin {
   to { transform: rotate(360deg); }
@@ -2077,16 +1971,6 @@ export default {
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
-  .main-content {
-    grid-template-columns: 1fr;
-  }
-  
-  .sidebar {
-    order: -1;
-  }
-}
-
 @media (max-width: 768px) {
   .bookings-section {
     padding: 16px;

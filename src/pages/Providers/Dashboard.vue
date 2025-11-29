@@ -103,20 +103,10 @@
         </nav>
       </div>
 
-      <!-- Sidebar Footer - Removed Logout -->
-      <div class="sidebar-footer">
-        <div class="support-section">
-          <i class="fa-solid fa-headset"></i>
-          <div class="support-text">
-            <div class="support-label"></div>
-            <div class="support-contact"></div>
-          </div>
-        </div>
-      </div>
+      <!-- ✅ REMOVED: support section & sidebar-footer -->
     </aside>
 
-    <!-- Overlay -->
-    <div v-if="sidebarOpen" class="mobile-overlay" @click="toggleSidebar"></div>
+    <!-- ✅ REMOVED: mobile-overlay -->
 
     <!-- Main Content -->
     <main class="dashboard-main">
@@ -486,13 +476,13 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 2rem; /* Space BETWEEN sections */
 }
 
 .nav-section {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.25rem; /* ✅ Even tighter spacing WITHIN each section */
 }
 
 .nav-section-title {
@@ -503,6 +493,7 @@ export default {
   letter-spacing: 0.1em;
   margin: 0;
   padding: 0 0.5rem;
+  margin-bottom: 0.5rem; /* Space below title */
 }
 
 .sidebar-menu {
@@ -511,7 +502,7 @@ export default {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem; /* ✅ Reduced from 0.5rem */
 }
 
 .sidebar-menu li {
@@ -525,7 +516,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 1rem 1.25rem;
+  padding: 0.65rem 1.25rem; /* ✅ Reduced vertical padding */
   border-radius: 14px;
   transition: all 0.3s ease;
 }
@@ -580,64 +571,6 @@ export default {
 
 .sidebar-menu li.active .active-indicator {
   opacity: 1;
-}
-
-/* Sidebar Footer */
-.sidebar-footer {
-  padding: 1.5rem;
-  border-top: 1px solid #f1f5f9;
-  background: #f8fafc;
-}
-
-.support-section {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  transition: all 0.3s ease;
-}
-
-.support-section:hover {
-  border-color: #3b82f6;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
-}
-
-.support-section i {
-  font-size: 1.2rem;
-  color: #3b82f6;
-}
-
-.support-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.support-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 0.25rem;
-}
-
-.support-contact {
-  font-size: 0.8rem;
-  color: #64748b;
-}
-
-/* Overlay */
-.mobile-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  z-index: 80;
 }
 
 /* Main Content */

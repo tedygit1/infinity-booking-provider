@@ -25,15 +25,69 @@
         </div>
       </div>
 
-      <!-- SUBCATEGORY -->
+      <!-- SUBCATEGORY - MULTIPLE SELECTION -->
       <div v-if="local.categoryId && subcategories.length" class="form-row">
-        <label>Subcategory</label>
-        <select v-model="local.subcategoryId">
-          <option disabled value="">Choose subcategory</option>
-          <option v-for="sub in subcategories" :key="sub._id" :value="sub._id">
+        <label>Subcategories</label>
+        <div class="multi-select-container">
+          <div 
+            class="multi-select-display"
+            @click="toggleSubcategoryDropdown"
+            :class="{ 'error': showError && !hasValidSubcategories }"
+          >
+            <span v-if="selectedSubcategories.length === 0" class="placeholder">
+              Choose subcategories (optional)
+            </span>
+            <span v-else class="selected-items">
+              {{ selectedSubcategories.length }} subcategory{{ selectedSubcategories.length !== 1 ? 's' : '' }} selected
+            </span>
+            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+          </div>
+          
+          <div v-if="showSubcategoryDropdown" class="multi-select-dropdown">
+            <div class="dropdown-search" v-if="subcategories.length > 5">
+              <input 
+                type="text" 
+                v-model="subcategorySearch" 
+                placeholder="Search subcategories..."
+                @click.stop
+              />
+            </div>
+            <div class="dropdown-options">
+              <label 
+                v-for="sub in filteredSubcategories" 
+                :key="sub._id" 
+                class="checkbox-option"
+              >
+                <input 
+                  type="checkbox" 
+                  :value="sub._id" 
+                  v-model="local.subcategoryIds"
+                  @change="onSubcategoryChange"
+                />
+                <span class="checkmark"></span>
+                <span class="option-text">{{ sub.name }}</span>
+              </label>
+            </div>
+            <div v-if="filteredSubcategories.length === 0" class="no-options">
+              No subcategories found
+            </div>
+          </div>
+        </div>
+        <div v-if="showError && !hasValidSubcategories" class="error-message">
+          Please select valid subcategories for this category
+        </div>
+        
+        <!-- Selected subcategories display -->
+        <div v-if="selectedSubcategories.length > 0" class="selected-tags">
+          <div 
+            v-for="sub in selectedSubcategories" 
+            :key="sub._id" 
+            class="tag"
+          >
             {{ sub.name }}
-          </option>
-        </select>
+            <button @click="removeSubcategory(sub._id)" class="remove-tag">×</button>
+          </div>
+        </div>
       </div>
 
       <!-- SERVICE NAME -->
@@ -190,7 +244,7 @@ export default {
       local: {
         _id: null,
         categoryId: "",
-        subcategoryId: "",
+        subcategoryIds: [], // CHANGED: Now an array for multiple selection
         title: "",
         bannerFile: null,
         description: "",
@@ -206,13 +260,38 @@ export default {
       subcategories: [],
       paymentMethods: ["Telebirr", "CBE Birr", "Cash"],
       showError: false,
-      isSaving: false
+      isSaving: false,
+      showSubcategoryDropdown: false,
+      subcategorySearch: ""
     };
   },
 
   computed: {
     isEdit() {
       return !!(this.service && this.service._id);
+    },
+    
+    selectedSubcategories() {
+      return this.subcategories.filter(sub => 
+        this.local.subcategoryIds.includes(sub._id)
+      );
+    },
+    
+    filteredSubcategories() {
+      if (!this.subcategorySearch) return this.subcategories;
+      return this.subcategories.filter(sub =>
+        sub.name.toLowerCase().includes(this.subcategorySearch.toLowerCase())
+      );
+    },
+    
+    hasValidSubcategories() {
+      // Subcategories are optional, but if selected they must be valid
+      if (this.local.subcategoryIds.length === 0) return true;
+      
+      // Check if all selected subcategory IDs exist in current subcategories
+      return this.local.subcategoryIds.every(id =>
+        this.subcategories.some(sub => sub._id === id)
+      );
     }
   },
 
@@ -224,7 +303,7 @@ export default {
           this.local = {
             _id: val._id,
             categoryId: val.categoryId || "",
-            subcategoryId: val.subcategoryId || "",
+            subcategoryIds: Array.isArray(val.subcategoryIds) ? [...val.subcategoryIds] : [], // CHANGED
             title: val.title || "",
             description: val.description || "",
             totalPrice: val.totalPrice || 0,
@@ -252,6 +331,13 @@ export default {
         this.$refs.titleInput.focus();
       }
     });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', this.closeDropdowns);
+  },
+
+  beforeUnmount() {
+    document.removeEventListener('click', this.closeDropdowns);
   },
 
   methods: {
@@ -271,6 +357,7 @@ export default {
 
     async fetchSubcategories(categoryId) {
       this.subcategories = [];
+      this.local.subcategoryIds = []; // Reset when category changes
       if (!categoryId) return;
       try {
         const res = await http.get(`/categories/${categoryId}/subcategories`);
@@ -281,9 +368,31 @@ export default {
     },
 
     onCategoryChange(e) {
-      this.local.subcategoryId = "";
       this.local.categoryId = e.target.value;
       this.fetchSubcategories(this.local.categoryId);
+      this.closeDropdowns();
+    },
+
+    onSubcategoryChange() {
+      // Force reactivity
+      this.local.subcategoryIds = [...this.local.subcategoryIds];
+    },
+
+    toggleSubcategoryDropdown() {
+      this.showSubcategoryDropdown = !this.showSubcategoryDropdown;
+      if (this.showSubcategoryDropdown) {
+        this.subcategorySearch = "";
+      }
+    },
+
+    closeDropdowns() {
+      this.showSubcategoryDropdown = false;
+    },
+
+    removeSubcategory(subcategoryId) {
+      this.local.subcategoryIds = this.local.subcategoryIds.filter(
+        id => id !== subcategoryId
+      );
     },
 
     onFileChange(e) {
@@ -312,6 +421,7 @@ export default {
       if (!this.local.categoryId) return false;
       if (!this.local.description?.trim()) return false;
       if (this.local.totalPrice <= 0) return false;
+      if (!this.hasValidSubcategories) return false;
       return true;
     },
 
@@ -345,46 +455,36 @@ export default {
           throw new Error("Please select a valid category");
         }
 
-        // Get subcategory data
-        let subcategoryIds = [];
-        let subcategoryNames = [];
-        
-        if (this.local.subcategoryId) {
-          const selectedSubcategory = this.subcategories.find(sub => sub._id === this.local.subcategoryId);
-          if (selectedSubcategory) {
-            subcategoryIds = [selectedSubcategory._id];
-            subcategoryNames = [selectedSubcategory.name];
-          }
-        }
+        // Get subcategory names for the selected IDs
+        const selectedSubcategoryNames = this.selectedSubcategories.map(sub => sub.name);
 
         console.log("🔍 SUBCATEGORY DATA:");
-        console.log("📍 IDs to send:", subcategoryIds);
-        console.log("📍 Names to send:", subcategoryNames);
+        console.log("📍 IDs to send:", this.local.subcategoryIds);
+        console.log("📍 Names to send:", selectedSubcategoryNames);
 
-        // Prepare service data
+        // Prepare service data - MATCH BACKEND EXPECTATION
         const serviceData = {
           title: this.local.title.trim(),
           description: this.local.description.trim(),
           totalPrice: Number(this.local.totalPrice),
           bookingPrice: Number(this.local.bookingPrice),
-          category: selectedCategory.name,
+          category: selectedCategory.name, // Backend expects category NAME
           categoryId: this.local.categoryId,
           status: "draft",
           providerId: providerId,
-          subcategoryIds: subcategoryIds,
-          subcategoryNames: subcategoryNames,
+          subcategories: selectedSubcategoryNames, // CHANGED: Backend expects 'subcategories' array of names
           slots: [],
           paymentMethod: this.local.paymentMethod || "Telebirr",
           priceUnit: "ETB",
           serviceType: "fixed"
         };
 
-        console.log("📤 COMPLETE DATA:", serviceData);
+        console.log("📤 COMPLETE DATA TO BACKEND:", serviceData);
 
         let response;
         const url = this.isEdit ? `/services/${this.local._id}` : "/services";
 
-        // ✅ SOLUTION: Use JSON format (no FormData issues)
+        // Use JSON format
         const config = {
           headers: {
             'Content-Type': 'application/json',
@@ -392,7 +492,7 @@ export default {
           }
         };
 
-        console.log("🚀 SENDING AS JSON (no banner for testing)");
+        console.log("🚀 SENDING TO BACKEND...");
         response = this.isEdit
           ? await http.put(url, serviceData, config)
           : await http.post(url, serviceData, config);
@@ -403,11 +503,10 @@ export default {
         if (response.data.subcategoryIds && response.data.subcategoryIds.length > 0) {
           console.log("🎉 SUCCESS! Subcategories saved in database:");
           console.log("   IDs:", response.data.subcategoryIds);
-          console.log("   Names:", response.data.subcategoryNames);
+          console.log("   Names:", response.data.subcategories);
           alert("✅ Service created WITH subcategories!");
         } else {
-          console.error("❌ FAILED: Subcategories still empty in database");
-          console.error("   Backend is not saving the subcategory data");
+          console.log("ℹ️ Service created without subcategories (optional)");
         }
         
         this.$emit("save", response.data);
@@ -417,14 +516,20 @@ export default {
         
         if (err.response) {
           console.error("Error response:", err.response.data);
+          
+          // Handle subcategory validation errors from backend
+          if (err.response.data.message?.includes("subcategories were not found")) {
+            alert(`❌ Subcategory Error: ${err.response.data.message}`);
+          } else {
+            const errorMsg = err.response.data?.message || 
+                            err.response.data?.error || 
+                            err.message || 
+                            "Failed to save service";
+            alert(`❌ ${errorMsg}`);
+          }
+        } else {
+          alert(`❌ ${err.message || "Failed to save service"}`);
         }
-        
-        const errorMsg = err.response?.data?.message || 
-                        err.response?.data?.error || 
-                        err.message || 
-                        "Failed to save service";
-        
-        alert(`❌ ${errorMsg}`);
       } finally {
         this.isSaving = false;
       }
@@ -433,9 +538,179 @@ export default {
 };
 </script>
 
-
 <style scoped>
-/* ===== KEEP ALL YOUR ORIGINAL STYLES ===== */
+/* ===== ADD MULTI-SELECT STYLES ===== */
+.multi-select-container {
+  position: relative;
+  width: 100%;
+}
+
+.multi-select-display {
+  width: 100%;
+  padding: 14px 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  font-size: 1.02rem;
+  background: #f8fafc;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.multi-select-display:hover {
+  border-color: #cbd5e1;
+}
+
+.multi-select-display:focus {
+  outline: none;
+  border-color: #22c55e;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+}
+
+.placeholder {
+  color: #94a3b8;
+}
+
+.selected-items {
+  color: #334155;
+  font-weight: 500;
+}
+
+.dropdown-arrow {
+  color: #64748b;
+  transition: transform 0.3s ease;
+}
+
+.multi-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  margin-top: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.dropdown-search {
+  padding: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.dropdown-search input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+.dropdown-options {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.checkbox-option:hover {
+  background: #f8fafc;
+}
+
+.checkbox-option input {
+  display: none;
+}
+
+.checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #cbd5e1;
+  border-radius: 4px;
+  margin-right: 12px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.checkbox-option input:checked + .checkmark {
+  background: #22c55e;
+  border-color: #22c55e;
+}
+
+.checkbox-option input:checked + .checkmark::after {
+  content: "✓";
+  position: absolute;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.option-text {
+  color: #334155;
+  font-size: 0.95rem;
+}
+
+.no-options {
+  padding: 20px;
+  text-align: center;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #dcfce7;
+  color: #166534;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.remove-tag {
+  background: none;
+  border: none;
+  color: #166534;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.remove-tag:hover {
+  background: #bbf7d0;
+}
+
 .service-form-container {
   display: flex;
   justify-content: center;

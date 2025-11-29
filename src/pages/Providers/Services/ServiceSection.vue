@@ -1,4 +1,4 @@
-<!-- src/pages/Providers/Services/ServicesSection.vue -->
+<!-- src/pages/Providers/Services/ServiceSection.vue -->
 <template>
   <div class="services-section">
     <!-- Header Section -->
@@ -134,9 +134,26 @@
           <div class="view-mode">
             <div class="card-header">
               <h3 class="service-title">{{ service?.title || 'Untitled Service' }}</h3>
-              <div class="category-tag">
-                {{ getCategoryName(service?.categoryId || service?.category) }}
+              
+              <!-- Category & Subcategories Section -->
+              <div class="categories-section">
+                <!-- Main Category -->
+                <div class="category-tag">
+                  {{ getCategoryName(service?.categoryId || service?.category) }}
+                </div>
+                
+                <!-- Subcategories -->
+                <div v-if="hasSubcategories(service)" class="subcategories-tags">
+                  <span 
+                    v-for="subcategory in getSubcategories(service)" 
+                    :key="subcategory._id"
+                    class="subcategory-tag"
+                  >
+                    {{ subcategory.name }}
+                  </span>
+                </div>
               </div>
+
               <!-- Debug: Show Service ID -->
               <div class="service-id-debug" v-if="debugMode">
                 <small>ID: {{ getServiceId(service) || 'No ID' }}</small>
@@ -431,7 +448,8 @@ export default {
         result = result.filter(s =>
           (s?.title || '').toLowerCase().includes(q) ||
           (s?.description || '').toLowerCase().includes(q) ||
-          this.getCategoryName(s?.categoryId || s?.category).toLowerCase().includes(q)
+          this.getCategoryName(s?.categoryId || s?.category).toLowerCase().includes(q) ||
+          this.getSubcategoryNames(s).toLowerCase().includes(q) // ✅ ADDED: Search subcategories
         );
       }
       return result;
@@ -607,6 +625,39 @@ export default {
       }
       const cat = this.categories.find(c => c._id === idOrName);
       return cat ? cat.name : "Unknown";
+    },
+    // ✅ NEW: Check if service has subcategories
+    // ✅ NEW: Check if service has subcategories (array of strings)
+hasSubcategories(service) {
+  if (!service) return false;
+  return Array.isArray(service.subcategories) && 
+         service.subcategories.length > 0 &&
+         service.subcategories[0] && typeof service.subcategories[0] === 'string';
+},
+
+// ✅ NEW: Get subcategories as simple strings
+getSubcategories(service) {
+  if (!service || !Array.isArray(service.subcategories)) {
+    return [];
+  }
+  return service.subcategories.filter(name => name && typeof name === 'string');
+},
+
+// ✅ NEW: Get subcategory names as string (for search)
+getSubcategoryNames(service) {
+  return this.getSubcategories(service).join(', ');
+},
+    // ✅ NEW: Get subcategories array
+    getSubcategories(service) {
+      if (!service || !service.subcategories || !Array.isArray(service.subcategories)) {
+        return [];
+      }
+      return service.subcategories.filter(sub => sub && sub.name);
+    },
+    // ✅ NEW: Get subcategory names as string (for search/filter)
+    getSubcategoryNames(service) {
+      const subcategories = this.getSubcategories(service);
+      return subcategories.map(sub => sub.name).join(', ');
     },
     async fetchServices() {
       this.loading = true;
@@ -1204,11 +1255,10 @@ export default {
 /* ===== CARD HEADER ===== */
 .card-header {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: flex-start;
   gap: 12px;
   margin-bottom: 14px;
-  flex-wrap: wrap;
 }
 
 .service-title {
@@ -1216,18 +1266,53 @@ export default {
   font-weight: 700;
   color: #0f172a;
   margin: 0;
-  flex: 1;
   line-height: 1.3;
+  width: 100%;
+}
+
+/* ===== CATEGORIES & SUBCATEGORIES SECTION ===== */
+.categories-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  width: 100%;
 }
 
 .category-tag {
-  background: #f1f5f9;
-  color: #475569;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
   padding: 6px 12px;
-  border-radius: 20px;
+  border-radius: 12px;
   font-size: 0.8rem;
-  white-space: nowrap;
   font-weight: 600;
+  align-self: flex-start;
+  white-space: nowrap;
+}
+
+.subcategories-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.subcategory-tag {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border: 1px solid #bae6fd;
+  white-space: nowrap;
+}
+
+.no-subcategories {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-style: italic;
+  margin-top: 4px;
 }
 
 /* ===== SERVICE DESCRIPTION ===== */

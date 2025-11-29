@@ -6,6 +6,12 @@
       <p>Loading time slots...</p>
     </div>
 
+    <!-- Loading Bookings State -->
+    <div v-if="loadingBookings" class="loading-state">
+      <i class="fa-solid fa-spinner fa-spin"></i>
+      <p>Checking booked appointments...</p>
+    </div>
+
     <!-- Error Message -->
     <div v-if="errorMessage" class="error-message">
       <i class="fa-solid fa-circle-exclamation"></i>
@@ -77,8 +83,8 @@
             :key="day.date"
             class="day-card"
             :class="{ 
-              'working-day': isWorkingDay(day.date), 
-              'day-off': !isWorkingDay(day.date),
+              'working-day': isWorkingAtDay(day.date), 
+              'day-off': !isWorkingAtDay(day.date),
               'today': day.isToday 
             }"
           >
@@ -86,60 +92,91 @@
               <label class="day-toggle">
                 <input
                   type="checkbox"
-                  :checked="isWorkingDay(day.date)"
+                  :checked="isWorkingAtDay(day.date)"
                   @change="toggleWorkingDay(day.date, $event.target.checked)"
                 />
                 <span class="day-label">{{ day.display }}</span>
               </label>
-              <span v-if="!isWorkingDay(day.date)" class="off-label">Day Off</span>
+              <span v-if="!isWorkingAtDay(day.date)" class="off-label">Day Off</span>
               <span v-if="day.isToday" class="today-label">Today</span>
             </div>
 
-            <div v-if="isWorkingDay(day.date)" class="time-slots-list">
+            <!-- ONLY SHOW EDITABLE SLOTS IF WORKING DAY -->
+            <div v-if="isWorkingAtDay(day.date)" class="time-slots-list">
               <div
-                v-for="(timeSlot, slotIndex) in getTimeSlotsForDay(day.date)"
+                v-for="(timeSlot, slotIndex) in dailySchedules[day.date]"
                 :key="slotIndex"
                 class="time-slot-item"
-                :class="{ 'has-error': timeSlot.hasError }"
+                :class="{ 
+                  'has-error': timeSlot.hasError,
+                  'booked-slot': timeSlot.isBooked
+                }"
               >
-                <div class="time-inputs">
-                  <input
-                    v-model="timeSlot.startTime"
-                    type="time"
-                    class="time-input"
-                    @change="validateTimeSlot(timeSlot)"
-                  />
-                  <span class="time-separator">to</span>
-                  <input
-                    v-model="timeSlot.endTime"
-                    type="time"
-                    class="time-input"
-                    @change="validateTimeSlot(timeSlot)"
-                  />
+                <!-- BOOKED SLOT -->
+                <div v-if="timeSlot.isBooked" class="booked-slot-content">
+                  <div class="booked-slot-info">
+                    <div class="booked-time">
+                      <i class="fa-solid fa-clock booked-icon"></i>
+                      {{ timeSlot.startTime }} - {{ timeSlot.endTime }}
+                    </div>
+                    <div class="booked-label">
+                      <span class="booked-badge">BOOKED</span>
+                    </div>
+                    <div class="customer-info" v-if="getBookingForSlot(day.date, timeSlot.startTime, timeSlot.endTime)">
+                      <i class="fa-solid fa-user"></i>
+                      {{ getBookingForSlot(day.date, timeSlot.startTime, timeSlot.endTime).customerName || 'Customer' }}
+                    </div>
+                  </div>
                 </div>
-                <div class="slot-actions">
-                  <label class="availability-toggle">
+
+                <!-- AVAILABLE SLOT -->
+                <div v-else class="available-slot-content">
+                  <div class="time-inputs">
                     <input
-                      type="checkbox"
-                      v-model="timeSlot.isAvailable"
+                      v-model="timeSlot.startTime"
+                      type="time"
+                      class="time-input"
+                      @change="validateTimeSlot(timeSlot)"
+                      :disabled="timeSlot.isBooked"
                     />
-                    <span class="toggle-slider"></span>
-                  </label>
-                  <button
-                    class="btn-remove-slot"
-                    @click="removeTimeSlot(day.date, slotIndex)"
-                    :disabled="getTimeSlotsForDay(day.date).length === 1"
-                    title="Remove time slot"
-                  >
-                    <i class="fa-solid fa-trash"></i>
-                  </button>
-                </div>
-                <div v-if="timeSlot.hasError" class="slot-error">
-                  {{ timeSlot.errorMessage }}
+                    <span class="time-separator">to</span>
+                    <input
+                      v-model="timeSlot.endTime"
+                      type="time"
+                      class="time-input"
+                      @change="validateTimeSlot(timeSlot)"
+                      :disabled="timeSlot.isBooked"
+                    />
+                  </div>
+                  <div class="slot-actions">
+                    <label class="availability-toggle">
+                      <input
+                        type="checkbox"
+                        v-model="timeSlot.isAvailable"
+                        :disabled="timeSlot.isBooked"
+                      />
+                      <span class="toggle-slider"></span>
+                    </label>
+                    <button
+                      class="btn-remove-slot"
+                      @click="removeTimeSlot(day.date, slotIndex)"
+                      :disabled="dailySchedules[day.date].length === 1 || timeSlot.isBooked"
+                      title="Remove time slot"
+                    >
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                  <div v-if="timeSlot.hasError" class="slot-error">
+                    {{ timeSlot.errorMessage }}
+                  </div>
                 </div>
               </div>
 
-              <button class="btn-add-slot" @click="addTimeSlot(day.date)">
+              <button 
+                class="btn-add-slot" 
+                @click="addTimeSlot(day.date)"
+                :disabled="loadingBookings"
+              >
                 <i class="fa-solid fa-plus"></i> Add Time Slot
               </button>
             </div>
@@ -171,6 +208,17 @@
             <i class="fa-solid fa-undo"></i>
             Reset Defaults
           </button>
+
+          <!-- Refresh Bookings Button -->
+          <button
+            class="btn btn-info"
+            @click="fetchBookedSlots"
+            :disabled="loadingBookings"
+          >
+            <i v-if="loadingBookings" class="fa-solid fa-spinner fa-spin"></i>
+            <i v-else class="fa-solid fa-rotate"></i>
+            {{ loadingBookings ? 'Refreshing...' : 'Refresh Bookings' }}
+          </button>
         </div>
       </div>
 
@@ -182,6 +230,8 @@
         <p>Total Days: {{ generatedDays.length }}</p>
         <p>First Day: {{ generatedDays[0]?.display }}</p>
         <p>Last Day: {{ generatedDays[6]?.display }}</p>
+        <p>Booked Slots Count: {{ bookedSlots.length }}</p>
+        <p>Loading Bookings: {{ loadingBookings }}</p>
       </div>
     </div>
   </div>
@@ -209,29 +259,24 @@ export default {
       errorMessage: '',
       successMessage: '',
       debugMode: true,
+      loadingBookings: false,
       
-      // Current slot configuration
       slotConfig: {
         slotLabel: '7-Day Rolling Schedule',
         isActive: true
       },
       
-      // 7-day rolling schedule
       generatedDays: [],
-      
-      // Store daily schedules by date
       dailySchedules: {},
-      
-      // Store existing slots data
       existingSlots: [],
       existingSlotId: null,
+      bookedSlots: [],
       
-      // Default time slots configuration - 4 slots instead of 1
       defaultTimeSlots: [
-        { startTime: '09:00', endTime: '11:00', isAvailable: true },
-        { startTime: '11:00', endTime: '13:00', isAvailable: true },
-        { startTime: '14:00', endTime: '16:00', isAvailable: true },
-        { startTime: '16:00', endTime: '18:00', isAvailable: true }
+        { startTime: '09:00', endTime: '11:00', isAvailable: true, isBooked: false },
+        { startTime: '11:00', endTime: '13:00', isAvailable: true, isBooked: false },
+        { startTime: '14:00', endTime: '16:00', isAvailable: true, isBooked: false },
+        { startTime: '16:00', endTime: '18:00', isAvailable: true, isBooked: false }
       ]
     };
   },
@@ -250,26 +295,18 @@ export default {
 
     serviceStatus() {
       if (!this.service) return 'draft';
-      
       if (!this.service.slots || !Array.isArray(this.service.slots) || this.service.slots.length === 0) {
         return 'draft';
       }
-      
       const hasRealSlots = this.service.slots.some(slot => {
         if (!slot) return false;
-        
         if (slot.weeklySchedule && Array.isArray(slot.weeklySchedule)) {
           return slot.weeklySchedule.some(week => 
-            week && 
-            week.timeSlots && 
-            Array.isArray(week.timeSlots) && 
-            week.timeSlots.length > 0
+            week && week.timeSlots && Array.isArray(week.timeSlots) && week.timeSlots.length > 0
           );
         }
-        
         return false;
       });
-      
       return hasRealSlots ? 'active' : 'draft';
     }
   },
@@ -277,25 +314,106 @@ export default {
   async created() {
     await this.initializeTimeSlots();
     this.generate7DaySchedule();
+    await this.fetchBookedSlots();
   },
 
   methods: {
-    // 🚀 GENERATE 7-DAY ROLLING SCHEDULE (Today + next 6 days)
+    // ✅ CORRECTED: Uses bookingDate from API
+    async fetchBookedSlots() {
+      this.loadingBookings = true;
+      try {
+        const response = await http.get(`/bookings/service/${this.serviceId}`);
+        const rawBookings = response.data || [];
+        
+        this.bookedSlots = rawBookings
+          .filter(booking => 
+            booking && 
+            booking.bookingDate && 
+            booking.startTime && 
+            booking.endTime &&
+            booking.status !== 'cancelled'
+          )
+          .map(booking => {
+            const dateObj = new Date(booking.bookingDate);
+            const day = dateObj.getDate().toString().padStart(2, '0');
+            const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+            const year = dateObj.getFullYear();
+            const formattedDate = `${day}/${month}/${year}`;
+
+            const normalizeTime = (t) => t?.length > 5 ? t.substring(0, 5) : t;
+
+            return {
+              ...booking,
+              date: formattedDate,
+              startTime: normalizeTime(booking.startTime),
+              endTime: normalizeTime(booking.endTime)
+            };
+          });
+
+        this.markBookedSlotsInDailySchedules();
+      } catch (error) {
+        console.error('❌ Failed to fetch booked slots:', error);
+        this.setError('Failed to load booked appointments');
+      } finally {
+        this.loadingBookings = false;
+      }
+    },
+
+   markBookedSlotsInDailySchedules() {
+  this.generatedDays.forEach(day => {
+    const dateKey = day.date;
+    const backendDate = this.formatDateForBackend(dateKey);
+    const bookingsForDay = this.bookedSlots.filter(b => b.date === backendDate);
+
+    if (!this.dailySchedules[dateKey]) {
+      this.dailySchedules[dateKey] = [];
+    }
+
+    // For each booking, ensure a slot exists
+    bookingsForDay.forEach(booking => {
+      const existingSlot = this.dailySchedules[dateKey].find(slot => 
+        slot.startTime === booking.startTime && slot.endTime === booking.endTime
+      );
+
+      if (!existingSlot) {
+        // Create new slot for this booking
+        const newSlot = {
+          startTime: booking.startTime,
+          endTime: booking.endTime,
+          isAvailable: false, // can't be available if booked
+          isBooked: true,
+          hasError: false,
+          errorMessage: ''
+        };
+        this.dailySchedules[dateKey].push(newSlot);
+      } else {
+        // Mark existing slot as booked
+        existingSlot.isBooked = true;
+        existingSlot.isAvailable = false;
+      }
+    });
+  
+      });
+    },
+
+    getBookingForSlot(date, startTime, endTime) {
+      const backendDate = this.formatDateForBackend(date);
+      return this.bookedSlots.find(booking => {
+        return booking.date === backendDate &&
+               booking.startTime === startTime &&
+               booking.endTime === endTime;
+      });
+    },
+
     generate7DaySchedule() {
       this.generatedDays = [];
       const today = new Date();
-      
-      console.log('📅 Today is:', today.toDateString());
-      
-      // Generate 7 consecutive days starting from TODAY
       for (let i = 0; i < 7; i++) {
         const date = new Date(today);
         date.setDate(today.getDate() + i);
-        
         const dayOfWeek = this.getDayOfWeek(date);
         const displayDate = this.formatDateForDisplay(date);
         const dateString = this.formatDateForInput(date);
-        
         this.generatedDays.push({
           date: dateString,
           dayKey: dayOfWeek.key,
@@ -303,14 +421,10 @@ export default {
           display: `${dayOfWeek.label}, ${displayDate}`,
           isToday: i === 0
         });
-        
-        // Initialize empty schedule for this date if not exists
         if (!this.dailySchedules[dateString]) {
           this.dailySchedules[dateString] = [];
         }
       }
-      
-      console.log('📅 Generated 7-day schedule (Today + 6 days):', this.generatedDays);
     },
 
     getDayOfWeek(date) {
@@ -326,82 +440,68 @@ export default {
       return days[date.getDay()];
     },
 
-    // 🚀 SLOT OPERATIONS (No auto-save)
+    isWorkingAtDay(date) {
+      return this.dailySchedules[date]?.length > 0;
+    },
+
     addTimeSlot(date) {
-      const lastSlot = this.dailySchedules[date] && this.dailySchedules[date].length > 0 
-        ? this.dailySchedules[date][this.dailySchedules[date].length - 1] 
-        : null;
+      const slots = this.dailySchedules[date] || [];
+      // Prevent duplicate slots
+      const existingKeys = new Set(slots.map(s => `${s.startTime}-${s.endTime}`));
       
+      const lastSlot = slots.length > 0 ? slots[slots.length - 1] : null;
       let newStartTime = '09:00';
       let newEndTime = '11:00';
       
       if (lastSlot) {
-        // Calculate new time based on last slot
-        const lastEnd = lastSlot.endTime;
-        const [hours, minutes] = lastEnd.split(':').map(Number);
-        
-        // Add 1 hour to the last end time
-        const newHours = hours + 1;
-        newStartTime = `${newHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-        newEndTime = `${(newHours + 2).toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        const [h, m] = lastSlot.endTime.split(':').map(Number);
+        const newH = h + 1;
+        newStartTime = `${newH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        newEndTime = `${(newH + 2).toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
       }
-      
-      const newSlot = {
-        startTime: newStartTime,
-        endTime: newEndTime,
-        isAvailable: true
-      };
 
-      if (!this.dailySchedules[date]) {
-        this.dailySchedules[date] = [];
-      }
-      
-      this.dailySchedules[date].push(newSlot);
-      console.log(`➕ Added time slot to ${date}`);
-    },
-
-    removeTimeSlot(date, slotIndex) {
-      if (!this.dailySchedules[date] || this.dailySchedules[date].length <= slotIndex) {
+      // Avoid duplicates
+      const newKey = `${newStartTime}-${newEndTime}`;
+      if (existingKeys.has(newKey)) {
+        this.setError('This time slot already exists');
         return;
       }
 
+      const newSlot = {
+        startTime: newStartTime,
+        endTime: newEndTime,
+        isAvailable: true,
+        isBooked: false
+      };
+
+      this.dailySchedules[date] = [...slots, newSlot];
+    },
+
+    removeTimeSlot(date, slotIndex) {
+      if (!this.dailySchedules[date] || slotIndex >= this.dailySchedules[date].length) return;
       this.dailySchedules[date].splice(slotIndex, 1);
-      console.log(`🗑️ Deleted time slot from ${date}`);
     },
 
     toggleWorkingDay(date, isWorking) {
-      console.log(`🔄 Toggling ${date} to ${isWorking ? 'working' : 'off'}`);
-      
       if (isWorking) {
         if (!this.dailySchedules[date] || this.dailySchedules[date].length === 0) {
-          // Create 4 default time slots instead of just 1
           this.dailySchedules[date] = JSON.parse(JSON.stringify(this.defaultTimeSlots));
         }
       } else {
-        // Day off - clear all slots
         this.dailySchedules[date] = [];
       }
-      
-      console.log(`✅ ${date} schedule with ${this.dailySchedules[date].length} default slots:`, this.dailySchedules[date]);
     },
 
-    // 🚀 INITIALIZATION AND DATA LOADING
     async initializeTimeSlots() {
       this.loading = true;
       try {
-        // ✅ GET: Get all slots for a service
         const response = await http.get(`/services/${this.serviceId}/slots`);
         this.existingSlots = response.data || [];
-        
-        console.log('🔍 Found existing slots:', this.existingSlots);
-        
         if (this.existingSlots.length > 0) {
           this.loadExistingSlotsIntoDays(this.existingSlots);
         } else {
-          // No existing slots, initialize empty
           this.initializeEmptyDays();
         }
-        
       } catch (error) {
         console.warn('Could not load existing slots:', error);
         this.initializeEmptyDays();
@@ -411,43 +511,29 @@ export default {
     },
 
     initializeEmptyDays() {
-      // Will be populated when generating the 7-day schedule
       this.dailySchedules = {};
     },
 
     loadExistingSlotsIntoDays(slots) {
-      console.log('🔄 Loading existing slots into daily schedule...');
-      
-      // Clear existing daily schedules
       this.dailySchedules = {};
-      
       slots.forEach(slot => {
-        console.log('📥 Processing slot:', slot);
-        
-        // Store the slot ID for updates
         this.existingSlotId = slot.slotId;
-        
         if (slot.weeklySchedule && Array.isArray(slot.weeklySchedule)) {
           slot.weeklySchedule.forEach(daySchedule => {
             if (daySchedule && daySchedule.date && Array.isArray(daySchedule.timeSlots)) {
               const dateString = this.parseBackendDate(daySchedule.date);
-              
-              console.log(`📅 Mapping schedule for ${dateString}:`, daySchedule.timeSlots);
-              
-              // Only load if date is within next 7 days
               if (this.isDateInNext7Days(dateString)) {
                 this.dailySchedules[dateString] = daySchedule.timeSlots.map(timeSlot => ({
                   startTime: timeSlot.startTime,
                   endTime: timeSlot.endTime,
-                  isAvailable: timeSlot.isAvailable !== false
+                  isAvailable: timeSlot.isAvailable !== false,
+                  isBooked: false
                 }));
               }
             }
           });
         }
       });
-      
-      console.log('✅ Final daily schedules:', this.dailySchedules);
     },
 
     isDateInNext7Days(dateString) {
@@ -458,7 +544,6 @@ export default {
       return diffDays >= 0 && diffDays < 7;
     },
 
-    // 🚀 SAVE ALL CHANGES (Manual save only)
     async saveTimeSlots() {
       if (!this.validateAllTimeSlots()) {
         this.setError('Please fix time slot errors before saving');
@@ -469,13 +554,10 @@ export default {
       this.errorMessage = '';
 
       try {
-        // Build the complete slots array for the 7-day schedule
         const weeklySchedule = [];
-        
         this.generatedDays.forEach(day => {
           const timeSlots = this.dailySchedules[day.date] || [];
           const isWorkingDay = timeSlots.length > 0;
-          
           weeklySchedule.push({
             date: this.formatDateForBackend(day.date),
             day: day.dayKey,
@@ -495,28 +577,17 @@ export default {
           weeklySchedule: weeklySchedule
         };
 
-        console.log('💾 Saving 7-day schedule:', slotData);
-
         if (this.existingSlotId) {
-          // ✅ PUT: Update existing slot
-          const response = await http.put(`/services/${this.serviceId}/slots/${this.existingSlotId}`, slotData);
-          console.log('✅ Schedule updated successfully:', response.data);
+          await http.put(`/services/${this.serviceId}/slots/${this.existingSlotId}`, slotData);
           this.setSuccess('Time slots updated successfully!');
         } else {
-          // ✅ POST: Create new slot
           const response = await http.post(`/services/${this.serviceId}/slots`, { slots: [slotData] });
-          console.log('✅ Schedule created successfully:', response.data);
-          
-          // Store the new slot ID
-          if (response.data && response.data.length > 0) {
+          if (response.data?.length > 0) {
             this.existingSlotId = response.data[0].slotId;
           }
-          
           this.setSuccess('Time slots created successfully!');
         }
-
         this.$emit('saved');
-        
       } catch (error) {
         console.error('❌ Error saving schedule:', error);
         this.handleApiError(error, 'save time slots');
@@ -525,20 +596,14 @@ export default {
       }
     },
 
-    // 🔧 UTILITY METHODS
     formatDateForInput(date) {
       if (typeof date === 'string') return date;
       return date.toISOString().split('T')[0];
     },
 
     formatDateForDisplay(date) {
-      if (typeof date === 'string') {
-        date = new Date(date);
-      }
-      return date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
-      });
+      if (typeof date === 'string') date = new Date(date);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     },
 
     formatDateForBackend(dateString) {
@@ -558,18 +623,9 @@ export default {
       return '';
     },
 
-    isWorkingDay(date) {
-      return this.dailySchedules[date] && this.dailySchedules[date].length > 0;
-    },
-
-    getTimeSlotsForDay(date) {
-      return this.dailySchedules[date] || [];
-    },
-
     validateTimeSlot(timeSlot) {
       timeSlot.hasError = false;
       timeSlot.errorMessage = '';
-
       if (timeSlot.startTime && timeSlot.endTime) {
         if (timeSlot.startTime >= timeSlot.endTime) {
           timeSlot.hasError = true;
@@ -577,24 +633,19 @@ export default {
           return false;
         }
       }
-      
       return true;
     },
 
     validateAllTimeSlots() {
       let isValid = true;
-      
       this.generatedDays.forEach(day => {
         const timeSlots = this.dailySchedules[day.date];
         if (timeSlots) {
           timeSlots.forEach(slot => {
-            if (!this.validateTimeSlot(slot)) {
-              isValid = false;
-            }
+            if (!this.validateTimeSlot(slot)) isValid = false;
           });
         }
       });
-      
       return isValid;
     },
 
@@ -602,39 +653,30 @@ export default {
       if (confirm('Are you sure you want to reset to default schedule? This will clear all your changes and set 4 default time slots for each working day.')) {
         this.initializeEmptyDays();
         this.generate7DaySchedule();
-        
-        // Set default working days (Monday to Thursday - 4 days)
         const workingDays = ['monday', 'tuesday', 'wednesday', 'thursday'];
-        
         this.generatedDays.forEach(day => {
           if (workingDays.includes(day.dayKey)) {
             this.dailySchedules[day.date] = JSON.parse(JSON.stringify(this.defaultTimeSlots));
           }
         });
-        
         this.setSuccess('Reset to default schedule with 4 working days and 4 time slots each');
       }
     },
 
     handleApiError(error, operation) {
       console.error(`❌ Error during ${operation}:`, error);
-      
       let errorMsg = `Failed to ${operation}`;
-      
       if (error.response?.status === 400) {
         errorMsg = 'Invalid data format. Please check your time slots.';
       } else if (error.response?.status === 500) {
         errorMsg = 'Server error. Please try again.';
       } else if (error.response?.data?.message) {
-        if (Array.isArray(error.response.data.message)) {
-          errorMsg = error.response.data.message.join(', ');
-        } else {
-          errorMsg = error.response.data.message;
-        }
+        errorMsg = Array.isArray(error.response.data.message)
+          ? error.response.data.message.join(', ')
+          : error.response.data.message;
       } else if (error.message) {
         errorMsg = error.message;
       }
-      
       this.setError(errorMsg);
     },
 
@@ -655,8 +697,82 @@ export default {
 };
 </script>
 
-
 <style scoped>
+/* Keep your existing CSS exactly as it was — no changes needed */
+.time-slots-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: "Poppins", sans-serif;
+}
+
+/* NEW STYLES FOR BOOKED SLOTS */
+.booked-slot-content {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.booked-slot-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.booked-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.booked-icon {
+  color: #dc2626;
+}
+
+.booked-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.booked-badge {
+  background: #dc2626;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.customer-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #7f1d1d;
+}
+
+.customer-info i {
+  font-size: 0.8rem;
+}
+
+.time-slot-item.booked-slot {
+  opacity: 0.9;
+}
+
+.btn-info {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-info:hover:not(:disabled) {
+  background: #2563eb;
+}
+
 /* Updated styles for 7-day schedule */
 .schedule-description {
   color: #64748b;
