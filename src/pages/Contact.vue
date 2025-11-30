@@ -7,68 +7,115 @@
       <div class="hero-content">
         <h1 class="hero-title">Partner with Infinity-Booking</h1>
         <p class="hero-text">
-          Grow your business, reach more customers, and manage bookings — all in one powerful platform.
+          Grow your service business, reach more customers, and manage bookings efficiently.
         </p>
-        <router-link to="/login" class="cta-btn">🚀 Get Started as a Provider</router-link>
+        <router-link to="/register" class="cta-btn">Start Your Journey</router-link>
       </div>
     </section>
 
-    <!-- Info Section -->
-    <section class="info-section">
+    <!-- Partnership Benefits -->
+    <section class="benefits-section">
       <div class="container">
-        <!-- Info Cards -->
-        <div class="info-cards">
-          <!-- Why Partner -->
-          <div class="info-card highlight">
-            <i class="fas fa-rocket icon"></i>
-            <h2>Why Partner With Us?</h2>
-            <ul class="benefits-list">
-              <li>✅ Instant visibility to thousands of customers</li>
-              <li>✅ Free profile setup & onboarding</li>
-              <li>✅ Secure payments & dispute resolution</li>
-              <li>✅ Real-time booking & calendar sync</li>
-            </ul>
+        <div class="section-header">
+          <h2 class="section-title">Why Partner With Us?</h2>
+          <p class="section-subtitle">
+            Join Ethiopia's fastest-growing platform for service professionals
+          </p>
+        </div>
+        <div class="benefits-grid">
+          <div class="benefit-card">
+            <div class="benefit-icon">👥</div>
+            <h3 class="benefit-title">Expand Your Reach</h3>
+            <p class="benefit-desc">Connect with thousands of potential customers in your area</p>
           </div>
-
-          <!-- How It Works -->
-          <div class="info-card">
-            <i class="fas fa-tasks icon"></i>
-            <h2>How to Become a Provider</h2>
-            <ol class="steps-list">
-              <li>✅ Sign up or log in to your account</li>
-              <li>✅ Go to “your Dashboard” → “Become a Provider”</li>
-              <li>✅ Fill out your service details & upload documents</li>
-  
-              <li>✅ Start receiving bookings!</li>
-            </ol>
+          <div class="benefit-card">
+            <div class="benefit-icon">💼</div>
+            <h3 class="benefit-title">Business Tools</h3>
+            <p class="benefit-desc">Professional dashboard to manage bookings and payments</p>
           </div>
-
-          <!-- Contact Info -->
-          <div class="info-card">
-            <i class="fas fa-headset icon"></i>
-            <h2>Contact Us</h2>
-            <p class="contact-item">
-              <i class="fas fa-envelope"></i> support@infinity-booking.com
-            </p>
-            <p class="contact-item">
-              <i class="fas fa-phone"></i> +251 911 234 567
-            </p>
-            <p class="contact-item">
-              <i class="fas fa-clock"></i> Mon–Fri, 9AM–5PM EAT
-            </p>
+          <div class="benefit-card">
+            <div class="benefit-icon">🛡️</div>
+            <h3 class="benefit-title">Secure Platform</h3>
+            <p class="benefit-desc">Verified customers and secure payment processing</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">📈</div>
+            <h3 class="benefit-title">Growth Support</h3>
+            <p class="benefit-desc">Marketing tools and analytics to grow your business</p>
           </div>
         </div>
+      </div>
+    </section>
 
-        <!-- Testimonials -->
-        <div class="testimonials">
-          <h2>What Our Providers Say</h2>
-          <div class="testimonial-card">
-            <div class="quote">“Infinity-Booking helped me double my clients in just 3 months!”</div>
-            <div class="author">— Alemu T., Photographer</div>
+    <!-- How to Join -->
+    <section class="process-section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">How to Become a Provider</h2>
+          <p class="section-subtitle">
+            Simple steps to start your journey with Infinity-Booking
+          </p>
+        </div>
+        <div class="process-steps">
+          <div class="process-step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3 class="step-title">Create Account</h3>
+              <p class="step-desc">Sign up with your email or phone number</p>
+            </div>
           </div>
-          <div class="testimonial-card">
-            <div class="quote">“The payment system is smooth and reliable. Highly recommend.”</div>
-            <div class="author">— Selamawit K., Tutor</div>
+          <div class="process-step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h3 class="step-title">Complete Profile</h3>
+              <p class="step-desc">Add your services, pricing, and availability</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h3 class="step-title">Get Verified</h3>
+              <p class="step-desc">Our team reviews your application</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <h3 class="step-title">Start Booking</h3>
+              <p class="step-desc">Begin receiving appointments from customers</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Information -->
+    <section class="contact-info-section">
+      <div class="container">
+        <div class="contact-grid">
+          <div class="contact-card">
+            <div class="contact-icon">📧</div>
+            <h3 class="contact-title">Email Support</h3>
+            <p class="contact-detail">support@infinitybooking.com</p>
+            <p class="contact-note">Typically replies within 2 hours</p>
+          </div>
+          <div class="contact-card">
+            <div class="contact-icon">📞</div>
+            <h3 class="contact-title">Phone Support</h3>
+            <p class="contact-detail">+251 900 000 000</p>
+            <p class="contact-note">Mon-Fri, 9AM-6PM EAT</p>
+          </div>
+          <div class="contact-card">
+            <div class="contact-icon">💬</div>
+            <h3 class="contact-title">Live Chat</h3>
+            <p class="contact-detail">Available 24/7</p>
+            <p class="contact-note">In-app messaging support</p>
+          </div>
+          <div class="contact-card">
+            <div class="contact-icon">📍</div>
+            <h3 class="contact-title">Office Location</h3>
+            <p class="contact-detail">Addis Ababa, Ethiopia</p>
+            <p class="contact-note">Visit by appointment</p>
           </div>
         </div>
       </div>
@@ -77,73 +124,83 @@
     <!-- FAQ Section -->
     <section class="faq-section">
       <div class="container">
-        <h2 class="section-title">Frequently Asked Questions</h2>
-        <div class="faq-list">
+        <div class="section-header">
+          <h2 class="section-title">Frequently Asked Questions</h2>
+          <p class="section-subtitle">
+            Quick answers to common questions about partnering with us
+          </p>
+        </div>
+        <div class="faq-grid">
           <div class="faq-item">
-            <div class="faq-question">Who can become a provider?</div>
-            <div class="faq-answer">
-              Any individual or business offering services — from tutors to plumbers to photographers. You must be 18+ and provide valid ID.
-            </div>
+            <h3 class="faq-question">Who can become a service provider?</h3>
+            <p class="faq-answer">Any professional offering services in home services, beauty, education, or other service categories. You must be 18+ with valid identification.</p>
           </div>
           <div class="faq-item">
-            <div class="faq-question">Is there a fee to join?</div>
-            <div class="faq-answer">
-              No! Registration is free. We charge a small commission only when you receive a booking.
-            </div>
+            <h3 class="faq-question">Is there a cost to join?</h3>
+            <p class="faq-answer">Registration is completely free. You only pay when you receive bookings through our platform.</p>
           </div>
           <div class="faq-item">
-            <div class="faq-question">How long does approval take?</div>
-            <div class="faq-answer">
-              After Admin has reviewed your documents to fit valid business certificate,you will be confirmed and you start creating your service 
-            </div>
+            <h3 class="faq-question">How long does approval take?</h3>
+            <p class="faq-answer">Our team typically reviews applications within 24-48 hours after document submission.</p>
           </div>
           <div class="faq-item">
-            <div class="faq-question">Can I edit my profile later?</div>
-            <div class="faq-answer">
-              Yes! You can update your services, photos, pricing, and availability anytime in your dashboard.
-            </div>
+            <h3 class="faq-question">Can I update my services?</h3>
+            <p class="faq-answer">Yes, you can update your services, pricing, and availability anytime through your dashboard.</p>
           </div>
         </div>
       </div>
     </section>
 
     <!-- Final CTA -->
-    <section class="cta-section">
+    <section class="final-cta">
       <div class="container">
-        <h2 class="cta-title">Ready to Grow Your Business?</h2>
-        <p class="cta-text">
-          Join thousands of providers who trust Infinity-Booking to manage their services and customers.
-        </p>
-        <router-link to="/login" class="cta-btn">📈 Sign Up / Login</router-link>
+        <div class="cta-content">
+          <h2 class="cta-title">Ready to Grow Your Business?</h2>
+          <p class="cta-text">
+            Join hundreds of Ethiopian service professionals already scaling their businesses with Infinity-Booking
+          </p>
+          <div class="cta-actions">
+            <router-link to="/register" class="cta-btn primary">
+              Start Free Trial
+            </router-link>
+            <router-link to="/login" class="cta-btn secondary">
+              Existing Provider
+            </router-link>
+          </div>
+          <div class="cta-note">
+            <span class="note-icon">✅</span>
+            No setup fees • Free training • Dedicated support
+          </div>
+        </div>
       </div>
     </section>
   </div>
 </template>
 
-<script setup>
-// No script needed — static content
-</script>
-
 <style scoped>
-/* Base */
+/* ===== BASE STYLES ===== */
 .contact-page {
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif;
   overflow-x: hidden;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  line-height: 1.5;
+  font-size: 14px;
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 16px;
 }
 
-/* Hero */
+/* ===== HERO SECTION ===== */
 .hero-section {
-  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-  position: relative;
-  padding: 90px 20px 70px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  padding: 100px 0 60px;
   text-align: center;
+  position: relative;
 }
 
 .hero-overlay {
@@ -152,289 +209,434 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .hero-content {
   position: relative;
   z-index: 2;
-  max-width: 800px;
+  max-width: 600px;
   margin: 0 auto;
+  padding: 0 20px;
 }
 
 .hero-title {
-  font-size: 2.4rem;
-  font-weight: 800;
-  margin-bottom: 1.2rem;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 16px;
   line-height: 1.2;
 }
 
 .hero-text {
-  font-size: 1.15rem;
-  line-height: 1.7;
-  opacity: 0.95;
-  max-width: 600px;
-  margin: 0 auto 1.5rem;
+  font-size: 1rem;
+  opacity: 0.9;
+  margin-bottom: 24px;
+  line-height: 1.6;
 }
 
 .cta-btn {
   display: inline-block;
-  background: #ffd54f;
-  color: #1e3a8a;
-  font-weight: 700;
-  padding: 14px 32px;
-  border-radius: 16px;
+  background: white;
+  color: #667eea;
+  padding: 12px 24px;
+  border-radius: 8px;
   text-decoration: none;
-  font-size: 1.15rem;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-  transition: all 0.25s ease;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
 }
 
 .cta-btn:hover {
-  transform: scale(1.04);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Info Section */
-.info-section {
-  background: #f8fafc;
-  padding: 70px 0;
-}
-
-.info-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 28px;
-  margin-bottom: 40px;
-}
-
-.info-card {
-  background: white;
-  border-radius: 22px;
-  padding: 30px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
-  transition: all 0.3s ease;
-}
-
-.info-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
-}
-
-.info-card.highlight {
-  border-top: 4px solid #3b82f6;
-}
-
-.icon {
-  font-size: 2rem;
-  color: #3b82f6;
-  margin-bottom: 16px;
-}
-
-.info-card h2 {
-  font-size: 1.5rem;
-  color: #1e3a8a;
-  margin: 0 0 16px;
-  font-weight: 700;
-}
-
-.benefits-list,
-.steps-list {
-  list-style: none;
-  padding: 0;
-  text-align: left;
-}
-
-.benefits-list li,
-.steps-list li {
-  margin-bottom: 10px;
-  color: #4b5563;
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-.steps-list li::before {
-  content: counter(item) ". ";
-  font-weight: bold;
-  color: #3b82f6;
-}
-
-.steps-list {
-  counter-reset: item;
-}
-
-.steps-list li {
-  counter-increment: item;
-}
-
-/* Contact Items */
-.contact-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 12px 0;
-  color: #4b5563;
-  font-size: 1rem;
-}
-
-.contact-item i {
-  color: #3b82f6;
-  width: 20px;
+/* ===== SECTION HEADER ===== */
+.section-header {
   text-align: center;
-}
-
-/* Testimonials */
-.testimonials {
-  margin-top: 40px;
-}
-
-.testimonials h2 {
-  text-align: center;
-  color: #1e3a8a;
-  font-size: 1.8rem;
-  margin-bottom: 24px;
-  font-weight: 700;
-}
-
-.testimonial-card {
-  background: white;
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
-  margin-bottom: 20px;
-}
-
-.quote {
-  font-style: italic;
-  color: #2d3748;
-  font-size: 1.1rem;
-  line-height: 1.6;
-  margin-bottom: 12px;
-}
-
-.author {
-  font-weight: 600;
-  color: #1e3a8a;
-  font-size: 0.95rem;
-}
-
-/* FAQ Section */
-.faq-section {
-  background: white;
-  padding: 70px 0;
+  margin-bottom: 48px;
 }
 
 .section-title {
-  text-align: center;
-  font-size: 2.1rem;
-  color: #1e3a8a;
-  margin-bottom: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
+  margin-bottom: 12px;
+  color: #1a1a1a;
 }
 
-.faq-list {
+.section-subtitle {
+  font-size: 0.95rem;
+  color: #6b7280;
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ===== BENEFITS SECTION ===== */
+.benefits-section {
+  padding: 60px 0;
+  background: #f8fafc;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.benefit-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+}
+
+.benefit-card:hover {
+  transform: translateY(-4px);
+}
+
+.benefit-icon {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+}
+
+.benefit-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+}
+
+.benefit-desc {
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ===== PROCESS SECTION ===== */
+.process-section {
+  padding: 60px 0;
+  background: white;
+}
+
+.process-steps {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.process-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  transition: background-color 0.2s;
+}
+
+.process-step:hover {
+  background: #f1f5f9;
+}
+
+.step-number {
+  background: #667eea;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #1a1a1a;
+}
+
+.step-desc {
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ===== CONTACT INFO SECTION ===== */
+.contact-info-section {
+  padding: 60px 0;
+  background: #f8fafc;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.contact-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+}
+
+.contact-card:hover {
+  transform: translateY(-4px);
+}
+
+.contact-icon {
+  font-size: 2rem;
+  margin-bottom: 16px;
+}
+
+.contact-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+}
+
+.contact-detail {
+  font-size: 0.9rem;
+  color: #667eea;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.contact-note {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ===== FAQ SECTION ===== */
+.faq-section {
+  padding: 60px 0;
+  background: white;
+}
+
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .faq-item {
   background: #f8fafc;
-  border-radius: 16px;
   padding: 20px;
-  transition: all 0.2s ease;
+  border-radius: 12px;
+  transition: background-color 0.2s;
 }
 
 .faq-item:hover {
-  background: #eef6ff;
-  transform: translateX(4px);
+  background: #f1f5f9;
 }
 
 .faq-question {
-  font-weight: 700;
-  color: #1e3a8a;
-  margin-bottom: 12px;
-  font-size: 1.1rem;
-  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1a1a1a;
 }
 
 .faq-answer {
-  color: #4b5563;
-  font-size: 1rem;
-  line-height: 1.6;
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
 }
 
-/* CTA Section */
-.cta-section {
-  background: linear-gradient(135deg, #1e40af, #3b82f6);
-  padding: 80px 20px;
-  text-align: center;
+/* ===== FINAL CTA ===== */
+.final-cta {
+  background: linear-gradient(135deg, #1a1a1a, #374151);
   color: white;
+  padding: 60px 0;
+  text-align: center;
+}
+
+.cta-content {
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 .cta-title {
-  font-size: 2.2rem;
-  font-weight: 800;
-  margin-bottom: 1rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  line-height: 1.2;
 }
 
 .cta-text {
-  font-size: 1.15rem;
-  max-width: 700px;
-  margin: 0 auto 2rem;
-  opacity: 0.95;
-  line-height: 1.7;
+  font-size: 0.95rem;
+  opacity: 0.9;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.cta-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .cta-btn {
-  display: inline-block;
-  background: #ffd54f;
-  color: #1e3a8a;
-  font-weight: 700;
-  padding: 14px 32px;
-  border-radius: 16px;
+  padding: 12px 24px;
+  border-radius: 8px;
   text-decoration: none;
-  font-size: 1.15rem;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-  transition: all 0.25s ease;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: inline-block;
 }
 
-.cta-btn:hover {
-  transform: scale(1.04);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+.cta-btn.primary {
+  background: #667eea;
+  color: white;
 }
 
-/* Mobile Responsive */
+.cta-btn.primary:hover {
+  background: #5a6fd8;
+  transform: translateY(-2px);
+}
+
+.cta-btn.secondary {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.cta-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.cta-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.note-icon {
+  font-size: 1rem;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1024px) {
+  .benefits-grid,
+  .contact-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 768px) {
+  .hero-section {
+    padding: 80px 0 40px;
+  }
+  
   .hero-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
-
-  .hero-text,
-  .cta-text {
-    font-size: 1.05rem;
+  
+  .section-title {
+    font-size: 1.5rem;
   }
-
-  .info-cards,
-  .container {
-    grid-template-columns: 1fr !important;
-    padding: 0 16px;
+  
+  .benefits-section,
+  .process-section,
+  .contact-info-section,
+  .faq-section,
+  .final-cta {
+    padding: 40px 0;
   }
-
-  .cta-btn {
-    width: 100%;
-    max-width: 320px;
+  
+  .benefits-grid,
+  .contact-grid,
+  .faq-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .process-steps {
+    gap: 12px;
+  }
+  
+  .process-step {
     padding: 16px;
   }
-
-  .faq-question {
-    font-size: 1rem;
+  
+  .cta-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .cta-btn {
+    width: 100%;
+    max-width: 280px;
+    text-align: center;
   }
 }
 
-/* Accessibility */
-.cta-btn:focus {
-  outline: 2px solid #ffd54f;
-  outline-offset: 4px;
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px;
+  }
+  
+  .hero-title {
+    font-size: 1.5rem;
+  }
+  
+  .section-title {
+    font-size: 1.25rem;
+  }
+  
+  .benefit-card,
+  .contact-card,
+  .faq-item {
+    padding: 20px;
+  }
+  
+  .process-step {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  
+  .step-number {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+  }
+  
+  .cta-title {
+    font-size: 1.5rem;
+  }
+  
+  .cta-text {
+    font-size: 0.9rem;
+  }
 }
 </style>

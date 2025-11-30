@@ -30,23 +30,9 @@
           </div>
         </div>
 
-        <!-- Welcome Card -->
-        <div class="welcome-card" v-if="provider">
-          <div class="welcome-avatar">
-            <i class="fa-solid fa-user-tie"></i>
-          </div>
-          <div class="welcome-text">
-            <div class="welcome-greeting">Welcome back</div>
-            <div class="welcome-name">{{ provider.fullname || 'Provider' }}</div>
-            <div class="welcome-status">
-              <i class="fa-solid fa-circle status-online"></i>
-              Online
-            </div>
-          </div>
-        </div>
-
         <!-- Navigation -->
         <nav class="sidebar-nav">
+          <!-- Main Dashboard Section -->
           <div class="nav-section">
             <h3 class="nav-section-title">MAIN</h3>
             <ul class="sidebar-menu">
@@ -65,11 +51,15 @@
             </ul>
           </div>
 
-          <div class="nav-section">
-            <h3 class="nav-section-title">BUSINESS</h3>
-            <ul class="sidebar-menu">
+          <!-- Dashboard Sub-menu (shown when on dashboard) -->
+          <div 
+            class="nav-section dashboard-submenu" 
+            v-if="showDashboardSubmenu"
+          >
+            <h3 class="nav-section-title">DASHBOARD SECTIONS</h3>
+            <ul class="sidebar-menu submenu">
               <li
-                v-for="(item, key) in businessMenuItems"
+                v-for="(item, key) in dashboardSubmenuItems"
                 :key="key"
                 @click="goTo(key)"
                 :class="{ active: isActiveRoute(key) }"
@@ -83,6 +73,7 @@
             </ul>
           </div>
 
+          <!-- Account Section -->
           <div class="nav-section">
             <h3 class="nav-section-title">ACCOUNT</h3>
             <ul class="sidebar-menu">
@@ -102,11 +93,7 @@
           </div>
         </nav>
       </div>
-
-      <!-- ✅ REMOVED: support section & sidebar-footer -->
     </aside>
-
-    <!-- ✅ REMOVED: mobile-overlay -->
 
     <!-- Main Content -->
     <main class="dashboard-main">
@@ -158,12 +145,12 @@ export default {
     // Organized menu items by category
     const menuItems = {
       home: { label: "Dashboard", icon: "fa-solid fa-house", route: "ProviderHome", category: "main" },
-      services: { label: "My Services", icon: "fa-solid fa-briefcase", route: "ProviderServices", category: "main" },
-      bookings: { label: "Bookings", icon: "fa-solid fa-calendar-check", route: "ProviderBookings", category: "main" },
-      earnings: { label: "Earnings", icon: "fa-solid fa-wallet", route: "ProviderEarnings", category: "business" },
-      analytics: { label: "Analytics", icon: "fa-solid fa-chart-line", route: "ProviderAnalytics", category: "business" },
-      messages: { label: "Messages", icon: "fa-solid fa-envelope", route: "ProviderMessages", category: "business" },
-      reviews: { label: "Reviews", icon: "fa-solid fa-star", route: "ProviderReviews", category: "business" },
+      services: { label: "My Services", icon: "fa-solid fa-briefcase", route: "ProviderServices", category: "dashboard" },
+      bookings: { label: "Bookings", icon: "fa-solid fa-calendar-check", route: "ProviderBookings", category: "dashboard" },
+      earnings: { label: "Earnings", icon: "fa-solid fa-wallet", route: "ProviderEarnings", category: "dashboard" },
+      analytics: { label: "Analytics", icon: "fa-solid fa-chart-line", route: "ProviderAnalytics", category: "dashboard" },
+      messages: { label: "Messages", icon: "fa-solid fa-envelope", route: "ProviderMessages", category: "dashboard" },
+      reviews: { label: "Reviews", icon: "fa-solid fa-star", route: "ProviderReviews", category: "dashboard" },
       profile: { label: "My Profile", icon: "fa-solid fa-user", route: "ProviderProfile", category: "account" },
       settings: { label: "Settings", icon: "fa-solid fa-gear", route: "ProviderSettings", category: "account" },
     };
@@ -175,9 +162,9 @@ export default {
         .reduce((obj, [key, item]) => ({ ...obj, [key]: item }), {})
     );
 
-    const businessMenuItems = computed(() => 
+    const dashboardSubmenuItems = computed(() => 
       Object.entries(menuItems)
-        .filter(([key, item]) => item.category === 'business')
+        .filter(([key, item]) => item.category === 'dashboard')
         .reduce((obj, [key, item]) => ({ ...obj, [key]: item }), {})
     );
 
@@ -186,6 +173,15 @@ export default {
         .filter(([key, item]) => item.category === 'account')
         .reduce((obj, [key, item]) => ({ ...obj, [key]: item }), {})
     );
+
+    // Show dashboard submenu when on dashboard or dashboard-related pages
+    const showDashboardSubmenu = computed(() => {
+      return route.name === 'ProviderHome' || 
+             Object.values(dashboardSubmenuItems.value).some(item => 
+               route.name?.includes(item.route.replace('Provider', '')) || 
+               route.name === item.route
+             );
+    });
 
     // Check if current route matches menu item
     const isActiveRoute = (menuKey) => {
@@ -254,8 +250,9 @@ export default {
       provider,
       sidebarOpen,
       mainMenuItems,
-      businessMenuItems,
+      dashboardSubmenuItems,
       accountMenuItems,
+      showDashboardSubmenu,
       isActiveRoute,
       goTo,
       toggleSidebar,
@@ -402,7 +399,7 @@ export default {
   margin: 0;
   color: #1e293b;
   letter-spacing: -0.02em;
-  padding-top: 4rem;
+  padding-top: 5rem;
 }
 
 .sidebar-subtitle {
@@ -412,77 +409,18 @@ export default {
   font-weight: 500;
 }
 
-/* Welcome Card */
-.welcome-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-  border-radius: 20px;
-  padding: 1.5rem;
-  margin: 1rem 0 2rem;
-  border: 1px solid #bae6fd;
-  box-shadow: 0 4px 20px rgba(14, 165, 233, 0.1);
-}
-
-.welcome-avatar {
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.3rem;
-}
-
-.welcome-text {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.welcome-greeting {
-  font-size: 0.85rem;
-  color: #64748b;
-  font-weight: 500;
-  margin-bottom: 0.25rem;
-}
-
-.welcome-name {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 0.5rem;
-}
-
-.welcome-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-  color: #059669;
-  font-weight: 500;
-}
-
-.status-online {
-  font-size: 0.6rem;
-  color: #10b981;
-}
-
 /* Navigation */
 .sidebar-nav {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2rem; /* Space BETWEEN sections */
+  gap: 2rem;
 }
 
 .nav-section {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem; /* ✅ Even tighter spacing WITHIN each section */
+  gap: 0.25rem;
 }
 
 .nav-section-title {
@@ -493,7 +431,32 @@ export default {
   letter-spacing: 0.1em;
   margin: 0;
   padding: 0 0.5rem;
-  margin-bottom: 0.5rem; /* Space below title */
+  margin-bottom: 0.5rem;
+}
+
+/* Dashboard Submenu */
+.dashboard-submenu {
+  margin-left: 1rem;
+  border-left: 2px solid #e2e8f0;
+  padding-left: 1rem;
+}
+
+.dashboard-submenu .nav-section-title {
+  font-size: 0.7rem;
+  color: #64748b;
+}
+
+.sidebar-menu.submenu {
+  margin-left: 0.5rem;
+}
+
+.sidebar-menu.submenu .menu-item-content {
+  padding: 0.5rem 1rem;
+}
+
+.sidebar-menu.submenu li span {
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .sidebar-menu {
@@ -502,7 +465,7 @@ export default {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem; /* ✅ Reduced from 0.5rem */
+  gap: 0.25rem;
 }
 
 .sidebar-menu li {
@@ -516,7 +479,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.65rem 1.25rem; /* ✅ Reduced vertical padding */
+  padding: 0.65rem 1.25rem;
   border-radius: 14px;
   transition: all 0.3s ease;
 }

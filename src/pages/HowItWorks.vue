@@ -7,22 +7,21 @@
       <div class="hero-content">
         <h1 class="hero-title">How Infinity-Booking Works</h1>
         <p class="hero-text">
-          Empowering local service providers while giving admins the tools to maintain high-quality service standards.
+          Streamlined process for service providers to join our platform and start growing their business with confidence.
         </p>
-        <p class="hero-text">
-          From registration to payment — follow this simple journey to start growing your business.
-        </p>
-        <router-link to="/login" class="hero-cta">🚀 Get Started as a Provider</router-link>
+        <router-link to="/login" class="hero-cta">Start Your Journey</router-link>
       </div>
     </section>
 
     <!-- Steps Section -->
     <section class="steps-section">
       <div class="container">
-        <h2 class="section-title">Your Provider Journey</h2>
-        <p class="section-subtitle">
-          Follow these 5 clear steps to go from sign-up to earning — safely and efficiently.
-        </p>
+        <div class="section-header">
+          <h2 class="section-title">Simple 5-Step Process</h2>
+          <p class="section-subtitle">
+            From registration to earning income - follow this clear path to success
+          </p>
+        </div>
         <div class="steps-grid">
           <div
             v-for="(step, index) in steps"
@@ -30,49 +29,70 @@
             class="step-card"
             :class="`step-${index}`"
           >
-            <div class="step-number">{{ index + 1 }}</div>
-            <img
-              :src="step.icon.trim()"
-              :alt="step.title"
-              loading="lazy"
-              @error="handleImageError"
-            />
-            <h3>{{ step.title }}</h3>
-            <p>{{ step.desc }}</p>
+            <div class="step-header">
+              <div class="step-number">{{ index + 1 }}</div>
+              <div class="step-icon">
+                <img
+                  :src="step.icon"
+                  :alt="step.title"
+                  loading="lazy"
+                  @error="handleImageError"
+                />
+              </div>
+            </div>
+            <h3 class="step-title">{{ step.title }}</h3>
+            <p class="step-desc">{{ step.desc }}</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features-section">
+    <!-- Platform Benefits -->
+    <section class="benefits-section">
       <div class="container">
-        <h2 class="section-title">Platform Features</h2>
-        <p class="section-subtitle">
-          Built for growth, trust, and efficiency — here’s what you get when you join.
-        </p>
-        <div class="features-grid">
+        <div class="section-header">
+          <h2 class="section-title">Why Choose Our Platform</h2>
+          <p class="section-subtitle">
+            Designed to help service providers succeed with powerful tools and support
+          </p>
+        </div>
+        <div class="benefits-grid">
           <div
-            v-for="(feature, index) in features"
+            v-for="(benefit, index) in benefits"
             :key="index"
-            class="feature-card"
+            class="benefit-card"
           >
-            <i :class="feature.icon"></i>
-            <h3>{{ feature.title }}</h3>
-            <p>{{ feature.description }}</p>
+            <div class="benefit-icon">
+              <span class="icon-emoji">{{ benefit.icon }}</span>
+            </div>
+            <h3 class="benefit-title">{{ benefit.title }}</h3>
+            <p class="benefit-desc">{{ benefit.description }}</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
+    <!-- Final CTA -->
+    <section class="final-cta">
       <div class="container">
-        <h2 class="cta-title">Ready to Join Infinity-Booking?</h2>
-        <p class="cta-text">
-          Create your provider account today and start growing your business in a professional network that expands endlessly.
-        </p>
-        <router-link to="/login" class="cta-btn">🚀 Sign Up / Login</router-link>
+        <div class="cta-content">
+          <h2 class="cta-title">Ready to Grow Your Business?</h2>
+          <p class="cta-text">
+            Join hundreds of service professionals already using Infinity-Booking to manage their appointments and grow their client base.
+          </p>
+          <div class="cta-actions">
+            <router-link to="/register" class="cta-btn primary">
+              Start Free Trial
+            </router-link>
+            <router-link to="/login" class="cta-btn secondary">
+              Existing Provider
+            </router-link>
+          </div>
+          <div class="cta-note">
+            <span class="note-icon">✅</span>
+            No setup fees • Free training • 24/7 support
+          </div>
+        </div>
       </div>
     </section>
   </div>
@@ -83,52 +103,52 @@ import { onMounted } from "vue";
 
 const steps = [
   {
-    icon: "https://cdn-icons-png.flaticon.com/512/747/747376.png",
-    title: "Sign Up & Create Profile",
-    desc: "Register with your email or phone. Complete your personal info, upload ID, and set up your basic profile.",
+    icon: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+    title: "Create Your Profile",
+    desc: "Sign up with your details and complete your professional profile with services and pricing.",
   },
   {
     icon: "https://cdn-icons-png.flaticon.com/512/1040/1040230.png",
-    title: "Wait for Admin Approval",
-    desc: "Our team reviews your application",
+    title: "Get Verified",
+    desc: "Our team reviews your application to ensure quality standards for all providers.",
   },
   {
-    icon: "https://cdn-icons-png.flaticon.com/512/3135/3135679.png",
-    title: "Post Your First Service",
-    desc: "Add your service name, description, pricing, location, availability, and photos. Make it irresistible to customers!",
+    icon: "https://cdn-icons-png.flaticon.com/512/1250/1250713.png",
+    title: "List Your Services",
+    desc: "Add your services with descriptions, pricing, availability, and professional photos.",
   },
   {
-    icon: "https://cdn-icons-png.flaticon.com/512/1250/1250615.png",
-    title: "Manage Appointments",
-    desc: "Customers book you directly! Confirm, reschedule, or cancel appointments from your dashboard — all in one place.",
+    icon: "https://cdn-icons-png.flaticon.com/512/3595/3595458.png",
+    title: "Manage Bookings",
+    desc: "Accept appointments, manage your schedule, and communicate with clients through our platform.",
   },
   {
-    icon: "https://cdn-icons-png.flaticon.com/512/545/545682.png",
-    title: "Get Paid & Build Reputation",
-    desc: "Receive payments securely via Telebirr after each job. Earn ratings and reviews to grow your visibility and trust.",
+    icon: "https://cdn-icons-png.flaticon.com/512/2721/2721612.png",
+    title: "Grow Your Business",
+    desc: "Build your reputation with reviews and expand your client base with our marketing tools.",
   },
 ];
 
-const features = [
+const benefits = [
   {
-    icon: "fas fa-user-check fa-2x",
-    title: "Verified Providers",
-    description: "Ensure trust and quality with admin-approved provider profiles.",
+    icon: "📱",
+    title: "Easy Management",
+    description: "Simple dashboard to manage appointments, clients, and payments in one place.",
   },
   {
-    icon: "fas fa-chart-line fa-2x",
-    title: "Analytics & Insights",
-    description: "Track your bookings, performance, and growth trends on your dashboard.",
+    icon: "🔒",
+    title: "Verified Clients",
+    description: "Connect with genuine customers through our trusted platform.",
   },
   {
-    icon: "fas fa-hand-holding-usd fa-2x",
-    title: "Secure Payments",
-    description: "Receive payments reliably via Telebirr, PayPal, and future card integrations.",
+    icon: "📈",
+    title: "Business Growth",
+    description: "Tools and analytics to help you understand and grow your business.",
   },
   {
-    icon: "fas fa-comments fa-2x",
-    title: "Customer Feedback",
-    description: "Build your reputation with ratings and reviews for better visibility.",
+    icon: "💬",
+    title: "Dedicated Support",
+    description: "24/7 customer support in Amharic and English for all your needs.",
   },
 ];
 
@@ -148,31 +168,35 @@ onMounted(() => {
     { threshold: 0.1 }
   );
 
-  document.querySelectorAll(".step-card, .feature-card").forEach((el) => {
+  document.querySelectorAll(".step-card, .benefit-card").forEach((el) => {
     observer.observe(el);
   });
 });
 </script>
 
 <style scoped>
-/* Base */
+/* ===== BASE STYLES ===== */
 .how-it-works {
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif;
   overflow-x: hidden;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  line-height: 1.5;
+  font-size: 14px;
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 16px;
 }
 
-/* Hero */
+/* ===== HERO SECTION ===== */
 .hero-section {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  padding: 100px 0 60px;
   text-align: center;
-  padding: 90px 20px 70px;
   position: relative;
 }
 
@@ -182,269 +206,399 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.25);
-  z-index: 1;
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .hero-content {
   position: relative;
   z-index: 2;
-  max-width: 800px;
+  max-width: 600px;
   margin: 0 auto;
+  padding: 0 20px;
 }
 
 .hero-title {
-  font-size: 2.4rem;
-  font-weight: 800;
-  margin-bottom: 1.2rem;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 16px;
   line-height: 1.2;
 }
 
 .hero-text {
-  font-size: 1.15rem;
-  line-height: 1.7;
-  margin-bottom: 1rem;
-  opacity: 0.95;
+  font-size: 1rem;
+  opacity: 0.9;
+  margin-bottom: 24px;
+  line-height: 1.6;
 }
 
 .hero-cta {
   display: inline-block;
-  background: #ffcc00;
-  color: #1e293b;
-  font-weight: 700;
-  padding: 14px 32px;
-  border-radius: 16px;
+  background: white;
+  color: #667eea;
+  padding: 12px 24px;
+  border-radius: 8px;
   text-decoration: none;
-  font-size: 1.15rem;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-  transition: all 0.25s ease;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
 }
 
 .hero-cta:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Steps Section */
-.steps-section {
-  background: #f8fafc;
-  padding: 70px 0;
+/* ===== SECTION HEADER ===== */
+.section-header {
+  text-align: center;
+  margin-bottom: 48px;
 }
 
 .section-title {
-  font-size: 2rem;
-  font-weight: 800;
-  color: #0ea5e9;
-  margin: 0 auto 1rem;
-  text-align: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #1a1a1a;
 }
 
 .section-subtitle {
-  color: #64748b;
-  font-size: 1.05rem;
-  max-width: 700px;
-  margin: 0 auto 2.5rem;
-  text-align: center;
+  font-size: 0.95rem;
+  color: #6b7280;
+  max-width: 500px;
+  margin: 0 auto;
   line-height: 1.6;
+}
+
+/* ===== STEPS SECTION ===== */
+.steps-section {
+  padding: 60px 0;
+  background: #f8fafc;
 }
 
 .steps-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 28px;
-  margin-top: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
 }
 
 .step-card {
   background: white;
-  border-radius: 22px;
-  padding: 30px 25px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
-  transition: all 0.3s ease;
-  position: relative;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
   opacity: 0;
-  transform: translateY(40px);
+  transform: translateY(20px);
 }
 
 .step-card.animate-in {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 .step-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 .step-number {
-  position: absolute;
-  top: -12px;
-  right: -12px;
-  width: 40px;
-  height: 40px;
-  background: #0ea5e9;
+  background: #667eea;
   color: white;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 1.1rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  z-index: 2;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex-shrink: 0;
 }
 
-.step-card img {
-  width: 60px;
-  margin-bottom: 16px;
-}
-
-.step-card h3 {
-  font-size: 1.3rem;
-  color: #0ea5e9;
-  margin: 16px 0 12px;
-  font-weight: 700;
-}
-
-.step-card p {
-  font-size: 1rem;
-  color: #475569;
-  line-height: 1.6;
-}
-
-/* Features Section */
-.features-section {
-  background: white;
-  padding: 70px 0;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 28px;
-  margin-top: 2rem;
-}
-
-.feature-card {
+.step-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: #f8fafc;
-  border-radius: 22px;
-  padding: 30px 25px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
-  transition: all 0.3s ease;
-  opacity: 0;
-  transform: translateY(40px);
+  border-radius: 12px;
+  flex-shrink: 0;
 }
 
-.feature-card.animate-in {
+.step-icon img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.step-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+}
+
+.step-desc {
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ===== BENEFITS SECTION ===== */
+.benefits-section {
+  padding: 60px 0;
+  background: white;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.benefit-card {
+  background: #f8fafc;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  transition: transform 0.2s;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.benefit-card.animate-in {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-.feature-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+.benefit-card:hover {
+  transform: translateY(-4px);
 }
 
-.feature-card i {
-  color: #0ea5e9;
+.benefit-icon {
   margin-bottom: 16px;
-  font-size: 1.8rem;
 }
 
-.feature-card h3 {
-  font-size: 1.3rem;
-  color: #0ea5e9;
-  margin: 16px 0 12px;
-  font-weight: 700;
+.icon-emoji {
+  font-size: 2rem;
+  display: block;
 }
 
-.feature-card p {
-  font-size: 1rem;
-  color: #475569;
-  line-height: 1.6;
+.benefit-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1a1a1a;
 }
 
-/* CTA Section */
-.cta-section {
-  background: linear-gradient(135deg, #0ea5e9, #0284c7);
-  padding: 80px 0;
-  text-align: center;
+.benefit-desc {
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ===== FINAL CTA ===== */
+.final-cta {
+  background: linear-gradient(135deg, #1a1a1a, #374151);
   color: white;
+  padding: 60px 0;
+  text-align: center;
+}
+
+.cta-content {
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 .cta-title {
-  font-size: 2.1rem;
-  font-weight: 800;
-  margin-bottom: 1rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  line-height: 1.2;
 }
 
 .cta-text {
-  font-size: 1.1rem;
-  max-width: 700px;
-  margin: 0 auto 2rem;
-  opacity: 0.95;
-  line-height: 1.7;
+  font-size: 0.95rem;
+  opacity: 0.9;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.cta-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .cta-btn {
-  display: inline-block;
-  background: #ffcc00;
-  color: #1e293b;
-  font-weight: 700;
-  padding: 14px 32px;
-  border-radius: 16px;
+  padding: 12px 24px;
+  border-radius: 8px;
   text-decoration: none;
-  font-size: 1.15rem;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-  transition: all 0.25s ease;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: inline-block;
 }
 
-.cta-btn:hover {
-  transform: scale(1.04);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+.cta-btn.primary {
+  background: #667eea;
+  color: white;
 }
 
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .hero-title {
-    font-size: 2rem;
-  }
+.cta-btn.primary:hover {
+  background: #5a6fd8;
+  transform: translateY(-2px);
+}
 
-  .hero-text,
-  .cta-text,
-  .section-subtitle {
-    font-size: 1rem;
-  }
+.cta-btn.secondary {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
 
+.cta-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.cta-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.note-icon {
+  font-size: 1rem;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1024px) {
   .steps-grid,
-  .features-grid {
-    grid-template-columns: 1fr !important;
-    padding: 0 16px;
+  .benefits-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
+}
 
-  .step-number {
-    top: -10px;
-    right: -10px;
-    width: 36px;
-    height: 36px;
-    font-size: 1rem;
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 80px 0 40px;
   }
-
-  .hero-cta,
+  
+  .hero-title {
+    font-size: 1.75rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
+  
+  .steps-section,
+  .benefits-section,
+  .final-cta {
+    padding: 40px 0;
+  }
+  
+  .steps-grid,
+  .benefits-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .step-card,
+  .benefit-card {
+    padding: 20px;
+  }
+  
+  .step-header {
+    gap: 12px;
+  }
+  
+  .step-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .step-icon img {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .cta-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
   .cta-btn {
     width: 100%;
-    max-width: 300px;
-    padding: 16px;
+    max-width: 280px;
+    text-align: center;
   }
 }
 
-/* Accessibility */
-.hero-cta:focus,
-.cta-btn:focus {
-  outline: 2px solid #ffcc00;
-  outline-offset: 4px;
-  border-radius: 16px;
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px;
+  }
+  
+  .hero-title {
+    font-size: 1.5rem;
+  }
+  
+  .section-title {
+    font-size: 1.25rem;
+  }
+  
+  .step-card,
+  .benefit-card {
+    padding: 16px;
+  }
+  
+  .step-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  
+  .step-number {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+  }
+  
+  .cta-title {
+    font-size: 1.5rem;
+  }
+  
+  .cta-text {
+    font-size: 0.9rem;
+  }
 }
+
+/* Animation delays for staggered effect */
+.step-card:nth-child(1) { transition-delay: 0.1s; }
+.step-card:nth-child(2) { transition-delay: 0.2s; }
+.step-card:nth-child(3) { transition-delay: 0.3s; }
+.step-card:nth-child(4) { transition-delay: 0.4s; }
+.step-card:nth-child(5) { transition-delay: 0.5s; }
+
+.benefit-card:nth-child(1) { transition-delay: 0.1s; }
+.benefit-card:nth-child(2) { transition-delay: 0.2s; }
+.benefit-card:nth-child(3) { transition-delay: 0.3s; }
+.benefit-card:nth-child(4) { transition-delay: 0.4s; }
 </style>

@@ -7,52 +7,110 @@
       <div class="hero-content">
         <h1 class="hero-title">About Infinity-Booking</h1>
         <p class="hero-text">
-          A flexible, professional platform connecting service providers and customers globally.
+          Connecting service professionals with customers through a reliable, efficient platform designed for growth.
         </p>
-        <p class="hero-text">
-          Empowering providers, ensuring quality, and simplifying appointments & payments.
-        </p>
-        <router-link to="/login" class="hero-cta">Get Started</router-link>
+        <router-link to="/register" class="hero-cta">Join Our Platform</router-link>
       </div>
     </section>
 
-    <!-- Mission Section -->
-    <section class="section mission-section">
-      <div class="section-container">
-        <h2 class="section-title">Our Mission</h2>
-        <p class="section-text">
-          To build a reliable ecosystem where providers grow, customers find trusted professionals, and admins maintain high standards — all on a platform designed to scale infinitely across any industry.
-        </p>
-      </div>
-    </section>
-
-    <!-- Values Section -->
-    <section class="section values-section">
-      <div class="section-container">
-        <h2 class="section-title">Our Values</h2>
-        <div class="values-grid">
-          <div
-            v-for="(value, index) in values"
-            :key="index"
-            class="value-card"
-            :class="`value-${index}`"
-          >
-            <i :class="value.icon"></i>
-            <h3>{{ value.title }}</h3>
-            <p>{{ value.description }}</p>
+    <!-- Mission & Vision -->
+    <section class="mission-section">
+      <div class="container">
+        <div class="mission-grid">
+          <div class="mission-card">
+            <div class="mission-icon">🎯</div>
+            <h3 class="mission-title">Our Mission</h3>
+            <p class="mission-text">
+              To empower service professionals with tools that simplify booking management, 
+              while providing customers with reliable access to quality services.
+            </p>
+          </div>
+          <div class="mission-card">
+            <div class="mission-icon">🚀</div>
+            <h3 class="mission-title">Our Vision</h3>
+            <p class="mission-text">
+              Create Ethiopia's leading platform where service businesses thrive through 
+              technology, trust, and seamless customer connections.
+            </p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
-      <div class="section-container">
-        <h2 class="cta-title">Join Infinity-Booking Today</h2>
-        <p class="cta-text">
-          Become part of a global network that empowers providers and connects customers with excellence.
-        </p>
-        <router-link to="/login" class="cta-btn">🚀 Sign Up / Login</router-link>
+    <!-- Values Section -->
+    <section class="values-section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Our Values</h2>
+          <p class="section-subtitle">
+            The principles that guide everything we do
+          </p>
+        </div>
+        <div class="values-grid">
+          <div
+            v-for="(value, index) in values"
+            :key="index"
+            class="value-card"
+          >
+            <div class="value-icon">{{ value.icon }}</div>
+            <h3 class="value-title">{{ value.title }}</h3>
+            <p class="value-desc">{{ value.description }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Platform Benefits -->
+    <section class="benefits-section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Why Choose Our Platform</h2>
+          <p class="section-subtitle">
+            Built specifically for Ethiopian service professionals
+          </p>
+        </div>
+        <div class="benefits-grid">
+          <div class="benefit-card">
+            <div class="benefit-icon">🌍</div>
+            <h3 class="benefit-title">Local Focus</h3>
+            <p class="benefit-desc">Designed for Ethiopian market needs and payment systems</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">💼</div>
+            <h3 class="benefit-title">Professional Tools</h3>
+            <p class="benefit-desc">Complete business management dashboard and analytics</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">🛡️</div>
+            <h3 class="benefit-title">Trust & Safety</h3>
+            <p class="benefit-desc">Verified providers and secure payment processing</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">📈</div>
+            <h3 class="benefit-title">Growth Focused</h3>
+            <p class="benefit-desc">Tools and features designed to help your business grow</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="final-cta">
+      <div class="container">
+        <div class="cta-content">
+          <h2 class="cta-title">Ready to Grow with Us?</h2>
+          <p class="cta-text">
+            Join hundreds of service professionals already using Infinity-Booking to manage their business
+          </p>
+          <div class="cta-actions">
+            <router-link to="/register" class="cta-btn primary">
+              Start Free Trial
+            </router-link>
+            <router-link to="/contact" class="cta-btn secondary">
+              Learn More
+            </router-link>
+          </div>
+        </div>
       </div>
     </section>
   </div>
@@ -61,31 +119,29 @@
 <script setup>
 import { onMounted } from "vue";
 
-// Enhanced values with icons and content
 const values = [
   {
-    icon: "fas fa-users fa-2x",
+    icon: "🤝",
     title: "Community First",
-    description: "We build a supportive network of providers and customers who grow together."
+    description: "Building a supportive network where service professionals and customers grow together."
   },
   {
-    icon: "fas fa-shield-alt fa-2x",
+    icon: "🔒",
     title: "Trust & Safety",
-    description: "Verified profiles, secure payments, and honest reviews ensure peace of mind."
+    description: "Verified profiles and secure systems ensure reliable service experiences for everyone."
   },
   {
-    icon: "fas fa-chart-line fa-2x",
-    title: "Growth & Insight",
-    description: "Track performance, understand trends, and scale your service business."
+    icon: "💡",
+    title: "Innovation",
+    description: "Continuously improving our platform to meet the evolving needs of service businesses."
   },
   {
-    icon: "fas fa-infinity fa-2x",
-    title: "Flexible & Scalable",
-    description: "Built to adapt endlessly — new services, industries, and innovations welcome."
+    icon: "🌱",
+    title: "Growth Focused",
+    description: "Providing tools and insights that help service professionals scale their businesses."
   }
 ];
 
-// Optional: Add simple scroll reveal
 onMounted(() => {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -95,38 +151,36 @@ onMounted(() => {
     });
   }, { threshold: 0.1 });
 
-  document.querySelectorAll('.value-card, .section').forEach(el => {
+  document.querySelectorAll('.value-card, .benefit-card').forEach(el => {
     observer.observe(el);
   });
 });
 </script>
 
 <style scoped>
-/* Base */
+/* ===== BASE STYLES ===== */
 .about-page {
-  font-family: "Poppins", sans-serif;
+  font-family: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif;
   overflow-x: hidden;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  line-height: 1.5;
+  font-size: 14px;
 }
 
-/* Universal Section */
-.section {
-  padding: 70px 20px;
-  position: relative;
-}
-
-.section-container {
-  max-width: 900px;
+.container {
+  max-width: 1200px;
   margin: 0 auto;
-  text-align: center;
+  padding: 0 16px;
 }
 
-/* Hero */
+/* ===== HERO SECTION ===== */
 .hero-section {
-  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  padding: 100px 0 60px;
+  text-align: center;
   position: relative;
-  padding: 100px 20px 80px;
-  overflow: hidden;
 }
 
 .hero-overlay {
@@ -135,94 +189,128 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .hero-content {
   position: relative;
   z-index: 2;
-  max-width: 900px;
+  max-width: 600px;
   margin: 0 auto;
-  text-align: center;
+  padding: 0 20px;
 }
 
 .hero-title {
-  font-size: 2.4rem;
-  font-weight: 800;
-  margin-bottom: 1.2rem;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 16px;
   line-height: 1.2;
-  color: #ffd54f;
 }
 
 .hero-text {
-  font-size: 1.15rem;
-  line-height: 1.7;
-  margin-bottom: 1rem;
-  opacity: 0.95;
+  font-size: 1rem;
+  opacity: 0.9;
+  margin-bottom: 24px;
+  line-height: 1.6;
 }
 
 .hero-cta {
   display: inline-block;
-  background: #ffd54f;
-  color: #1e3a8a;
-  font-weight: 700;
-  padding: 0.9rem 2rem;
-  border-radius: 14px;
+  background: white;
+  color: #667eea;
+  padding: 12px 24px;
+  border-radius: 8px;
   text-decoration: none;
-  margin-top: 1.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: all 0.25s ease;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
 }
 
 .hero-cta:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Mission & Values */
-.mission-section {
-  background: white;
-  color: #1e3a8a;
-}
-
-.mission-section .section-title {
-  color: #1e40af;
-}
-
-.values-section {
-  background: #f8fafc;
-  color: #1e3a8a;
+/* ===== SECTION HEADER ===== */
+.section-header {
+  text-align: center;
+  margin-bottom: 48px;
 }
 
 .section-title {
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: 1.5rem;
-  line-height: 1.2;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #1a1a1a;
 }
 
-.section-text {
-  font-size: 1.1rem;
-  line-height: 1.7;
-  max-width: 700px;
+.section-subtitle {
+  font-size: 0.95rem;
+  color: #6b7280;
+  max-width: 500px;
   margin: 0 auto;
-  color: #4b5563;
+  line-height: 1.6;
 }
 
-/* Values Grid */
+/* ===== MISSION SECTION ===== */
+.mission-section {
+  padding: 60px 0;
+  background: #f8fafc;
+}
+
+.mission-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.mission-card {
+  background: white;
+  padding: 32px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.mission-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+
+.mission-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #1a1a1a;
+}
+
+.mission-text {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ===== VALUES SECTION ===== */
+.values-section {
+  padding: 60px 0;
+  background: white;
+}
+
 .values-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 24px;
-  margin-top: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
 }
 
 .value-card {
-  background: white;
-  border-radius: 20px;
-  padding: 28px 24px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  background: #f8fafc;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+  transition: transform 0.2s;
   opacity: 0;
   transform: translateY(20px);
 }
@@ -230,114 +318,240 @@ onMounted(() => {
 .value-card.animate-in {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 .value-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
 }
 
-.value-card i {
-  color: #3b82f6;
+.value-icon {
+  font-size: 2.5rem;
   margin-bottom: 16px;
 }
 
-.value-card h3 {
-  font-size: 1.25rem;
-  margin: 0.8rem 0;
-  color: #1e40af;
-  font-weight: 700;
+.value-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1a1a1a;
 }
 
-.value-card p {
-  font-size: 1rem;
-  color: #4b5563;
-  line-height: 1.6;
+.value-desc {
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.5;
   margin: 0;
 }
 
-/* CTA Section */
-.cta-section {
-  background: linear-gradient(135deg, #1e40af, #3b82f6);
-  color: white;
+/* ===== BENEFITS SECTION ===== */
+.benefits-section {
+  padding: 60px 0;
+  background: #f8fafc;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.benefit-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
   text-align: center;
-  padding: 80px 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.benefit-card.animate-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-4px);
+}
+
+.benefit-icon {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+}
+
+.benefit-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+}
+
+.benefit-desc {
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ===== FINAL CTA ===== */
+.final-cta {
+  background: linear-gradient(135deg, #1a1a1a, #374151);
+  color: white;
+  padding: 60px 0;
+  text-align: center;
+}
+
+.cta-content {
+  max-width: 500px;
+  margin: 0 auto;
 }
 
 .cta-title {
-  font-size: 2.1rem;
-  font-weight: 800;
-  margin-bottom: 1rem;
-  color: #ffd54f;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  line-height: 1.2;
 }
 
 .cta-text {
-  font-size: 1.15rem;
-  max-width: 700px;
-  margin: 0 auto 1.8rem;
-  opacity: 0.95;
-  line-height: 1.7;
+  font-size: 0.95rem;
+  opacity: 0.9;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.cta-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .cta-btn {
-  display: inline-block;
-  background: #ffd54f;
-  color: #1e3a8a;
-  font-weight: 700;
-  padding: 1rem 2.2rem;
-  border-radius: 16px;
+  padding: 12px 24px;
+  border-radius: 8px;
   text-decoration: none;
-  font-size: 1.1rem;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-  transition: all 0.25s ease;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: inline-block;
 }
 
-.cta-btn:hover {
-  transform: scale(1.04);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+.cta-btn.primary {
+  background: #667eea;
+  color: white;
 }
 
-/* Mobile-First Responsive */
-@media (max-width: 640px) {
+.cta-btn.primary:hover {
+  background: #5a6fd8;
+  transform: translateY(-2px);
+}
+
+.cta-btn.secondary {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.cta-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1024px) {
+  .values-grid,
+  .benefits-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 80px 0 40px;
+  }
+  
   .hero-title {
-    font-size: 2rem;
-  }
-
-  .hero-text {
-    font-size: 1.05rem;
-  }
-
-  .section-title {
     font-size: 1.75rem;
   }
-
-  .section-text,
-  .cta-text {
-    font-size: 1.05rem;
+  
+  .section-title {
+    font-size: 1.5rem;
   }
-
-  .values-grid {
+  
+  .mission-section,
+  .values-section,
+  .benefits-section,
+  .final-cta {
+    padding: 40px 0;
+  }
+  
+  .mission-grid,
+  .values-grid,
+  .benefits-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 16px;
   }
-
-  .value-card {
-    padding: 24px 20px;
+  
+  .mission-card {
+    padding: 24px;
   }
-
-  .hero-cta,
+  
+  .cta-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
   .cta-btn {
     width: 100%;
-    max-width: 320px;
+    max-width: 280px;
+    text-align: center;
   }
 }
 
-/* Accessibility */
-.hero-cta:focus,
-.cta-btn:focus {
-  outline: 2px solid #ffd54f;
-  outline-offset: 4px;
-  border-radius: 14px;
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px;
+  }
+  
+  .hero-title {
+    font-size: 1.5rem;
+  }
+  
+  .section-title {
+    font-size: 1.25rem;
+  }
+  
+  .mission-card,
+  .value-card,
+  .benefit-card {
+    padding: 20px;
+  }
+  
+  .mission-icon {
+    font-size: 2.5rem;
+  }
+  
+  .cta-title {
+    font-size: 1.5rem;
+  }
+  
+  .cta-text {
+    font-size: 0.9rem;
+  }
 }
+
+/* Animation delays for staggered effect */
+.value-card:nth-child(1) { transition-delay: 0.1s; }
+.value-card:nth-child(2) { transition-delay: 0.2s; }
+.value-card:nth-child(3) { transition-delay: 0.3s; }
+.value-card:nth-child(4) { transition-delay: 0.4s; }
+
+.benefit-card:nth-child(1) { transition-delay: 0.1s; }
+.benefit-card:nth-child(2) { transition-delay: 0.2s; }
+.benefit-card:nth-child(3) { transition-delay: 0.3s; }
+.benefit-card:nth-child(4) { transition-delay: 0.4s; }
 </style>

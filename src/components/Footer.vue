@@ -1,97 +1,127 @@
 <!-- src/components/Footer.vue -->
 <template>
   <footer class="footer">
-    <div class="footer-content">
-      <!-- Brand Info -->
-      <div class="footer-section brand">
-        <h2 class="logo">Infinity-Booking</h2>
-        <p class="desc">
-          Connecting customers and trusted service providers worldwide — discover professionals for every need, anywhere.
-        </p>
-        <div class="social-icons">
-          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-          <a
-            href="https://www.linkedin.com/in/tedros-welu-126b77378"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="LinkedIn"
-          >
-            <i class="fab fa-linkedin-in"></i>
-          </a>
+    <div class="container">
+      <div class="footer-content">
+        <!-- Brand Section -->
+        <div class="footer-section brand-section">
+          <div class="brand-logo">
+            <span class="logo-icon">∞</span>
+            <span class="logo-text">Infinity-Booking</span>
+          </div>
+          <p class="brand-description">
+            Empowering service professionals with smart booking solutions and helping customers find trusted services.
+          </p>
+          <div class="social-links">
+            <a href="#" class="social-link" aria-label="Facebook">
+              <span class="social-icon">📘</span>
+            </a>
+            <a href="#" class="social-link" aria-label="Instagram">
+              <span class="social-icon">📷</span>
+            </a>
+            <a href="#" class="social-link" aria-label="Twitter">
+              <span class="social-icon">🐦</span>
+            </a>
+            <a href="#" class="social-link" aria-label="LinkedIn">
+              <span class="social-icon">💼</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Product Links -->
+        <div class="footer-section">
+          <h3 class="section-title">Product</h3>
+          <div class="footer-links">
+            <router-link to="/features" class="footer-link">Features</router-link>
+            <router-link to="/pricing" class="footer-link">Pricing</router-link>
+            <router-link to="/industries" class="footer-link">Industries</router-link>
+            <router-link to="/updates" class="footer-link">Updates</router-link>
+          </div>
+        </div>
+
+        <!-- Company Links -->
+        <div class="footer-section">
+          <h3 class="section-title">Company</h3>
+          <div class="footer-links">
+            <router-link to="/about" class="footer-link">About</router-link>
+            <router-link to="/blog" class="footer-link">Blog</router-link>
+            <router-link to="/careers" class="footer-link">Careers</router-link>
+            <router-link to="/contact" class="footer-link">Contact</router-link>
+          </div>
+        </div>
+
+        <!-- Support Links -->
+        <div class="footer-section">
+          <h3 class="section-title">Support</h3>
+          <div class="footer-links">
+            <router-link to="/help" class="footer-link">Help Center</router-link>
+            <router-link to="/docs" class="footer-link">Documentation</router-link>
+            <router-link to="/api" class="footer-link">API</router-link>
+            <router-link to="/status" class="footer-link">Status</router-link>
+          </div>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="footer-section contact-section">
+          <h3 class="section-title">Contact</h3>
+          <div class="contact-info">
+            <div class="contact-item">
+              <span class="contact-icon">📞</span>
+              <span class="contact-text">+251 900 000 000</span>
+            </div>
+            <div class="contact-item">
+              <span class="contact-icon">✉️</span>
+              <span class="contact-text">hello@infinitybooking.com</span>
+            </div>
+            <div class="contact-item">
+              <span class="contact-icon">📍</span>
+              <span class="contact-text">Addis Ababa, Ethiopia</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Quick Links -->
-      <div class="footer-section links">
-        <h3>Quick Links</h3>
-        <ul>
-          <li><router-link to="/">Home</router-link></li>
-          <li><router-link to="/providers">Providers</router-link></li>
-          <li><router-link to="/about">About</router-link></li>
-          <li><router-link to="/contact">Contact</router-link></li>
-        </ul>
+      <!-- Footer Bottom -->
+      <div class="footer-bottom">
+        <div class="footer-copyright">
+          <p>&copy; {{ currentYear }} Infinity-Booking. All rights reserved.</p>
+        </div>
+        <div class="footer-legal">
+          <router-link to="/privacy" class="legal-link">Privacy Policy</router-link>
+          <router-link to="/terms" class="legal-link">Terms of Service</router-link>
+          <router-link to="/cookies" class="legal-link">Cookie Policy</router-link>
+        </div>
+        <button 
+          class="scroll-top" 
+          @click="scrollToTop"
+          :class="{ 'visible': showScrollTop }"
+          aria-label="Scroll to top"
+        >
+          <span class="scroll-icon">↑</span>
+        </button>
       </div>
-
-      <!-- Support -->
-      <div class="footer-section support">
-        <h3>Support</h3>
-        <ul>
-          <li><router-link to="/help-center">Help Center</router-link></li>
-          <li><router-link to="/privacy-policy">Privacy Policy</router-link></li>
-          <li><router-link to="/terms-of-service">Terms of Service</router-link></li>
-          <li><router-link to="/feedback">Feedback</router-link></li>
-        </ul>
-      </div>
-
-      <!-- Contact Info -->
-      <div class="footer-section contact">
-        <h3>Contact Us</h3>
-        <p><i class="fas fa-envelope"></i> info@csplatform.com</p>
-        <p><i class="fas fa-phone"></i> +251 96 488 3260</p>
-        <p><i class="fas fa-globe"></i> Available Worldwide</p>
-      </div>
-    </div>
-
-    <hr class="divider" />
-
-    <!-- Bottom Copyright -->
-    <div class="footer-bottom">
-      <p>© {{ currentYear }} <strong>Infinity-Booking</strong>. All rights reserved.</p>
-      <button
-        class="scroll-top"
-        @click="scrollToTop"
-        aria-label="Scroll to top"
-        title="Back to top"
-      >
-        <i class="fas fa-arrow-up"></i>
-      </button>
     </div>
   </footer>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const currentYear = new Date().getFullYear();
+const showScrollTop = ref(false);
 
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+};
 
-// Optional: Auto-hide scroll button on scroll
-let scrollBtn = null;
-function handleScroll() {
-  if (window.scrollY > 400) {
-    scrollBtn?.classList.add('show');
-  } else {
-    scrollBtn?.classList.remove('show');
-  }
-}
+const handleScroll = () => {
+  showScrollTop.value = window.scrollY > 400;
+};
 
 onMounted(() => {
-  scrollBtn = document.querySelector('.scroll-top');
   window.addEventListener('scroll', handleScroll);
 });
 
@@ -101,204 +131,301 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ===== BASE STYLES ===== */
 .footer {
-  background: linear-gradient(135deg, #0f172a, #1e293b);
-  color: #e2e8f0;
-  padding: 2.5rem 1.5rem 1.2rem;
-  font-family: "Poppins", sans-serif;
-  position: relative;
-  overflow: hidden;
+  background: #1a1a1a;
+  color: #ffffff;
+  padding: 60px 0 20px;
+  margin-top: auto;
 }
 
-.footer::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 4px;
-  background: linear-gradient(90deg, #ffcc00, #3b82f6);
-}
-
-.footer-content {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
+.container {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 16px;
 }
 
-.logo {
-  font-size: 1.7rem;
-  background: linear-gradient(90deg, #ffcc00, #ffd54f);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 800;
-  margin-bottom: 12px;
+/* ===== FOOTER CONTENT ===== */
+.footer-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr;
+  gap: 40px;
+  margin-bottom: 40px;
 }
 
-.desc {
-  font-size: 0.95rem;
-  color: #cbd5e1;
-  line-height: 1.6;
+.footer-section {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== BRAND SECTION ===== */
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 16px;
 }
 
-/* Social Icons */
-.social-icons {
+.logo-icon {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
   display: flex;
-  gap: 12px;
-  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
-.social-icons a {
+.logo-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.brand-description {
+  font-size: 0.85rem;
+  color: #9ca3af;
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.social-links {
+  display: flex;
+  gap: 12px;
+}
+
+.social-link {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
-  font-size: 1rem;
-  transition: all 0.25s ease;
-}
-
-.social-icons a:hover {
-  background: #ffcc00;
-  color: #1e293b;
-  transform: translateY(-3px);
-}
-
-/* Section Headers */
-.footer-section h3 {
-  color: #ffcc00;
-  font-size: 1.15rem;
-  margin-bottom: 16px;
-  font-weight: 700;
-}
-
-/* Links */
-.footer-section ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.footer-section li {
-  margin-bottom: 10px;
-}
-
-.footer-section a,
-.footer-section router-link {
-  color: #cbd5e1;
-  text-decoration: none;
-  font-size: 0.95rem;
+  border-radius: 8px;
   transition: all 0.2s ease;
-  display: inline-block;
+  text-decoration: none;
+}
+
+.social-link:hover {
+  background: #667eea;
+  transform: translateY(-2px);
+}
+
+.social-icon {
+  font-size: 1rem;
+}
+
+/* ===== SECTION TITLES ===== */
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 16px;
+}
+
+/* ===== FOOTER LINKS ===== */
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.footer-link {
+  color: #9ca3af;
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.2s ease;
   padding: 4px 0;
 }
 
-.footer-section a:hover,
-.footer-section router-link:hover {
-  color: #ffcc00;
-  transform: translateX(4px);
+.footer-link:hover {
+  color: #667eea;
 }
 
-/* Contact Info */
-.contact p {
-  color: #cbd5e1;
-  font-size: 0.95rem;
-  margin: 8px 0;
+/* ===== CONTACT SECTION ===== */
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contact-item {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.contact i {
-  color: #ffcc00;
-  width: 18px;
+.contact-icon {
+  font-size: 1rem;
+  width: 16px;
   text-align: center;
 }
 
-/* Divider */
-.divider {
-  border: 0;
-  border-top: 1px solid #334155;
-  margin: 2rem auto 1.2rem;
-  max-width: 1200px;
+.contact-text {
+  font-size: 0.85rem;
+  color: #9ca3af;
 }
 
-/* Footer Bottom */
+/* ===== FOOTER BOTTOM ===== */
 .footer-bottom {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  font-size: 0.9rem;
-  color: #94a3b8;
+  padding-top: 20px;
+  border-top: 1px solid #374151;
   position: relative;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
 }
 
-.footer-bottom strong {
-  color: #ffcc00;
+.footer-copyright p {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin: 0;
 }
 
-/* Scroll Top Button */
+.footer-legal {
+  display: flex;
+  gap: 24px;
+}
+
+.legal-link {
+  color: #9ca3af;
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: color 0.2s ease;
+}
+
+.legal-link:hover {
+  color: #667eea;
+}
+
+/* ===== SCROLL TO TOP BUTTON ===== */
 .scroll-top {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 24px;
+  right: 24px;
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, #ffcc00, #ffd54f);
+  background: #667eea;
+  color: white;
   border: none;
-  border-radius: 50%;
-  color: #1e293b;
-  font-size: 1.1rem;
+  border-radius: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(20px);
+  transform: translateY(10px);
   transition: all 0.3s ease;
   z-index: 100;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-.scroll-top.show {
+.scroll-top.visible {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
 }
 
 .scroll-top:hover {
-  transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  background: #5a6fd8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
 }
 
-/* Mobile Responsive */
-@media (max-width: 768px) {
+.scroll-icon {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1024px) {
   .footer-content {
-    gap: 1.8rem;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 32px;
+  }
+  
+  .brand-section {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 40px 0 20px;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  
+  .brand-section {
+    grid-column: 1 / -1;
     text-align: center;
   }
-
-  .social-icons {
+  
+  .brand-logo {
     justify-content: center;
   }
-
+  
+  .social-links {
+    justify-content: center;
+  }
+  
   .footer-bottom {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  
+  .footer-legal {
+    gap: 16px;
+  }
+  
+  .scroll-top {
+    bottom: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px;
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .footer-section {
+    text-align: center;
+  }
+  
+  .contact-item {
+    justify-content: center;
+  }
+  
+  .footer-legal {
     flex-direction: column;
     gap: 8px;
   }
-
+  
   .scroll-top {
-    right: 20px;
-    bottom: 20px;
+    bottom: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+  }
+  
+  .scroll-icon {
+    font-size: 1rem;
   }
 }
 </style>
