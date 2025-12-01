@@ -97,8 +97,10 @@
                 />
                 <span class="day-label">{{ day.display }}</span>
               </label>
-              <span v-if="!isWorkingAtDay(day.date)" class="off-label">Day Off</span>
-              <span v-if="day.isToday" class="today-label">Today</span>
+              <div class="day-labels">
+                <span v-if="!isWorkingAtDay(day.date)" class="off-label">Day Off</span>
+                <span v-if="day.isToday" class="today-label">Today</span>
+              </div>
             </div>
 
             <!-- ONLY SHOW EDITABLE SLOTS IF WORKING DAY -->
@@ -112,62 +114,64 @@
                   'booked-slot': timeSlot.isBooked
                 }"
               >
-                <!-- BOOKED SLOT -->
+                <!-- BOOKED SLOT - COMPACT -->
                 <div v-if="timeSlot.isBooked" class="booked-slot-content">
                   <div class="booked-slot-info">
                     <div class="booked-time">
                       <i class="fa-solid fa-clock booked-icon"></i>
-                      {{ timeSlot.startTime }} - {{ timeSlot.endTime }}
+                      <span class="time-text">{{ timeSlot.startTime }} - {{ timeSlot.endTime }}</span>
                     </div>
-                    <div class="booked-label">
+                    <div class="booked-details">
                       <span class="booked-badge">BOOKED</span>
-                    </div>
-                    <div class="customer-info" v-if="getBookingForSlot(day.date, timeSlot.startTime, timeSlot.endTime)">
-                      <i class="fa-solid fa-user"></i>
-                      {{ getBookingForSlot(day.date, timeSlot.startTime, timeSlot.endTime).customerName || 'Customer' }}
+                      <div v-if="getBookingForSlot(day.date, timeSlot.startTime, timeSlot.endTime)" 
+                           class="customer-info">
+                        <i class="fa-solid fa-user"></i>
+                        <span class="customer-name">
+                          {{ getBookingForSlot(day.date, timeSlot.startTime, timeSlot.endTime).customerName || 'Customer' }}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <!-- AVAILABLE SLOT -->
+                <!-- AVAILABLE SLOT - OPTIMIZED LAYOUT -->
                 <div v-else class="available-slot-content">
-                  <div class="time-inputs">
-                    <input
-                      v-model="timeSlot.startTime"
-                      type="time"
-                      class="time-input"
-                      @change="validateTimeSlot(timeSlot)"
-                      :disabled="timeSlot.isBooked"
-                    />
-                    <span class="time-separator">to</span>
-                    <input
-                      v-model="timeSlot.endTime"
-                      type="time"
-                      class="time-input"
-                      @change="validateTimeSlot(timeSlot)"
-                      :disabled="timeSlot.isBooked"
-                    />
+                  <div class="time-inputs-group">
+                    <div class="time-inputs">
+                      <input
+                        v-model="timeSlot.startTime"
+                        type="time"
+                        class="time-input"
+                        @change="validateTimeSlot(timeSlot)"
+                      />
+                      <span class="time-separator">to</span>
+                      <input
+                        v-model="timeSlot.endTime"
+                        type="time"
+                        class="time-input"
+                        @change="validateTimeSlot(timeSlot)"
+                      />
+                    </div>
+                    <div v-if="timeSlot.hasError" class="slot-error-mobile">
+                      {{ timeSlot.errorMessage }}
+                    </div>
                   </div>
-                  <div class="slot-actions">
-                    <label class="availability-toggle">
+                  <div class="slot-controls">
+                    <label class="availability-toggle" :title="timeSlot.isAvailable ? 'Available' : 'Unavailable'">
                       <input
                         type="checkbox"
                         v-model="timeSlot.isAvailable"
-                        :disabled="timeSlot.isBooked"
                       />
                       <span class="toggle-slider"></span>
                     </label>
                     <button
                       class="btn-remove-slot"
                       @click="removeTimeSlot(day.date, slotIndex)"
-                      :disabled="dailySchedules[day.date].length === 1 || timeSlot.isBooked"
+                      :disabled="dailySchedules[day.date].length === 1"
                       title="Remove time slot"
                     >
                       <i class="fa-solid fa-trash"></i>
                     </button>
-                  </div>
-                  <div v-if="timeSlot.hasError" class="slot-error">
-                    {{ timeSlot.errorMessage }}
                   </div>
                 </div>
               </div>
@@ -179,6 +183,12 @@
               >
                 <i class="fa-solid fa-plus"></i> Add Time Slot
               </button>
+            </div>
+
+            <!-- DAY OFF MESSAGE -->
+            <div v-else class="day-off-message">
+              <i class="fa-solid fa-moon"></i>
+              <span>No time slots - Day off</span>
             </div>
           </div>
         </div>
@@ -197,7 +207,7 @@
           >
             <i v-if="saving" class="fa-solid fa-spinner fa-spin"></i>
             <i v-else class="fa-solid fa-save"></i>
-            {{ saving ? 'Saving...' : 'Update Time Slots' }}
+            <span class="btn-text">{{ saving ? 'Saving...' : 'Update Time Slots' }}</span>
           </button>
           
           <button
@@ -206,7 +216,7 @@
             :disabled="saving"
           >
             <i class="fa-solid fa-undo"></i>
-            Reset Defaults
+            <span class="btn-text">Reset Defaults</span>
           </button>
 
           <!-- Refresh Bookings Button -->
@@ -217,7 +227,7 @@
           >
             <i v-if="loadingBookings" class="fa-solid fa-spinner fa-spin"></i>
             <i v-else class="fa-solid fa-rotate"></i>
-            {{ loadingBookings ? 'Refreshing...' : 'Refresh Bookings' }}
+            <span class="btn-text">{{ loadingBookings ? 'Refreshing...' : 'Refresh Bookings' }}</span>
           </button>
         </div>
       </div>
@@ -696,6 +706,7 @@ export default {
   }
 };
 </script>
+
 <style scoped>
 /* ===== BASE STYLES ===== */
 .time-slots-container {
@@ -703,6 +714,7 @@ export default {
   margin: 0 auto;
   padding: 20px;
   font-family: "Poppins", sans-serif;
+  box-sizing: border-box;
 }
 
 /* ===== LOADING & MESSAGE STATES ===== */
@@ -847,7 +859,7 @@ export default {
 .schedule-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 20px;
   flex-wrap: wrap;
   gap: 12px;
@@ -889,6 +901,9 @@ export default {
   padding: 20px;
   transition: all 0.3s ease;
   background: white;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
 }
 
 .day-card.working-day {
@@ -910,7 +925,7 @@ export default {
 .day-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 16px;
   flex-wrap: wrap;
   gap: 8px;
@@ -931,11 +946,21 @@ export default {
   height: 20px;
   cursor: pointer;
   border-radius: 4px;
+  flex-shrink: 0;
 }
 
 .day-label {
   font-size: 1rem;
   font-weight: 600;
+  word-break: break-word;
+}
+
+.day-labels {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .off-label {
@@ -945,6 +970,7 @@ export default {
   background: #f1f5f9;
   padding: 4px 10px;
   border-radius: 12px;
+  white-space: nowrap;
 }
 
 .today-label {
@@ -957,26 +983,38 @@ export default {
   white-space: nowrap;
 }
 
+.day-off-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  padding: 20px;
+  text-align: center;
+  flex: 1;
+}
+
+.day-off-message i {
+  font-size: 1.2rem;
+}
+
 /* ===== TIME SLOTS LIST ===== */
 .time-slots-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  flex: 1;
 }
 
-/* ===== TIME SLOT ITEM - HORIZONTAL LAYOUT ===== */
+/* ===== TIME SLOT ITEM - COMPACT LAYOUT ===== */
 .time-slot-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: 6px;
   background: white;
   border: 1px solid #e2e8f0;
   transition: all 0.2s ease;
-  flex-wrap: nowrap;
-  min-height: 60px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .time-slot-item.has-error {
@@ -988,63 +1026,75 @@ export default {
   background: #fef2f2;
   border-color: #fecaca;
   opacity: 0.9;
-  min-height: auto;
-  padding: 6px 10px;
 }
 
-/* ===== ULTRA COMPACT BOOKED SLOTS ===== */
+/* ===== COMPACT BOOKED SLOTS ===== */
 .booked-slot-content {
-  width: 100%;
-  padding: 0;
-}
-
-.booked-slot-info {
+  padding: 6px 8px;
   display: flex;
-  flex-direction: row;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .booked-time {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-weight: 600;
-  color: #dc2626;
-  font-size: 0.85rem;
+  gap: 4px;
+  font-weight: 700;
+  color: #1e40af;
+  font-size: 0.9rem;
   flex-shrink: 0;
 }
 
 .booked-icon {
   color: #dc2626;
   font-size: 0.8rem;
+  flex-shrink: 0;
 }
 
-.booked-label {
+.time-text {
+  white-space: nowrap;
+  font-weight: 700;
+  color: #1e40af;
+  font-size: 0.9rem;
+  padding: 4px 8px;
+  background: #eff6ff;
+  border-radius: 4px;
+  border: 1px solid #bfdbfe;
+  flex-shrink: 0;
+  min-width: 120px;
+  text-align: center;
+}
+
+.booked-details {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .booked-badge {
   background: #dc2626;
   color: white;
   padding: 2px 6px;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 0.7rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .customer-info {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 3px;
   font-size: 0.75rem;
   color: #7f1d1d;
+  white-space: nowrap;
+  font-weight: 600;
   flex-shrink: 0;
 }
 
@@ -1052,71 +1102,115 @@ export default {
   font-size: 0.7rem;
 }
 
-/* ===== AVAILABLE SLOTS - FIXED LAYOUT ===== */
+.customer-name {
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ===== AVAILABLE SLOTS - COMPACT SINGLE LINE LAYOUT ===== */
 .available-slot-content {
-  width: 100%;
+  padding: 6px 8px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
   flex-wrap: nowrap;
 }
 
-.time-inputs {
+/* ===== TIME INPUTS GROUP - COMPACT LAYOUT ===== */
+.time-inputs-group {
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex-wrap: nowrap;
-  min-width: 0;
   flex: 1;
+  min-width: 0;
+  flex-wrap: nowrap;
 }
 
+/* === TIME INPUTS - MAKE ZEROS VISIBLE === */
 .time-input {
-  padding: 8px 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 0.85rem;
+  padding: 6px 8px;
+  border: 2px solid #3b82f6;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 800;
   background: white;
   text-align: center;
-  min-width: 85px;
-  max-width: 95px;
+  min-width: 70px;
+  max-width: 80px;
   flex-shrink: 0;
   transition: all 0.2s ease;
+  box-sizing: border-box;
+  color: #1e40af;
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2);
+  letter-spacing: 0.5px;
+  font-family: 'Courier New', monospace;
 }
 
 .time-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  background-color: #f0f9ff;
 }
 
-.time-input:disabled {
-  background: #f8fafc;
-  cursor: not-allowed;
-  opacity: 0.6;
+.time-input::placeholder {
+  color: #93c5fd;
+  font-weight: 600;
+  font-size: 0.85rem;
 }
 
+.time-input.filled {
+  background-color: #f0f9ff;
+  border-color: #1d4ed8;
+  color: #1e40af;
+  font-weight: 900;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+/* === TIME SEPARATOR - VISIBLE === */
 .time-separator {
-  color: #64748b;
-  font-size: 0.8rem;
-  font-weight: 500;
+  color: #1e40af;
+  font-size: 0.9rem;
+  font-weight: 800;
   flex-shrink: 0;
   white-space: nowrap;
   margin: 0 2px;
+  min-width: 12px;
+  text-align: center;
 }
 
-.slot-actions {
+.slot-error-mobile {
+  color: #dc2626;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: #fee2e2;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-top: 2px;
+  border: 1px solid #fecaca;
+  flex-shrink: 0;
+  max-width: 150px;
+}
+
+/* === SLOT CONTROLS - NO SPACE === */
+.slot-controls {
   display: flex;
   align-items: center;
-  gap: 8px;
   flex-shrink: 0;
+  margin-left: auto;
+  padding-left: 8px;
 }
 
+/* Toggle Switch - Compact */
 .availability-toggle {
   position: relative;
   display: inline-block;
-  width: 36px;
-  height: 20px;
+  width: 40px;
+  height: 22px;
   flex-shrink: 0;
 }
 
@@ -1133,51 +1227,52 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #cbd5e1;
+  background-color: #94a3b8;
   transition: .4s;
   border-radius: 20px;
+  border: 1px solid transparent;
 }
 
 .toggle-slider:before {
   position: absolute;
   content: "";
-  height: 16px;
-  width: 16px;
+  height: 18px;
+  width: 18px;
   left: 2px;
   bottom: 2px;
   background-color: white;
   transition: .4s;
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
 input:checked + .toggle-slider {
   background-color: #22c55e;
+  border-color: #16a34a;
 }
 
 input:checked + .toggle-slider:before {
-  transform: translateX(16px);
+  transform: translateX(18px);
 }
 
-input:disabled + .toggle-slider {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
+/* Delete Button - NO SPACE */
 .btn-remove-slot {
   background: #fee2e2;
   border: none;
   color: #dc2626;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
+  font-weight: bold;
   flex-shrink: 0;
+  padding: 0;
+  margin-left: 4px;
 }
 
 .btn-remove-slot:hover:not(:disabled) {
@@ -1191,32 +1286,23 @@ input:disabled + .toggle-slider {
   transform: none;
 }
 
-.slot-error {
-  color: #dc2626;
-  font-size: 0.8rem;
-  margin-top: 4px;
-  text-align: center;
-  font-weight: 500;
-  width: 100%;
-  flex-basis: 100%;
-}
-
 /* ===== ADD SLOT BUTTON ===== */
 .btn-add-slot {
   background: #f8fafc;
   border: 2px dashed #cbd5e1;
   color: #475569;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 0.95rem;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 4px;
   width: 100%;
   transition: all 0.2s ease;
   font-weight: 500;
+  margin-top: auto;
 }
 
 .btn-add-slot:hover:not(:disabled) {
@@ -1242,7 +1328,7 @@ input:disabled + .toggle-slider {
 }
 
 .btn {
-  padding: 12px 20px;
+  padding: 10px 16px;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
@@ -1252,8 +1338,10 @@ input:disabled + .toggle-slider {
   gap: 8px;
   border: none;
   transition: all 0.2s ease;
-  font-size: 0.95rem;
-  min-height: 48px;
+  font-size: 0.9rem;
+  min-height: 42px;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .btn-primary {
@@ -1310,6 +1398,10 @@ input:disabled + .toggle-slider {
   box-shadow: none !important;
 }
 
+.btn-text {
+  white-space: nowrap;
+}
+
 .primary-actions {
   display: flex;
   gap: 12px;
@@ -1336,7 +1428,62 @@ input:disabled + .toggle-slider {
   color: #64748b;
 }
 
+/* ===== ENHANCED VISIBILITY ===== */
+.time-slot-item:nth-child(odd) {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.time-slot-item:nth-child(even) {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+}
+
+.time-slot-item:hover {
+  border-color: #3b82f6;
+}
+
 /* ===== RESPONSIVE DESIGN ===== */
+
+/* Desktop Large */
+@media (min-width: 1200px) {
+  .time-input {
+    min-width: 80px;
+    max-width: 90px;
+    padding: 8px 10px;
+    font-size: 1rem;
+  }
+  
+  .time-separator {
+    font-size: 1rem;
+  }
+  
+  .time-text {
+    font-size: 1rem;
+    padding: 6px 10px;
+    min-width: 140px;
+  }
+  
+  .availability-toggle {
+    width: 44px;
+    height: 24px;
+  }
+  
+  .toggle-slider:before {
+    height: 20px;
+    width: 20px;
+  }
+  
+  input:checked + .toggle-slider:before {
+    transform: translateX(20px);
+  }
+  
+  .btn-remove-slot {
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+  }
+}
+
+/* Tablet */
 @media (max-width: 1024px) {
   .time-slots-container {
     padding: 16px;
@@ -1346,8 +1493,50 @@ input:disabled + .toggle-slider {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 16px;
   }
+  
+  .slot-label-input {
+    min-width: 200px;
+  }
+  
+  .time-input {
+    min-width: 65px;
+    max-width: 75px;
+    padding: 6px 8px;
+    font-size: 0.88rem;
+  }
+  
+  .time-separator {
+    font-size: 0.88rem;
+  }
+  
+  .time-text {
+    font-size: 0.88rem;
+    padding: 4px 8px;
+    min-width: 110px;
+  }
+  
+  .availability-toggle {
+    width: 36px;
+    height: 20px;
+  }
+  
+  .toggle-slider:before {
+    height: 16px;
+    width: 16px;
+  }
+  
+  input:checked + .toggle-slider:before {
+    transform: translateX(16px);
+  }
+  
+  .btn-remove-slot {
+    width: 24px;
+    height: 24px;
+    font-size: 0.85rem;
+  }
 }
 
+/* Mobile (up to 768px) */
 @media (max-width: 768px) {
   .time-slots-container {
     padding: 12px;
@@ -1373,17 +1562,22 @@ input:disabled + .toggle-slider {
   }
   
   .weekly-schedule-section {
-    padding: 20px;
+    padding: 16px;
   }
   
   .schedule-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 8px;
   }
   
   .schedule-header h4 {
     font-size: 1.2rem;
+  }
+  
+  .date-range {
+    font-size: 0.85rem;
+    padding: 6px 12px;
   }
   
   .days-grid {
@@ -1393,62 +1587,42 @@ input:disabled + .toggle-slider {
   
   .day-card {
     padding: 16px;
+    min-height: auto;
   }
   
   .day-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  
-  .day-toggle {
-    width: 100%;
-  }
-  
-  /* MOBILE FIX: Keep available slots in one line */
-  .available-slot-content {
-    display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    flex-wrap: nowrap;
   }
   
-  .time-inputs {
-    display: flex;
+  .day-labels {
+    flex-direction: row;
     align-items: center;
-    gap: 4px;
-    flex-wrap: nowrap;
-    flex: 1;
-    min-width: 0;
+  }
+  
+  /* MOBILE: Compact layout */
+  .available-slot-content {
+    padding: 6px 8px;
   }
   
   .time-input {
-    padding: 6px 8px;
-    font-size: 0.8rem;
-    min-width: 70px;
-    max-width: 75px;
-    flex-shrink: 0;
+    min-width: 60px;
+    max-width: 70px;
+    padding: 6px 7px;
+    font-size: 0.85rem;
   }
   
   .time-separator {
-    font-size: 0.75rem;
-    margin: 0 2px;
-    flex-shrink: 0;
+    font-size: 0.85rem;
   }
   
-  .slot-actions {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
+  .slot-controls {
+    padding-left: 6px;
   }
   
   .availability-toggle {
-    width: 32px;
+    width: 34px;
     height: 18px;
-    flex-shrink: 0;
   }
   
   .toggle-slider:before {
@@ -1457,58 +1631,41 @@ input:disabled + .toggle-slider {
   }
   
   input:checked + .toggle-slider:before {
-    transform: translateX(14px);
+    transform: translateX(16px);
   }
   
   .btn-remove-slot {
-    width: 28px;
-    height: 28px;
-    font-size: 0.7rem;
-    flex-shrink: 0;
-  }
-  
-  .time-slot-item {
-    padding: 8px 10px;
-    gap: 8px;
-    min-height: auto;
-    flex-wrap: nowrap;
-  }
-  
-  /* Compact booked slots on mobile */
-  .time-slot-item.booked-slot {
-    padding: 5px 8px;
-  }
-  
-  .booked-slot-info {
-    gap: 8px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-  }
-  
-  .booked-time {
+    width: 22px;
+    height: 22px;
     font-size: 0.8rem;
-    gap: 5px;
-    flex-shrink: 0;
   }
   
-  .booked-icon {
-    font-size: 0.75rem;
+  /* Booked slots adjustments */
+  .booked-slot-content {
+    padding: 6px 8px;
+  }
+  
+  .time-text {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    min-width: 100px;
+  }
+  
+  .booked-details {
+    gap: 4px;
   }
   
   .booked-badge {
-    padding: 2px 5px;
     font-size: 0.65rem;
-    flex-shrink: 0;
+    padding: 2px 4px;
   }
   
   .customer-info {
     font-size: 0.7rem;
-    gap: 4px;
-    flex-shrink: 0;
   }
   
-  .customer-info i {
-    font-size: 0.65rem;
+  .customer-name {
+    max-width: 60px;
   }
   
   .action-buttons {
@@ -1517,16 +1674,21 @@ input:disabled + .toggle-slider {
   }
   
   .primary-actions {
-    flex-direction: column;
     width: 100%;
+    flex-direction: column;
   }
   
   .btn {
     width: 100%;
-    justify-content: center;
+  }
+  
+  .btn-text {
+    flex: 1;
+    text-align: center;
   }
 }
 
+/* Small Mobile (up to 480px) */
 @media (max-width: 480px) {
   .time-slots-container {
     padding: 8px;
@@ -1534,8 +1696,7 @@ input:disabled + .toggle-slider {
   
   .slot-config-header,
   .weekly-schedule-section {
-    padding: 16px;
-    border-radius: 8px;
+    padding: 12px;
   }
   
   .slot-config-header h3 {
@@ -1548,7 +1709,7 @@ input:disabled + .toggle-slider {
   
   .date-range {
     font-size: 0.8rem;
-    padding: 6px 12px;
+    padding: 5px 10px;
   }
   
   .day-card {
@@ -1559,92 +1720,102 @@ input:disabled + .toggle-slider {
     font-size: 0.95rem;
   }
   
-  /* MOBILE FIX: Ultra compact but still in one line */
-  .available-slot-content {
-    gap: 6px;
+  .day-labels {
+    flex-direction: column;
+    align-items: flex-end;
   }
   
-  .time-inputs {
-    gap: 3px;
+  .off-label,
+  .today-label {
+    font-size: 0.8rem;
+    padding: 3px 8px;
+  }
+  
+  /* SMALL MOBILE: Compact */
+  .available-slot-content {
+    padding: 5px 6px;
   }
   
   .time-input {
-    padding: 5px 6px;
-    font-size: 0.75rem;
-    min-width: 60px;
+    min-width: 55px;
     max-width: 65px;
+    padding: 5px 6px;
+    font-size: 0.8rem;
   }
   
   .time-separator {
-    font-size: 0.7rem;
-    margin: 0 1px;
+    font-size: 0.8rem;
   }
   
-  .slot-actions {
-    gap: 4px;
-  }
-  
-  .booked-time {
-    font-size: 0.75rem;
-    gap: 4px;
-  }
-  
-  .booked-icon {
-    font-size: 0.7rem;
-  }
-  
-  .booked-badge {
-    padding: 1px 4px;
-    font-size: 0.6rem;
-    border-radius: 8px;
-  }
-  
-  .customer-info {
-    font-size: 0.65rem;
-    gap: 3px;
-  }
-  
-  .customer-info i {
-    font-size: 0.6rem;
+  .slot-controls {
+    padding-left: 4px;
   }
   
   .availability-toggle {
-    width: 28px;
+    width: 30px;
     height: 16px;
   }
   
   .toggle-slider:before {
     height: 12px;
     width: 12px;
-    left: 2px;
-    bottom: 2px;
   }
   
   input:checked + .toggle-slider:before {
-    transform: translateX(12px);
+    transform: translateX(14px);
+  }
+  
+  .btn-remove-slot {
+    width: 20px;
+    height: 20px;
+    font-size: 0.75rem;
+  }
+  
+  /* Booked slots on small mobile */
+  .booked-slot-content {
+    padding: 5px 6px;
+  }
+  
+  .time-text {
+    font-size: 0.8rem;
+    padding: 3px 6px;
+    min-width: 80px;
+  }
+  
+  .booked-details {
+    gap: 3px;
+  }
+  
+  .booked-badge {
+    font-size: 0.6rem;
+    padding: 1px 3px;
+  }
+  
+  .customer-info {
+    font-size: 0.65rem;
+  }
+  
+  .customer-name {
+    max-width: 40px;
   }
   
   .btn {
-    padding: 10px 16px;
-    font-size: 0.9rem;
-    min-height: 44px;
+    padding: 8px 12px;
+    min-height: 40px;
+    font-size: 0.85rem;
   }
   
   .btn-add-slot {
-    padding: 10px 12px;
-    font-size: 0.9rem;
+    padding: 6px 8px;
+    font-size: 0.8rem;
   }
   
-  /* Ultra compact booked slots */
-  .time-slot-item.booked-slot {
-    padding: 4px 6px;
-  }
-  
-  .booked-slot-info {
-    gap: 6px;
+  .btn-text {
+    font-size: 0.85rem;
   }
 }
 
+/* Very Small Mobile (up to 360px) */
 @media (max-width: 360px) {
   .time-slots-container {
     padding: 6px;
@@ -1652,70 +1823,145 @@ input:disabled + .toggle-slider {
   
   .slot-config-header,
   .weekly-schedule-section {
-    padding: 12px;
+    padding: 10px;
+    border-radius: 6px;
+  }
+  
+  .slot-config-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .schedule-header h4 {
+    font-size: 1rem;
   }
   
   .day-card {
     padding: 10px;
   }
   
-  .time-slot-item {
-    padding: 5px 6px;
-    gap: 4px;
-  }
-  
-  /* MOBILE FIX: Ensure everything stays in one line even on very small screens */
+  /* VERY SMALL MOBILE: Minimal spacing */
   .available-slot-content {
-    gap: 4px;
-  }
-  
-  .time-input {
-    padding: 4px 6px;
-    font-size: 0.7rem;
-    min-width: 55px;
-    max-width: 60px;
-  }
-  
-  .time-separator {
-    font-size: 0.65rem;
-  }
-  
-  .booked-badge {
-    font-size: 0.55rem;
-    padding: 1px 3px;
-  }
-  
-  /* Super compact booked slots */
-  .time-slot-item.booked-slot {
-    padding: 3px 5px;
-  }
-  
-  .booked-slot-info {
-    gap: 4px;
-  }
-}
-
-/* Special fix for very small mobile screens to prevent wrapping */
-@media (max-width: 320px) {
-  .available-slot-content {
-    flex-wrap: nowrap;
-    overflow: hidden;
-  }
-  
-  .time-inputs {
-    flex-shrink: 1;
-    min-width: 0;
+    padding: 4px 5px;
   }
   
   .time-input {
     min-width: 50px;
-    max-width: 55px;
-    font-size: 0.65rem;
-    padding: 3px 4px;
+    max-width: 60px;
+    padding: 4px 5px;
+    font-size: 0.75rem;
   }
   
-  .slot-actions {
-    flex-shrink: 0;
+  .time-separator {
+    font-size: 0.75rem;
+  }
+  
+  .slot-controls {
+    padding-left: 3px;
+  }
+  
+  .availability-toggle {
+    width: 28px;
+    height: 14px;
+  }
+  
+  .toggle-slider:before {
+    height: 10px;
+    width: 10px;
+  }
+  
+  input:checked + .toggle-slider:before {
+    transform: translateX(14px);
+  }
+  
+  .btn-remove-slot {
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+  }
+  
+  /* Last resort: Remove border on controls to save space */
+  .slot-controls {
+    border-left: none;
+  }
+}
+
+/* Extra Small Mobile (up to 320px) */
+@media (max-width: 320px) {
+  .time-input {
+    min-width: 45px;
+    max-width: 55px;
+    padding: 3px 4px;
+    font-size: 0.7rem;
+  }
+  
+  .time-separator {
+    font-size: 0.7rem;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  .time-input {
+    min-height: 44px;
+    padding: 10px;
+    font-size: 1rem;
+  }
+  
+  .time-input:active {
+    background-color: #f0f9ff;
+    transform: scale(0.98);
+  }
+  
+  .btn {
+    padding: 12px 16px;
+    min-height: 44px;
+  }
+  
+  .btn-remove-slot {
+    min-height: 30px;
+    min-width: 30px;
+  }
+  
+  .availability-toggle {
+    width: 44px;
+    height: 24px;
+  }
+  
+  .toggle-slider:before {
+    height: 20px;
+    width: 20px;
+  }
+  
+  input:checked + .toggle-slider:before {
+    transform: translateX(20px);
+  }
+}
+
+/* Print styles */
+@media print {
+  .btn,
+  .btn-add-slot,
+  .btn-remove-slot,
+  .availability-toggle,
+  .time-input {
+    display: none !important;
+  }
+  
+  .time-slots-container {
+    padding: 0;
+  }
+  
+  .day-card {
+    break-inside: avoid;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
+  
+  .time-text {
+    border: 1px solid #ccc;
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
   }
 }
 </style>

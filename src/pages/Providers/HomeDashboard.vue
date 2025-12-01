@@ -6,20 +6,20 @@
       <div class="header-content">
         <div class="welcome-section">
           <h1 class="title">Welcome back, {{ provider?.fullname || 'Provider' }}! 👋</h1>
-          <p class="subtitle">Here's your business overview and recent activity</p>
+          <p class="subtitle">Your business overview at a glance</p>
           <div class="date-display">
             <i class="fa-solid fa-calendar"></i>
             {{ currentDate }}
+          </div>
+          <div class="provider-id">
+            <i class="fa-solid fa-id-card"></i>
+            Provider ID: {{ currentProviderPid || 'Loading...' }}
           </div>
         </div>
         <div class="header-actions">
           <button class="btn btn-primary" @click="refreshData" :disabled="loading">
             <i class="fa-solid fa-rotate" :class="{ 'fa-spin': loading }"></i>
             {{ loading ? 'Refreshing...' : 'Refresh' }}
-          </button>
-          <button class="btn btn-outline" @click="generateReport">
-            <i class="fa-solid fa-chart-line"></i>
-            Analytics
           </button>
         </div>
       </div>
@@ -29,12 +29,12 @@
     <div v-if="loading && !hasData" class="loading-container">
       <div class="loading-content">
         <div class="spinner"></div>
-        <h3>Loading Your Dashboard</h3>
-        <p>Getting your latest business insights...</p>
+        <h3>Loading Dashboard</h3>
+        <p>Getting your business summary...</p>
       </div>
     </div>
 
-    <!-- Error State - Only show if there's a critical error and no data -->
+    <!-- Error State -->
     <div v-else-if="criticalError && !hasData" class="error-container">
       <div class="error-content">
         <i class="fa-solid fa-exclamation-triangle"></i>
@@ -46,213 +46,261 @@
       </div>
     </div>
 
-    <!-- Main Content - Show when we have data OR when loading is complete -->
+    <!-- Main Content -->
     <div v-else class="dashboard-content">
+      <!-- Data Source Indicator -->
+      <div class="data-source-indicator">
+        <div class="source-badge" :class="{ 'real-data': isRealData, 'demo-data': !isRealData }">
+          <i :class="isRealData ? 'fa-solid fa-database' : 'fa-solid fa-eye'"></i>
+          {{ isRealData ? 'Live Data' : 'Demo Data' }}
+        </div>
+        <div class="last-updated">
+          <i class="fa-solid fa-clock"></i>
+          Updated: {{ lastUpdated }}
+        </div>
+      </div>
+
       <!-- Key Metrics Grid -->
       <div class="metrics-grid">
-        <div class="metric-card" v-for="metric in metrics" :key="metric.title">
-          <div class="metric-icon" :class="metric.trend">
-            <i :class="metric.icon"></i>
+        <!-- Total Bookings -->
+        <div class="metric-card primary" @click="navigateTo('/bookings')">
+          <div class="metric-icon">
+            <i class="fa-solid fa-calendar-check"></i>
           </div>
           <div class="metric-content">
-            <h3>{{ metric.value }}</h3>
-            <p class="metric-title">{{ metric.title }}</p>
-            <div class="metric-trend" v-if="metric.trendValue">
-              <i :class="metric.trendIcon"></i>
-              <span>{{ metric.trendValue }}</span>
+            <h3>{{ totalBookings }}</h3>
+            <p class="metric-title">Total Bookings</p>
+            <div class="metric-trend" v-if="bookingChange">
+              <i :class="bookingChange >= 0 ? 'fa-solid fa-arrow-up' : 'fa-solid fa-arrow-down'"></i>
+              <span>{{ Math.abs(bookingChange) }}%</span>
+              <span class="metric-period">from last month</span>
+            </div>
+          </div>
+          <div class="metric-action">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <!-- Total Services -->
+        <div class="metric-card success" @click="navigateTo('/services')">
+          <div class="metric-icon">
+            <i class="fa-solid fa-briefcase"></i>
+          </div>
+          <div class="metric-content">
+            <h3>{{ totalServices }}</h3>
+            <p class="metric-title">Total Services</p>
+            <div class="metric-subtext">
+              <i class="fa-solid fa-check-circle"></i>
+              {{ activeServices }} active
+            </div>
+          </div>
+          <div class="metric-action">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="metric-card revenue" @click="navigateTo('/revenue')">
+          <div class="metric-icon">
+            <i class="fa-solid fa-money-bill-wave"></i>
+          </div>
+          <div class="metric-content">
+            <h3>${{ formatCurrency(totalRevenue) }}</h3>
+            <p class="metric-title">Total Revenue</p>
+            <div class="metric-trend" v-if="revenueChange">
+              <i :class="revenueChange >= 0 ? 'fa-solid fa-arrow-up' : 'fa-solid fa-arrow-down'"></i>
+              <span>{{ Math.abs(revenueChange) }}%</span>
+              <span class="metric-period">from last month</span>
+            </div>
+          </div>
+          <div class="metric-action">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <!-- Today's Bookings -->
+        <div class="metric-card info" @click="navigateTo('/bookings?filter=today')">
+          <div class="metric-icon">
+            <i class="fa-solid fa-calendar-day"></i>
+          </div>
+          <div class="metric-content">
+            <h3>{{ todayBookings }}</h3>
+            <p class="metric-title">Today's Bookings</p>
+            <div class="metric-subtext">
+              <i class="fa-solid fa-clock"></i>
+              {{ upcomingBookings }} upcoming
+            </div>
+          </div>
+          <div class="metric-action">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <!-- Completion Rate -->
+        <div class="metric-card warning" @click="navigateTo('/analytics')">
+          <div class="metric-icon">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <div class="metric-content">
+            <h3>{{ completionRate }}%</h3>
+            <p class="metric-title">Completion Rate</p>
+            <div class="metric-subtext">
+              {{ completedBookings }} completed bookings
+            </div>
+          </div>
+          <div class="metric-action">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <!-- Customer Satisfaction -->
+        <div class="metric-card purple" @click="navigateTo('/reviews')">
+          <div class="metric-icon">
+            <i class="fa-solid fa-star"></i>
+          </div>
+          <div class="metric-content">
+            <h3>{{ averageRating }}/5</h3>
+            <p class="metric-title">Avg. Rating</p>
+            <div class="rating-stars">
+              <i v-for="n in 5" :key="n" 
+                 class="fa-star" 
+                 :class="n <= Math.floor(averageRating) ? 'fa-solid filled' : 'fa-regular'">
+              </i>
+            </div>
+          </div>
+          <div class="metric-action">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats Grid -->
+      <div class="quick-stats-grid">
+        <div class="stats-card">
+          <div class="stats-header">
+            <h3><i class="fa-solid fa-users"></i> Customer Overview</h3>
+          </div>
+          <div class="stats-content">
+            <div class="stat-row">
+              <div class="stat-item">
+                <div class="stat-value">{{ totalCustomers }}</div>
+                <div class="stat-label">Total Customers</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">{{ repeatCustomers }}</div>
+                <div class="stat-label">Repeat Customers</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">{{ newCustomers }}</div>
+                <div class="stat-label">New (30 days)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-card">
+          <div class="stats-header">
+            <h3><i class="fa-solid fa-chart-pie"></i> Booking Status</h3>
+          </div>
+          <div class="stats-content">
+            <div class="status-bars">
+              <div class="status-bar completed" :style="{ width: completedPercentage + '%' }">
+                <span class="status-label">Completed {{ completedBookings }}</span>
+              </div>
+              <div class="status-bar confirmed" :style="{ width: confirmedPercentage + '%' }">
+                <span class="status-label">Confirmed {{ confirmedBookings }}</span>
+              </div>
+              <div class="status-bar pending" :style="{ width: pendingPercentage + '%' }">
+                <span class="status-label">Pending {{ pendingBookings }}</span>
+              </div>
+              <div class="status-bar cancelled" :style="{ width: cancelledPercentage + '%' }">
+                <span class="status-label">Cancelled {{ cancelledBookings }}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Main Content Grid -->
-      <div class="content-grid">
-        <!-- Left Column -->
-        <div class="left-column">
-          <!-- Upcoming Bookings -->
-          <div class="content-card">
-            <div class="card-header">
-              <h3><i class="fa-solid fa-calendar-check"></i> Upcoming Bookings</h3>
-              <router-link to="/bookings" class="view-all">
-                View All <i class="fa-solid fa-arrow-right"></i>
-              </router-link>
+      <!-- Quick Actions -->
+      <div class="quick-actions-section">
+        <h3><i class="fa-solid fa-bolt"></i> Quick Actions</h3>
+        <div class="actions-grid">
+          <button class="action-card" @click="navigateTo('/services/create')">
+            <div class="action-icon">
+              <i class="fa-solid fa-plus-circle"></i>
             </div>
-            <div class="card-body">
-              <div v-if="upcomingBookings.length === 0" class="empty-state">
-                <i class="fa-regular fa-calendar"></i>
-                <p>No upcoming bookings</p>
-                <small>New bookings will appear here</small>
-              </div>
-              <div v-else class="bookings-list">
-                <div 
-                  v-for="booking in upcomingBookings" 
-                  :key="booking.id"
-                  class="booking-item"
-                  :class="{ urgent: isUrgentBooking(booking) }"
-                >
-                  <div class="booking-avatar">
-                    {{ getInitials(booking.customerName) }}
-                  </div>
-                  <div class="booking-details">
-                    <strong>{{ booking.customerName }}</strong>
-                    <div class="booking-meta">
-                      <span class="service">{{ booking.serviceName }}</span>
-                      <span class="time">
-                        <i class="fa-solid fa-clock"></i>
-                        {{ formatTime(booking.startTime) }}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="booking-date">
-                    {{ formatBookingDate(booking.date) }}
-                  </div>
-                </div>
-              </div>
+            <div class="action-content">
+              <h4>Add New Service</h4>
+              <p>Create a new service offering</p>
             </div>
-          </div>
+          </button>
 
-          <!-- Recent Activity -->
-          <div class="content-card">
-            <div class="card-header">
-              <h3><i class="fa-solid fa-bell"></i> Recent Activity</h3>
+          <button class="action-card" @click="navigateTo('/bookings/create')">
+            <div class="action-icon">
+              <i class="fa-solid fa-calendar-plus"></i>
             </div>
-            <div class="card-body">
-              <div v-if="recentActivity.length === 0" class="empty-state">
-                <i class="fa-regular fa-bell"></i>
-                <p>No recent activity</p>
-              </div>
-              <div v-else class="activity-list">
-                <div 
-                  v-for="activity in recentActivity" 
-                  :key="activity.id"
-                  class="activity-item"
-                >
-                  <div class="activity-icon" :class="activity.type">
-                    <i :class="activity.icon"></i>
-                  </div>
-                  <div class="activity-content">
-                    <p>{{ activity.message }}</p>
-                    <span class="activity-time">{{ activity.time }}</span>
-                  </div>
-                </div>
-              </div>
+            <div class="action-content">
+              <h4>Create Booking</h4>
+              <p>Book a new appointment</p>
             </div>
-          </div>
+          </button>
+
+          <button class="action-card" @click="navigateTo('/schedule')">
+            <div class="action-icon">
+              <i class="fa-solid fa-clock"></i>
+            </div>
+            <div class="action-content">
+              <h4>Manage Schedule</h4>
+              <p>Set your availability</p>
+            </div>
+          </button>
+
+          <button class="action-card" @click="navigateTo('/analytics')">
+            <div class="action-icon">
+              <i class="fa-solid fa-chart-bar"></i>
+            </div>
+            <div class="action-content">
+              <h4>View Analytics</h4>
+              <p>Detailed reports & insights</p>
+            </div>
+          </button>
         </div>
+      </div>
 
-        <!-- Right Column -->
-        <div class="right-column">
-          <!-- Performance Overview -->
-          <div class="content-card">
-            <div class="card-header">
-              <h3><i class="fa-solid fa-chart-line"></i> Performance Overview</h3>
+      <!-- Coming Soon Features -->
+      <div class="coming-soon-section">
+        <h3><i class="fa-solid fa-rocket"></i> Coming Soon</h3>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fa-solid fa-credit-card"></i>
             </div>
-            <div class="card-body">
-              <div class="performance-stats">
-                <div class="performance-item">
-                  <label>Monthly Revenue</label>
-                  <div class="performance-value">${{ monthlyRevenue }}</div>
-                  <div class="performance-progress">
-                    <div class="progress-bar">
-                      <div 
-                        class="progress-fill revenue" 
-                        :style="{ width: revenueProgress + '%' }"
-                      ></div>
-                    </div>
-                    <span class="progress-text">{{ revenueProgress }}% of goal</span>
-                  </div>
-                </div>
-
-                <div class="performance-item">
-                  <label>Booking Completion Rate</label>
-                  <div class="performance-value">{{ completionRate }}%</div>
-                  <div class="performance-progress">
-                    <div class="progress-bar">
-                      <div 
-                        class="progress-fill completion" 
-                        :style="{ width: completionRate + '%' }"
-                      ></div>
-                    </div>
-                    <span class="progress-text">Last 30 days</span>
-                  </div>
-                </div>
-
-                <div class="performance-item">
-                  <label>Customer Satisfaction</label>
-                  <div class="performance-value">{{ satisfactionRate }}%</div>
-                  <div class="performance-progress">
-                    <div class="progress-bar">
-                      <div 
-                        class="progress-fill satisfaction" 
-                        :style="{ width: satisfactionRate + '%' }"
-                      ></div>
-                    </div>
-                    <span class="progress-text">Based on reviews</span>
-                  </div>
-                </div>
-              </div>
+            <div class="feature-content">
+              <h4>Payment Analytics</h4>
+              <p>Track payments & revenue trends</p>
+              <span class="feature-status">In Development</span>
             </div>
           </div>
 
-          <!-- Quick Actions -->
-          <div class="content-card">
-            <div class="card-header">
-              <h3><i class="fa-solid fa-bolt"></i> Quick Actions</h3>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fa-solid fa-chart-pie"></i>
             </div>
-            <div class="card-body">
-              <div class="quick-actions">
-                <button class="action-btn" @click="navigateTo('/services')">
-                  <i class="fa-solid fa-plus"></i>
-                  <span>Add Service</span>
-                </button>
-                <button class="action-btn" @click="navigateTo('/schedule')">
-                  <i class="fa-solid fa-calendar-plus"></i>
-                  <span>Manage Schedule</span>
-                </button>
-                <button class="action-btn" @click="navigateTo('/messages')">
-                  <i class="fa-solid fa-message"></i>
-                  <span>View Messages</span>
-                </button>
-                <button class="action-btn" @click="navigateTo('/profile')">
-                  <i class="fa-solid fa-user"></i>
-                  <span>Update Profile</span>
-                </button>
-              </div>
+            <div class="feature-content">
+              <h4>Advanced Reports</h4>
+              <p>Detailed performance insights</p>
+              <span class="feature-status">Planned</span>
             </div>
           </div>
 
-          <!-- Recent Messages -->
-          <div class="content-card">
-            <div class="card-header">
-              <h3><i class="fa-solid fa-comments"></i> Recent Messages</h3>
-              <router-link to="/messages" class="view-all">
-                View All <i class="fa-solid fa-arrow-right"></i>
-              </router-link>
+          <div class="feature-card">
+            <div class="feature-icon">
+              <i class="fa-solid fa-message"></i>
             </div>
-            <div class="card-body">
-              <div v-if="recentMessages.length === 0" class="empty-state">
-                <i class="fa-regular fa-comment"></i>
-                <p>No new messages</p>
-              </div>
-              <div v-else class="messages-list">
-                <div 
-                  v-for="message in recentMessages" 
-                  :key="message.id"
-                  class="message-item"
-                  :class="{ unread: !message.read }"
-                >
-                  <div class="message-avatar">
-                    {{ getInitials(message.from) }}
-                  </div>
-                  <div class="message-content">
-                    <div class="message-header">
-                      <strong>{{ message.from }}</strong>
-                      <span class="message-time">{{ message.time }}</span>
-                    </div>
-                    <p class="message-preview">{{ message.preview }}</p>
-                  </div>
-                </div>
-              </div>
+            <div class="feature-content">
+              <h4>Review System</h4>
+              <p>Collect customer feedback</p>
+              <span class="feature-status">Planned</span>
             </div>
           </div>
         </div>
@@ -280,68 +328,20 @@ export default {
     
     // Reactive data
     const loading = ref(true);
-    const criticalError = ref(""); // Renamed from error to criticalError
-    const hasData = ref(false); // New flag to track if we have data
+    const criticalError = ref("");
+    const hasData = ref(false);
+    const isRealData = ref(false);
+    const currentProviderPid = ref("");
     
-    // Mock data for demonstration (replace with real API calls)
-    const metrics = ref([
-      { 
-        title: "Total Bookings", 
-        value: "0", 
-        icon: "fa-solid fa-calendar-check",
-        trend: "up",
-        trendValue: "+12%",
-        trendIcon: "fa-solid fa-arrow-up"
-      },
-      { 
-        title: "Completed", 
-        value: "0", 
-        icon: "fa-solid fa-check-circle",
-        trend: "up",
-        trendValue: "+8%",
-        trendIcon: "fa-solid fa-arrow-up"
-      },
-      { 
-        title: "Active Services", 
-        value: "0", 
-        icon: "fa-solid fa-briefcase",
-        trend: "neutral",
-        trendValue: null,
-        trendIcon: ""
-      },
-      { 
-        title: "Monthly Revenue", 
-        value: "$0", 
-        icon: "fa-solid fa-dollar-sign",
-        trend: "up",
-        trendValue: "+15%",
-        trendIcon: "fa-solid fa-arrow-up"
-      },
-      { 
-        title: "New Messages", 
-        value: "0", 
-        icon: "fa-solid fa-envelope",
-        trend: "down",
-        trendValue: "-5%",
-        trendIcon: "fa-solid fa-arrow-down"
-      },
-      { 
-        title: "Satisfaction Rate", 
-        value: "0%", 
-        icon: "fa-solid fa-star",
-        trend: "up",
-        trendValue: "+3%",
-        trendIcon: "fa-solid fa-arrow-up"
-      }
-    ]);
-
-    const upcomingBookings = ref([]);
-    const recentActivity = ref([]);
-    const recentMessages = ref([]);
-    const monthlyRevenue = ref("0");
-    const revenueProgress = ref(0);
-    const completionRate = ref(0);
-    const satisfactionRate = ref(0);
+    // Data
+    const bookings = ref([]);
+    const services = ref([]);
+    
+    // Known provider PIDs - MANUAL MAPPING
+    const knownProviderPids = {
+      "691e1659e304653542a825d5": "PROV-1763579481598-1GBEN", // hayelom
+      "692b3c78d399bc41c3712380": "PROV-1764441208540-C269P"  // tig-tg
+    };
 
     // Computed properties
     const currentDate = computed(() => {
@@ -353,11 +353,173 @@ export default {
       });
     });
 
-    // Methods
+    const lastUpdated = computed(() => {
+      return new Date().toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    });
+
+    // Booking metrics
+    const totalBookings = computed(() => bookings.value.length);
+    const completedBookings = computed(() => bookings.value.filter(b => b.status === 'completed').length);
+    const confirmedBookings = computed(() => bookings.value.filter(b => b.status === 'confirmed').length);
+    const pendingBookings = computed(() => bookings.value.filter(b => b.status === 'pending').length);
+    const cancelledBookings = computed(() => bookings.value.filter(b => b.status === 'cancelled').length);
+    
+    const completionRate = computed(() => {
+      if (totalBookings.value === 0) return 0;
+      return Math.round((completedBookings.value / totalBookings.value) * 100);
+    });
+
+    const completedPercentage = computed(() => {
+      if (totalBookings.value === 0) return 0;
+      return (completedBookings.value / totalBookings.value) * 100;
+    });
+
+    const confirmedPercentage = computed(() => {
+      if (totalBookings.value === 0) return 0;
+      return (confirmedBookings.value / totalBookings.value) * 100;
+    });
+
+    const pendingPercentage = computed(() => {
+      if (totalBookings.value === 0) return 0;
+      return (pendingBookings.value / totalBookings.value) * 100;
+    });
+
+    const cancelledPercentage = computed(() => {
+      if (totalBookings.value === 0) return 0;
+      return (cancelledBookings.value / totalBookings.value) * 100;
+    });
+
+    const totalRevenue = computed(() => {
+      return bookings.value
+        .filter(b => b.status === 'completed' || b.status === 'confirmed')
+        .reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0);
+    });
+
+    const todayBookings = computed(() => {
+      const today = new Date().toISOString().split('T')[0];
+      return bookings.value.filter(b => {
+        try {
+          const bookingDate = new Date(b.date).toISOString().split('T')[0];
+          return bookingDate === today;
+        } catch {
+          return false;
+        }
+      }).length;
+    });
+
+    const upcomingBookings = computed(() => {
+      const now = new Date();
+      return bookings.value.filter(b => {
+        if (b.status !== 'pending' && b.status !== 'confirmed') return false;
+        try {
+          const bookingDate = new Date(b.date);
+          return bookingDate > now;
+        } catch {
+          return false;
+        }
+      }).length;
+    });
+
+    // Service metrics
+    const totalServices = computed(() => services.value.length);
+    const activeServices = computed(() => services.value.filter(s => s.status === 'active').length);
+
+    // Customer metrics
+    const totalCustomers = computed(() => {
+      const customerIds = new Set();
+      bookings.value.forEach(b => {
+        if (b.customerId) customerIds.add(b.customerId);
+      });
+      return customerIds.size;
+    });
+
+    const repeatCustomers = computed(() => {
+      const customerCounts = {};
+      bookings.value.forEach(b => {
+        if (b.customerId) {
+          customerCounts[b.customerId] = (customerCounts[b.customerId] || 0) + 1;
+        }
+      });
+      return Object.values(customerCounts).filter(count => count > 1).length;
+    });
+
+    const newCustomers = computed(() => {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const newCustomerIds = new Set();
+      bookings.value.forEach(b => {
+        if (b.customerId && b.createdAt && new Date(b.createdAt) >= thirtyDaysAgo) {
+          newCustomerIds.add(b.customerId);
+        }
+      });
+      
+      return newCustomerIds.size;
+    });
+
+    // Mock trends (will be real data later)
+    const bookingChange = computed(() => 12); // +12% from last month
+    const revenueChange = computed(() => 15); // +15% from last month
+    const averageRating = computed(() => 4.5); // Mock rating
+
+    // Get Provider PID
+    const getProviderPid = () => {
+      try {
+        const loggedProvider = localStorage.getItem("loggedProvider");
+        
+        if (!loggedProvider) {
+          throw new Error("No logged provider found. Please login again.");
+        }
+        
+        const providerData = JSON.parse(loggedProvider);
+        
+        // Check if PID exists in localStorage
+        const existingPid = providerData.pid || providerData.providerProfile?.pid;
+        if (existingPid) {
+          currentProviderPid.value = existingPid;
+          return existingPid;
+        }
+        
+        // Use manual mapping
+        const mappedPid = knownProviderPids[providerData._id];
+        if (mappedPid) {
+          // Update localStorage with PID for future use
+          const updatedData = { ...providerData, pid: mappedPid };
+          localStorage.setItem("loggedProvider", JSON.stringify(updatedData));
+          
+          currentProviderPid.value = mappedPid;
+          return mappedPid;
+        }
+        
+        throw new Error(`No PID mapping found for provider: ${providerData._id}`);
+        
+      } catch (err) {
+        console.error("❌ Error getting provider ID:", err);
+        criticalError.value = "Authentication error: " + err.message;
+        return null;
+      }
+    };
+
+    // Process booking data (simplified)
+    const processBookingData = (booking) => {
+      return {
+        _id: booking._id,
+        date: booking.date || booking.startTime || booking.createdAt,
+        status: (booking.status || 'pending').toLowerCase(),
+        amount: parseFloat(booking.amount || booking.price || 0),
+        customerId: booking.customer?._id || booking.customerId,
+        createdAt: booking.createdAt
+      };
+    };
+
+    // Load dashboard data
     const loadDashboardData = async () => {
-      const providerId = getProviderId();
-      if (!providerId) {
-        criticalError.value = "Please login to access dashboard";
+      const providerPid = getProviderPid();
+      if (!providerPid) {
+        criticalError.value = "Unable to identify provider. Please login again.";
         loading.value = false;
         return;
       }
@@ -366,210 +528,37 @@ export default {
       criticalError.value = "";
 
       try {
-        console.log("📊 Loading dashboard data for provider:", providerId);
+        console.log("🚀 Loading dashboard data for provider:", providerPid);
         
-        // Load bookings data
-        const bookingsResponse = await http.get(`/bookings/provider/${providerId}`);
+        // Load provider bookings
+        const bookingsResponse = await http.get(`/bookings/provider/${providerPid}`);
         
-        // Load statistics
-        const statsResponse = await http.get(`/bookings/stats/provider/${providerId}`);
+        if (bookingsResponse.data && Array.isArray(bookingsResponse.data)) {
+          bookings.value = bookingsResponse.data.map(processBookingData);
+          console.log(`✅ Loaded ${bookings.value.length} bookings`);
+          isRealData.value = true;
+        }
         
-        // Process the data
-        processDashboardData(bookingsResponse.data, statsResponse.data);
+        // Load services (mock for now - you'll need to create this endpoint)
+        // const servicesResponse = await http.get(`/services/provider/${providerPid}`);
+        // if (servicesResponse.data) {
+        //   services.value = servicesResponse.data;
+        // }
+        
+        // Mock services for now
+        services.value = [
+          { _id: '1', name: 'Hair Styling', status: 'active', price: 75 },
+          { _id: '2', name: 'Massage Therapy', status: 'active', price: 120 },
+          { _id: '3', name: 'Yoga Session', status: 'inactive', price: 60 }
+        ];
         
         hasData.value = true;
         
       } catch (err) {
         console.error("❌ Error loading dashboard data:", err);
         handleLoadError(err);
-        
-        // Load mock data for demonstration
-        loadMockData();
-        hasData.value = true; // We have mock data now
       } finally {
         loading.value = false;
-      }
-    };
-
-    const processDashboardData = (bookings, stats) => {
-      // Update metrics with real data
-      if (stats) {
-        metrics.value[0].value = stats.totalBookings || "0";
-        metrics.value[1].value = stats.completedBookings || "0";
-        metrics.value[2].value = stats.activeServices || "0";
-        metrics.value[3].value = `$${stats.monthlyRevenue || "0"}`;
-        metrics.value[4].value = stats.newMessages || "0";
-        metrics.value[5].value = `${stats.satisfactionRate || "0"}%`;
-        
-        monthlyRevenue.value = stats.monthlyRevenue || "0";
-        revenueProgress.value = Math.min(((stats.monthlyRevenue || 0) / 2000) * 100, 100);
-        completionRate.value = stats.completionRate || 0;
-        satisfactionRate.value = stats.satisfactionRate || 0;
-      }
-
-      // Process upcoming bookings
-      if (bookings && Array.isArray(bookings)) {
-        upcomingBookings.value = bookings
-          .filter(booking => 
-            booking.status === 'confirmed' || 
-            booking.status === 'pending'
-          )
-          .slice(0, 5)
-          .map(booking => ({
-            id: booking.id,
-            customerName: booking.customerName || 'Customer',
-            serviceName: booking.serviceName || 'Service',
-            date: booking.date,
-            startTime: booking.startTime,
-            status: booking.status
-          }));
-      }
-
-      // Animate metrics counting
-      animateMetrics();
-    };
-
-    const loadMockData = () => {
-      console.log("📋 Loading mock data for demonstration...");
-      
-      // Mock metrics data
-      const mockMetrics = [24, 19, 5, "1,250", 3, 92];
-      metrics.value.forEach((metric, index) => {
-        if (index !== 3) { // Skip revenue which has $ sign
-          metric.value = mockMetrics[index];
-        } else {
-          metric.value = `$${mockMetrics[index]}`;
-        }
-      });
-
-      // Mock upcoming bookings
-      upcomingBookings.value = [
-        {
-          id: 1,
-          customerName: "Alice Johnson",
-          serviceName: "Hair Styling",
-          date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          startTime: "14:00",
-          status: "confirmed"
-        },
-        {
-          id: 2,
-          customerName: "Mark Wilson",
-          serviceName: "Massage Therapy",
-          date: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0],
-          startTime: "10:30",
-          status: "pending"
-        },
-        {
-          id: 3,
-          customerName: "Sarah Brown",
-          serviceName: "Yoga Session",
-          date: new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString().split('T')[0],
-          startTime: "16:00",
-          status: "confirmed"
-        }
-      ];
-
-      // Mock recent activity
-      recentActivity.value = [
-        {
-          id: 1,
-          type: "booking",
-          icon: "fa-solid fa-calendar-plus",
-          message: "New booking from Alice Johnson",
-          time: "2 hours ago"
-        },
-        {
-          id: 2,
-          type: "review",
-          icon: "fa-solid fa-star",
-          message: "Received a 5-star review",
-          time: "1 day ago"
-        },
-        {
-          id: 3,
-          type: "message",
-          icon: "fa-solid fa-comment",
-          message: "New message from Mark Wilson",
-          time: "2 days ago"
-        }
-      ];
-
-      // Mock recent messages
-      recentMessages.value = [
-        {
-          id: 1,
-          from: "Alice Johnson",
-          preview: "Thanks for the great service! Can I book again for next week?",
-          time: "2 hours ago",
-          read: false
-        },
-        {
-          id: 2,
-          from: "Mark Wilson",
-          preview: "Looking forward to our session tomorrow",
-          time: "1 day ago",
-          read: true
-        }
-      ];
-
-      // Mock performance data
-      monthlyRevenue.value = "1,250";
-      revenueProgress.value = 68;
-      completionRate.value = 92;
-      satisfactionRate.value = 95;
-
-      animateMetrics();
-    };
-
-    const animateMetrics = () => {
-      metrics.value.forEach((metric, index) => {
-        let targetValue = metric.value;
-        
-        // Extract numeric value for counting animation
-        let numericValue = 0;
-        if (typeof targetValue === 'string') {
-          numericValue = parseInt(targetValue.replace(/[^0-9]/g, '')) || 0;
-        } else {
-          numericValue = targetValue;
-        }
-
-        if (numericValue > 0) {
-          let count = 0;
-          const increment = Math.ceil(numericValue / 50);
-          const interval = setInterval(() => {
-            count += increment;
-            if (count >= numericValue) {
-              count = numericValue;
-              clearInterval(interval);
-            }
-            
-            if (index === 3) { // Revenue metric
-              metric.value = `$${count.toLocaleString()}`;
-            } else if (index === 5) { // Percentage metric
-              metric.value = `${count}%`;
-            } else {
-              metric.value = count.toLocaleString();
-            }
-          }, 30);
-        }
-      });
-    };
-
-    const getProviderId = () => {
-      try {
-        const providerId = localStorage.getItem("provider_id");
-        const loggedProvider = localStorage.getItem("loggedProvider");
-        
-        if (providerId) return providerId;
-        if (loggedProvider) {
-          const providerData = JSON.parse(loggedProvider);
-          return providerData._id;
-        }
-        return null;
-      } catch (err) {
-        console.error("Error getting provider ID:", err);
-        return null;
       }
     };
 
@@ -578,10 +567,8 @@ export default {
         criticalError.value = "Session expired. Please login again.";
       } else if (err.response?.status === 403) {
         criticalError.value = "Access denied. Please check your permissions.";
-      } else if (err.response?.status === 404) {
-        // API endpoints might not exist yet, use mock data
-        console.log("📋 API endpoints not found, using mock data");
-        criticalError.value = ""; // Clear error since we'll use mock data
+      } else if (err.code === 'ERR_NETWORK') {
+        criticalError.value = "Network error. Please check your connection.";
       } else {
         criticalError.value = "Unable to load dashboard data. Please try again.";
       }
@@ -591,41 +578,12 @@ export default {
       loadDashboardData();
     };
 
-    const generateReport = () => {
-      // Implement report generation
-      console.log("Generating analytics report...");
-    };
-
     const navigateTo = (path) => {
       router.push(path);
     };
 
-    const getInitials = (name) => {
-      if (!name) return "??";
-      return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-    };
-
-    const formatTime = (timeString) => {
-      if (!timeString) return "";
-      return timeString; // Could be enhanced with 12-hour format
-    };
-
-    const formatBookingDate = (dateString) => {
-      if (!dateString) return "";
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
-      });
-    };
-
-    const isUrgentBooking = (booking) => {
-      if (!booking.date) return false;
-      const bookingDate = new Date(booking.date);
-      const today = new Date();
-      const diffTime = bookingDate - today;
-      const diffDays = diffTime / (1000 * 60 * 60 * 24);
-      return diffDays <= 1; // Urgent if within 24 hours
+    const formatCurrency = (amount) => {
+      return parseFloat(amount).toFixed(2);
     };
 
     // Lifecycle
@@ -635,33 +593,47 @@ export default {
 
     return {
       loading,
-      criticalError: criticalError, // Expose as criticalError
+      criticalError,
       hasData,
-      metrics,
-      upcomingBookings,
-      recentActivity,
-      recentMessages,
-      monthlyRevenue,
-      revenueProgress,
-      completionRate,
-      satisfactionRate,
+      isRealData,
+      currentProviderPid,
       currentDate,
+      lastUpdated,
+      
+      // Metrics
+      totalBookings,
+      completedBookings,
+      confirmedBookings,
+      pendingBookings,
+      cancelledBookings,
+      completionRate,
+      completedPercentage,
+      confirmedPercentage,
+      pendingPercentage,
+      cancelledPercentage,
+      totalRevenue,
+      todayBookings,
+      upcomingBookings,
+      totalServices,
+      activeServices,
+      totalCustomers,
+      repeatCustomers,
+      newCustomers,
+      bookingChange,
+      revenueChange,
+      averageRating,
+      
+      // Methods
       loadDashboardData,
       refreshData,
-      generateReport,
       navigateTo,
-      getInitials,
-      formatTime,
-      formatBookingDate,
-      isUrgentBooking
+      formatCurrency
     };
   }
 };
 </script>
 
 <style scoped>
-/* Your existing CSS remains exactly the same */
-/* Enhanced Home Dashboard Styles */
 .home-dashboard {
   max-width: 1400px;
   margin: 0 auto;
@@ -673,7 +645,7 @@ export default {
 .dashboard-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 40px 32px;
+  padding: 32px;
   border-radius: 0 0 20px 20px;
   margin-bottom: 24px;
 }
@@ -687,7 +659,7 @@ export default {
 }
 
 .welcome-section .title {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 800;
   margin-bottom: 8px;
   background: linear-gradient(135deg, #fff, #e2e8f0);
@@ -697,7 +669,7 @@ export default {
 }
 
 .welcome-section .subtitle {
-  font-size: 1.2rem;
+  font-size: 1rem;
   opacity: 0.9;
   margin-bottom: 12px;
 }
@@ -707,7 +679,16 @@ export default {
   align-items: center;
   gap: 8px;
   opacity: 0.8;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+}
+
+.provider-id {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  opacity: 0.9;
 }
 
 .header-actions {
@@ -720,13 +701,12 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px;
+  padding: 10px 16px;
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  text-decoration: none;
 }
 
 .btn-primary {
@@ -742,15 +722,9 @@ export default {
   transform: translateY(-2px);
 }
 
-.btn-outline {
-  background: transparent;
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.btn-outline:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 /* Loading State */
@@ -815,14 +789,57 @@ export default {
   margin-bottom: 20px;
 }
 
-/* Metrics Grid */
+/* Main Content */
 .dashboard-content {
-  padding: 0 24px 24px;
+  padding: 0 24px 40px;
 }
 
+/* Data Source Indicator */
+.data-source-indicator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 12px 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.source-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.source-badge.real-data {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.source-badge.demo-data {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.last-updated {
+  font-size: 0.9rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Metrics Grid */
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
   margin-bottom: 32px;
 }
@@ -831,18 +848,38 @@ export default {
   background: white;
   border-radius: 16px;
   padding: 24px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid #f1f5f9;
   transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  overflow: hidden;
 }
 
 .metric-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  border-color: #e2e8f0;
 }
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+.metric-card.primary::before { background: linear-gradient(90deg, #3b82f6, #1d4ed8); }
+.metric-card.success::before { background: linear-gradient(90deg, #10b981, #059669); }
+.metric-card.revenue::before { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
+.metric-card.info::before { background: linear-gradient(90deg, #0ea5e9, #0284c7); }
+.metric-card.warning::before { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.metric-card.purple::before { background: linear-gradient(90deg, #a855f7, #9333ea); }
 
 .metric-icon {
   width: 60px;
@@ -851,16 +888,23 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   flex-shrink: 0;
 }
 
-.metric-icon.up { background: #dcfce7; color: #16a34a; }
-.metric-icon.down { background: #fee2e2; color: #dc2626; }
-.metric-icon.neutral { background: #f1f5f9; color: #64748b; }
+.metric-card.primary .metric-icon { background: #dbeafe; color: #1d4ed8; }
+.metric-card.success .metric-icon { background: #d1fae5; color: #059669; }
+.metric-card.revenue .metric-icon { background: #ede9fe; color: #7c3aed; }
+.metric-card.info .metric-icon { background: #e0f2fe; color: #0284c7; }
+.metric-card.warning .metric-icon { background: #fef3c7; color: #d97706; }
+.metric-card.purple .metric-icon { background: #f3e8ff; color: #9333ea; }
+
+.metric-content {
+  flex: 1;
+}
 
 .metric-content h3 {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 800;
   color: #1e293b;
   margin-bottom: 4px;
@@ -869,384 +913,285 @@ export default {
 
 .metric-title {
   color: #64748b;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .metric-trend {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.8rem;
+  gap: 6px;
+  font-size: 0.85rem;
   font-weight: 600;
+  margin-top: 6px;
 }
 
-.metric-trend.up { color: #16a34a; }
-.metric-trend.down { color: #dc2626; }
+.metric-trend .fa-arrow-up { color: #10b981; }
+.metric-trend .fa-arrow-down { color: #ef4444; }
 
-/* Content Grid */
-.content-grid {
-  display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 24px;
+.metric-period {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
 }
 
-.left-column,
-.right-column {
+.metric-subtext {
+  font-size: 0.85rem;
+  color: #64748b;
   display: flex;
-  flex-direction: column;
-  gap: 24px;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
 }
 
-/* Content Cards */
-.content-card {
+.rating-stars {
+  display: flex;
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.rating-stars .filled {
+  color: #fbbf24;
+}
+
+.metric-action {
+  color: #94a3b8;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.metric-card:hover .metric-action {
+  color: #3b82f6;
+  transform: translateX(4px);
+}
+
+/* Quick Stats Grid */
+.quick-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.stats-card {
   background: white;
   border-radius: 16px;
-  overflow: hidden;
+  padding: 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   border: 1px solid #f1f5f9;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  background: #f8fafc;
-  border-bottom: 1px solid #e2e8f0;
+.stats-header {
+  margin-bottom: 20px;
 }
 
-.card-header h3 {
-  margin: 0;
+.stats-header h3 {
+  color: #1e293b;
   font-size: 1.2rem;
   font-weight: 600;
-  color: #1e293b;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.view-all {
-  color: #3b82f6;
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: color 0.2s ease;
-}
-
-.view-all:hover {
-  color: #2563eb;
-}
-
-.card-body {
-  padding: 24px;
-}
-
-/* Empty States */
-.empty-state {
-  text-align: center;
-  padding: 40px 20px;
-  color: #64748b;
-}
-
-.empty-state i {
-  font-size: 3rem;
-  color: #cbd5e1;
-  margin-bottom: 16px;
-}
-
-.empty-state p {
-  margin: 0 0 4px 0;
-  font-weight: 600;
-}
-
-.empty-state small {
-  font-size: 0.85rem;
-}
-
-/* Bookings List */
-.bookings-list {
-  space-y: 16px;
-}
-
-.booking-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  background: #f8fafc;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-}
-
-.booking-item:hover {
-  background: #f1f5f9;
-  transform: translateX(4px);
-}
-
-.booking-item.urgent {
-  background: #fef3c7;
-  border-left: 4px solid #d97706;
-}
-
-.booking-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6, #1e40af);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-}
-
-.booking-details {
-  flex: 1;
-}
-
-.booking-details strong {
-  color: #1e293b;
-  display: block;
-  margin-bottom: 4px;
-}
-
-.booking-meta {
-  display: flex;
-  gap: 12px;
-  font-size: 0.85rem;
-  color: #64748b;
-}
-
-.service {
-  background: #e2e8f0;
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-weight: 500;
-}
-
-.time {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.booking-date {
-  font-weight: 600;
-  color: #3b82f6;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-}
-
-/* Activity List */
-.activity-list {
-  space-y: 12px;
-}
-
-.activity-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
-}
-
-.activity-item:hover {
-  background: #f8fafc;
-}
-
-.activity-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.activity-icon.booking { background: #dbeafe; color: #1e40af; }
-.activity-icon.review { background: #fef3c7; color: #d97706; }
-.activity-icon.message { background: #dcfce7; color: #16a34a; }
-
-.activity-content {
-  flex: 1;
-}
-
-.activity-content p {
-  margin: 0 0 4px 0;
-  color: #1e293b;
-  font-size: 0.9rem;
-}
-
-.activity-time {
-  font-size: 0.8rem;
-  color: #64748b;
-}
-
-/* Performance Stats */
-.performance-stats {
-  space-y: 20px;
-}
-
-.performance-item {
-  space-y: 8px;
-}
-
-.performance-item label {
-  font-weight: 600;
-  color: #374151;
-  font-size: 0.9rem;
-}
-
-.performance-value {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #1e293b;
-}
-
-.performance-progress {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.progress-bar {
-  flex: 1;
-  height: 8px;
-  background: #f1f5f9;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 1s ease-in-out;
-}
-
-.progress-fill.revenue { background: linear-gradient(90deg, #10b981, #34d399); }
-.progress-fill.completion { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
-.progress-fill.satisfaction { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-
-.progress-text {
-  font-size: 0.8rem;
-  color: #64748b;
-  font-weight: 500;
-  min-width: 80px;
-  text-align: right;
-}
-
-/* Quick Actions */
-.quick-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.action-btn {
-  background: #f8fafc;
-  border: 2px dashed #e2e8f0;
-  border-radius: 12px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #64748b;
-}
-
-.action-btn:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
-  background: #f0f9ff;
-  transform: translateY(-2px);
-}
-
-.action-btn i {
-  font-size: 1.2rem;
-}
-
-.action-btn span {
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-/* Messages List */
-.messages-list {
-  space-y: 12px;
-}
-
-.message-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
-}
-
-.message-item:hover {
-  background: #f8fafc;
-}
-
-.message-item.unread {
-  background: #f0f9ff;
-  border-left: 3px solid #0ea5e9;
-}
-
-.message-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #8b5cf6, #a855f7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 0.8rem;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.message-content {
-  flex: 1;
-}
-
-.message-header {
+.stat-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  gap: 20px;
+}
+
+.stat-item {
+  text-align: center;
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1e293b;
   margin-bottom: 4px;
 }
 
-.message-header strong {
-  color: #1e293b;
-  font-size: 0.9rem;
-}
-
-.message-time {
-  font-size: 0.75rem;
-  color: #64748b;
-}
-
-.message-preview {
-  margin: 0;
+.stat-label {
   font-size: 0.85rem;
   color: #64748b;
-  line-height: 1.4;
+  font-weight: 500;
+}
+
+/* Status Bars */
+.status-bars {
+  display: flex;
+  height: 32px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+.status-bar {
+  height: 100%;
+  position: relative;
+  transition: width 1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-bar.completed { background: #10b981; }
+.status-bar.confirmed { background: #3b82f6; }
+.status-bar.pending { background: #f59e0b; }
+.status-bar.cancelled { background: #6b7280; }
+
+.status-label {
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 0 8px;
+}
+
+/* Quick Actions Section */
+.quick-actions-section {
+  margin-bottom: 40px;
+}
+
+.quick-actions-section h3 {
+  color: #1e293b;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.action-card {
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.action-card:hover {
+  border-color: #3b82f6;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.15);
+}
+
+.action-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: #f0f9ff;
+  color: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.action-content {
+  flex: 1;
+}
+
+.action-content h4 {
+  color: #1e293b;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.action-content p {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Coming Soon Section */
+.coming-soon-section {
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid #e2e8f0;
+}
+
+.coming-soon-section h3 {
+  color: #1e293b;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.feature-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.feature-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  background: #e0f2fe;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.feature-content {
+  flex: 1;
+}
+
+.feature-content h4 {
+  color: #1e293b;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.feature-content p {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.feature-status {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #fef3c7;
+  color: #92400e;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 /* Animations */
@@ -1256,19 +1201,18 @@ export default {
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .content-grid {
-    grid-template-columns: 1fr;
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
   
-  .right-column {
-    order: -1;
+  .quick-stats-grid {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 768px) {
   .dashboard-header {
-    padding: 32px 24px;
-    border-radius: 0 0 16px 16px;
+    padding: 24px;
   }
   
   .header-content {
@@ -1276,46 +1220,46 @@ export default {
     gap: 20px;
   }
   
-  .header-actions {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .welcome-section .title {
-    font-size: 2rem;
-  }
-  
   .metrics-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
   }
   
-  .quick-actions {
+  .actions-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .stat-item {
+    text-align: left;
   }
 }
 
 @media (max-width: 480px) {
   .dashboard-content {
-    padding: 0 16px 16px;
+    padding: 0 16px 24px;
   }
   
-  .metrics-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .card-body {
-    padding: 20px;
-  }
-  
-  .booking-item {
+  .metric-card {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
+    gap: 16px;
   }
   
-  .booking-meta {
-    flex-direction: column;
-    gap: 4px;
+  .metric-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .status-label {
+    font-size: 0.7rem;
   }
 }
 </style>

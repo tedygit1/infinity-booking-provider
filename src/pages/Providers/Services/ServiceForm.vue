@@ -1,233 +1,239 @@
 <!-- src/pages/Providers/ServiceForm.vue -->
 <template>
-  <div class="service-form-container">
-    <div class="service-form">
-      <div class="form-header">
-        <h2 class="form-title">{{ isEdit ? "Edit Service" : "Add New Service" }}</h2>
-        <p class="form-subtitle">Fill in the basic details - you'll add time slots later</p>
-      </div>
-
-      <!-- CATEGORY -->
-      <div class="form-row">
-        <label>Category <span class="required">*</span></label>
-        <select 
-          v-model="local.categoryId" 
-          @change="onCategoryChange"
-          :class="{ 'error': !local.categoryId && showError }"
-        >
-          <option disabled value="">Choose a category</option>
-          <option v-for="cat in categories" :key="cat._id" :value="cat._id">
-            {{ cat.name }}
-          </option>
-        </select>
-        <div v-if="!local.categoryId && showError" class="error-message">
-          Please select a service category
+  <!-- Scrollable container added here -->
+  <div class="service-form-scroll-wrapper">
+    <div class="service-form-container">
+      <div class="service-form">
+        <div class="form-header">
+          <h2 class="form-title">{{ isEdit ? "Edit Service" : "Add New Service" }}</h2>
+          <p class="form-subtitle">Fill in the basic details - you'll add time slots later</p>
         </div>
-      </div>
 
-      <!-- SUBCATEGORY - MULTIPLE SELECTION -->
-      <div v-if="local.categoryId && subcategories.length" class="form-row">
-        <label>Subcategories</label>
-        <div class="multi-select-container">
-          <div 
-            class="multi-select-display"
-            @click="toggleSubcategoryDropdown"
-            :class="{ 'error': showError && !hasValidSubcategories }"
+        <!-- CATEGORY -->
+        <div class="form-row">
+          <label>Category <span class="required">*</span></label>
+          <select 
+            v-model="local.categoryId" 
+            @change="onCategoryChange"
+            :class="{ 'error': !local.categoryId && showError }"
           >
-            <span v-if="selectedSubcategories.length === 0" class="placeholder">
-              Choose subcategories (optional)
-            </span>
-            <span v-else class="selected-items">
-              {{ selectedSubcategories.length }} subcategory{{ selectedSubcategories.length !== 1 ? 's' : '' }} selected
-            </span>
-            <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+            <option disabled value="">Choose a category</option>
+            <option v-for="cat in categories" :key="cat._id" :value="cat._id">
+              {{ cat.name }}
+            </option>
+          </select>
+          <div v-if="!local.categoryId && showError" class="error-message">
+            Please select a service category
+          </div>
+        </div>
+
+        <!-- SUBCATEGORY - MULTIPLE SELECTION -->
+        <div v-if="local.categoryId && subcategories.length" class="form-row">
+          <label>Subcategories</label>
+          <div class="multi-select-container">
+            <div 
+              class="multi-select-display"
+              @click="toggleSubcategoryDropdown"
+              :class="{ 'error': showError && !hasValidSubcategories }"
+            >
+              <span v-if="selectedSubcategories.length === 0" class="placeholder">
+                Choose subcategories (optional)
+              </span>
+              <span v-else class="selected-items">
+                {{ selectedSubcategories.length }} subcategory{{ selectedSubcategories.length !== 1 ? 's' : '' }} selected
+              </span>
+              <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+            </div>
+            
+            <div v-if="showSubcategoryDropdown" class="multi-select-dropdown">
+              <div class="dropdown-search" v-if="subcategories.length > 5">
+                <input 
+                  type="text" 
+                  v-model="subcategorySearch" 
+                  placeholder="Search subcategories..."
+                  @click.stop
+                />
+              </div>
+              <div class="dropdown-options">
+                <label 
+                  v-for="sub in filteredSubcategories" 
+                  :key="sub._id" 
+                  class="checkbox-option"
+                >
+                  <input 
+                    type="checkbox" 
+                    :value="sub._id" 
+                    v-model="local.subcategoryIds"
+                    @change="onSubcategoryChange"
+                  />
+                  <span class="checkmark"></span>
+                  <span class="option-text">{{ sub.name }}</span>
+                </label>
+              </div>
+              <div v-if="filteredSubcategories.length === 0" class="no-options">
+                No subcategories found
+              </div>
+            </div>
+          </div>
+          <div v-if="showError && !hasValidSubcategories" class="error-message">
+            Please select valid subcategories for this category
           </div>
           
-          <div v-if="showSubcategoryDropdown" class="multi-select-dropdown">
-            <div class="dropdown-search" v-if="subcategories.length > 5">
+          <!-- Selected subcategories display -->
+          <div v-if="selectedSubcategories.length > 0" class="selected-tags">
+            <div 
+              v-for="sub in selectedSubcategories" 
+              :key="sub._id" 
+              class="tag"
+            >
+              {{ sub.name }}
+              <button @click="removeSubcategory(sub._id)" class="remove-tag">×</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SERVICE NAME -->
+        <div class="form-row">
+          <label>Service Name <span class="required">*</span></label>
+          <input 
+            type="text" 
+            v-model="local.title" 
+            placeholder="e.g. Men's Haircut, Legal Consultation"
+            :class="{ 'error': !local.title.trim() && showError }"
+            ref="titleInput"
+          />
+          <div v-if="!local.title.trim() && showError" class="error-message">
+            A clear service name is required
+          </div>
+        </div>
+
+        <!-- BANNER -->
+        <div class="form-row">
+          <label>Banner Image <span class="required">*</span></label>
+          <div class="file-upload-area" @click="$refs.fileInput.click()">
+            <input 
+              ref="fileInput"
+              type="file" 
+              accept="image/*"
+              @change="onFileChange" 
+              hidden 
+            />
+            <div v-if="previewImage" class="image-preview-container">
+              <img :src="previewImage" class="banner-preview" />
+              <button class="remove-image-btn" @click.stop="removeImage" aria-label="Remove image">✕</button>
+            </div>
+            <div v-else class="upload-placeholder">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <p>Upload banner (JPG/PNG)</p>
+              <p class="upload-hint">Recommended: 800×400 px</p>
+            </div>
+          </div>
+          <div v-if="!local.bannerFile && showError" class="error-message">
+            Banner image is required
+          </div>
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div class="form-row">
+          <label>Description <span class="required">*</span></label>
+          <textarea 
+            v-model="local.description" 
+            rows="4" 
+            placeholder="Describe what's included, duration, tools used, etc."
+            :class="{ 'error': !local.description.trim() && showError }"
+          ></textarea>
+          <div v-if="!local.description.trim() && showError" class="error-message">
+            A detailed description helps attract clients
+          </div>
+        </div>
+
+        <!-- PRICE SECTION -->
+        <div class="form-row price-section">
+          <div class="price-inputs">
+            <div class="price-input">
+              <label>Total Price (ETB) <span class="required">*</span></label>
               <input 
-                type="text" 
-                v-model="subcategorySearch" 
-                placeholder="Search subcategories..."
-                @click.stop
+                type="number" 
+                v-model.number="local.totalPrice" 
+                @input="updateBookingPrice"
+                min="0" 
+                placeholder="0"
+                :class="{ 'error': local.totalPrice <= 0 && showError }"
               />
             </div>
-            <div class="dropdown-options">
-              <label 
-                v-for="sub in filteredSubcategories" 
-                :key="sub._id" 
-                class="checkbox-option"
-              >
-                <input 
-                  type="checkbox" 
-                  :value="sub._id" 
-                  v-model="local.subcategoryIds"
-                  @change="onSubcategoryChange"
-                />
-                <span class="checkmark"></span>
-                <span class="option-text">{{ sub.name }}</span>
-              </label>
-            </div>
-            <div v-if="filteredSubcategories.length === 0" class="no-options">
-              No subcategories found
+            <div class="price-input">
+              <label>Booking Deposit (10%)</label>
+              <input 
+                type="number" 
+                v-model.number="local.bookingPrice" 
+                disabled 
+                readonly
+              />
             </div>
           </div>
+          <div v-if="local.totalPrice <= 0 && showError" class="error-message">
+            Please set a valid price above 0 ETB
+          </div>
         </div>
-        <div v-if="showError && !hasValidSubcategories" class="error-message">
-          Please select valid subcategories for this category
+
+        <!-- PAYMENT METHOD -->
+        <div class="form-row">
+          <label>Preferred Payment Method</label>
+          <select v-model="local.paymentMethod">
+            <option value="">Not specified</option>
+            <option v-for="pm in paymentMethods" :key="pm" :value="pm">
+              {{ pm }}
+            </option>
+          </select>
         </div>
-        
-        <!-- Selected subcategories display -->
-        <div v-if="selectedSubcategories.length > 0" class="selected-tags">
-          <div 
-            v-for="sub in selectedSubcategories" 
-            :key="sub._id" 
-            class="tag"
+
+        <!-- STATUS - ALWAYS DRAFT FOR NEW SERVICES -->
+        <div class="form-row" v-if="isEdit">
+          <label>Listing Status</label>
+          <div class="status-options" role="radiogroup" aria-label="Service status">
+            <label class="status-option">
+              <input 
+                type="radio" 
+                value="published" 
+                v-model="local.status" 
+              />
+              <span class="status-label published">Published</span>
+            </label>
+            <label class="status-option">
+              <input 
+                type="radio" 
+                value="draft" 
+                v-model="local.status" 
+              />
+              <span class="status-label draft">Draft</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- INFO MESSAGE FOR NEW SERVICES -->
+        <div v-if="!isEdit" class="info-message">
+          <i class="fa-solid fa-info-circle"></i>
+          <p><strong>Next step:</strong> After saving, you'll add time slots to make your service available for booking.</p>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="form-actions">
+          <button class="btn cancel-btn" @click="$emit('close')">
+            <i class="fa-solid fa-xmark"></i> Cancel
+          </button>
+          <button 
+            class="btn save-btn" 
+            @click="saveService"
+            :disabled="isSaving"
           >
-            {{ sub.name }}
-            <button @click="removeSubcategory(sub._id)" class="remove-tag">×</button>
-          </div>
+            <span v-if="isSaving">
+              <i class="fa-solid fa-spinner fa-spin"></i> Saving...
+            </span>
+            <span v-else>
+              <i class="fa-solid fa-check"></i> {{ isEdit ? "Update Service" : "Save as Draft" }}
+            </span>
+          </button>
         </div>
-      </div>
-
-      <!-- SERVICE NAME -->
-      <div class="form-row">
-        <label>Service Name <span class="required">*</span></label>
-        <input 
-          type="text" 
-          v-model="local.title" 
-          placeholder="e.g. Men's Haircut, Legal Consultation"
-          :class="{ 'error': !local.title.trim() && showError }"
-          ref="titleInput"
-        />
-        <div v-if="!local.title.trim() && showError" class="error-message">
-          A clear service name is required
-        </div>
-      </div>
-
-      <!-- BANNER -->
-      <div class="form-row">
-        <label>Banner Image (optional)</label>
-        <div class="file-upload-area" @click="$refs.fileInput.click()">
-          <input 
-            ref="fileInput"
-            type="file" 
-            accept="image/*"
-            @change="onFileChange" 
-            hidden 
-          />
-          <div v-if="previewImage" class="image-preview-container">
-            <img :src="previewImage" class="banner-preview" />
-            <button class="remove-image-btn" @click.stop="removeImage" aria-label="Remove image">✕</button>
-          </div>
-          <div v-else class="upload-placeholder">
-            <i class="fa-solid fa-cloud-arrow-up"></i>
-            <p>Upload banner (JPG/PNG)</p>
-            <p class="upload-hint">Recommended: 800×400 px</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- DESCRIPTION -->
-      <div class="form-row">
-        <label>Description <span class="required">*</span></label>
-        <textarea 
-          v-model="local.description" 
-          rows="4" 
-          placeholder="Describe what's included, duration, tools used, etc."
-          :class="{ 'error': !local.description.trim() && showError }"
-        ></textarea>
-        <div v-if="!local.description.trim() && showError" class="error-message">
-          A detailed description helps attract clients
-        </div>
-      </div>
-
-      <!-- PRICE SECTION -->
-      <div class="form-row price-section">
-        <div class="price-inputs">
-          <div class="price-input">
-            <label>Total Price (ETB) <span class="required">*</span></label>
-            <input 
-              type="number" 
-              v-model.number="local.totalPrice" 
-              @input="updateBookingPrice"
-              min="0" 
-              placeholder="0"
-              :class="{ 'error': local.totalPrice <= 0 && showError }"
-            />
-          </div>
-          <div class="price-input">
-            <label>Booking Deposit (10%)</label>
-            <input 
-              type="number" 
-              v-model.number="local.bookingPrice" 
-              disabled 
-              readonly
-            />
-          </div>
-        </div>
-        <div v-if="local.totalPrice <= 0 && showError" class="error-message">
-          Please set a valid price above 0 ETB
-        </div>
-      </div>
-
-      <!-- PAYMENT METHOD -->
-      <div class="form-row">
-        <label>Preferred Payment Method</label>
-        <select v-model="local.paymentMethod">
-          <option value="">Not specified</option>
-          <option v-for="pm in paymentMethods" :key="pm" :value="pm">
-            {{ pm }}
-          </option>
-        </select>
-      </div>
-
-      <!-- STATUS - ALWAYS DRAFT FOR NEW SERVICES -->
-      <div class="form-row" v-if="isEdit">
-        <label>Listing Status</label>
-        <div class="status-options" role="radiogroup" aria-label="Service status">
-          <label class="status-option">
-            <input 
-              type="radio" 
-              value="published" 
-              v-model="local.status" 
-            />
-            <span class="status-label published">Published</span>
-          </label>
-          <label class="status-option">
-            <input 
-              type="radio" 
-              value="draft" 
-              v-model="local.status" 
-            />
-            <span class="status-label draft">Draft</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- INFO MESSAGE FOR NEW SERVICES -->
-      <div v-if="!isEdit" class="info-message">
-        <i class="fa-solid fa-info-circle"></i>
-        <p><strong>Next step:</strong> After saving, you'll add time slots to make your service available for booking.</p>
-      </div>
-
-      <!-- ACTIONS -->
-      <div class="form-actions">
-        <button class="btn cancel-btn" @click="$emit('close')">
-          <i class="fa-solid fa-xmark"></i> Cancel
-        </button>
-        <button 
-          class="btn save-btn" 
-          @click="saveService"
-          :disabled="isSaving"
-        >
-          <span v-if="isSaving">
-            <i class="fa-solid fa-spinner fa-spin"></i> Saving...
-          </span>
-          <span v-else>
-            <i class="fa-solid fa-check"></i> {{ isEdit ? "Update Service" : "Save as Draft" }}
-          </span>
-        </button>
       </div>
     </div>
   </div>
@@ -244,7 +250,7 @@ export default {
       local: {
         _id: null,
         categoryId: "",
-        subcategoryIds: [], // CHANGED: Now an array for multiple selection
+        subcategoryIds: [],
         title: "",
         bannerFile: null,
         description: "",
@@ -285,10 +291,7 @@ export default {
     },
     
     hasValidSubcategories() {
-      // Subcategories are optional, but if selected they must be valid
       if (this.local.subcategoryIds.length === 0) return true;
-      
-      // Check if all selected subcategory IDs exist in current subcategories
       return this.local.subcategoryIds.every(id =>
         this.subcategories.some(sub => sub._id === id)
       );
@@ -303,7 +306,7 @@ export default {
           this.local = {
             _id: val._id,
             categoryId: val.categoryId || "",
-            subcategoryIds: Array.isArray(val.subcategoryIds) ? [...val.subcategoryIds] : [], // CHANGED
+            subcategoryIds: Array.isArray(val.subcategoryIds) ? [...val.subcategoryIds] : [],
             title: val.title || "",
             description: val.description || "",
             totalPrice: val.totalPrice || 0,
@@ -314,7 +317,11 @@ export default {
             slots: Array.isArray(val.slots) ? [...val.slots] : [],
             bannerFile: null
           };
-          this.previewImage = val.banner || "";
+          if (val.banner) {
+            this.previewImage = val.banner;
+          } else {
+            this.previewImage = null;
+          }
           if (val.categoryId) {
             this.fetchSubcategories(val.categoryId);
           }
@@ -332,7 +339,6 @@ export default {
       }
     });
     
-    // Close dropdown when clicking outside
     document.addEventListener('click', this.closeDropdowns);
   },
 
@@ -357,7 +363,7 @@ export default {
 
     async fetchSubcategories(categoryId) {
       this.subcategories = [];
-      this.local.subcategoryIds = []; // Reset when category changes
+      this.local.subcategoryIds = [];
       if (!categoryId) return;
       try {
         const res = await http.get(`/categories/${categoryId}/subcategories`);
@@ -374,7 +380,6 @@ export default {
     },
 
     onSubcategoryChange() {
-      // Force reactivity
       this.local.subcategoryIds = [...this.local.subcategoryIds];
     },
 
@@ -404,7 +409,9 @@ export default {
         }
         this.local.bannerFile = file;
         const reader = new FileReader();
-        reader.onload = (ev) => (this.previewImage = ev.target.result);
+        reader.onload = (ev) => {
+          this.previewImage = ev.target.result;
+        };
         reader.readAsDataURL(file);
       }
     },
@@ -422,6 +429,7 @@ export default {
       if (!this.local.description?.trim()) return false;
       if (this.local.totalPrice <= 0) return false;
       if (!this.hasValidSubcategories) return false;
+      if (!this.local.bannerFile) return false;
       return true;
     },
 
@@ -434,7 +442,6 @@ export default {
       this.isSaving = true;
 
       try {
-        // Get provider PID
         let providerId = null;
         try {
           const loggedProvider = JSON.parse(localStorage.getItem("loggedProvider") || "{}");
@@ -449,84 +456,115 @@ export default {
           throw new Error("Provider not authenticated.");
         }
 
-        // Get category info
         const selectedCategory = this.categories.find(cat => cat._id === this.local.categoryId);
         if (!selectedCategory) {
           throw new Error("Please select a valid category");
         }
 
-        // Get subcategory names for the selected IDs
         const selectedSubcategoryNames = this.selectedSubcategories.map(sub => sub.name);
 
-        console.log("🔍 SUBCATEGORY DATA:");
-        console.log("📍 IDs to send:", this.local.subcategoryIds);
-        console.log("📍 Names to send:", selectedSubcategoryNames);
+        const formData = new FormData();
+        formData.append('title', this.local.title.trim());
+        formData.append('description', this.local.description.trim());
+        formData.append('totalPrice', String(this.local.totalPrice));
+        formData.append('bookingPrice', String(this.local.bookingPrice));
+        formData.append('category', selectedCategory.name);
+        formData.append('categoryId', this.local.categoryId);
+        formData.append('status', "draft");
+        formData.append('providerId', providerId);
+        formData.append('paymentMethod', this.local.paymentMethod || "Telebirr");
+        formData.append('priceUnit', "ETB");
+        formData.append('serviceType', "fixed");
 
-        // Prepare service data - MATCH BACKEND EXPECTATION
-        const serviceData = {
-          title: this.local.title.trim(),
-          description: this.local.description.trim(),
-          totalPrice: Number(this.local.totalPrice),
-          bookingPrice: Number(this.local.bookingPrice),
-          category: selectedCategory.name, // Backend expects category NAME
-          categoryId: this.local.categoryId,
-          status: "draft",
-          providerId: providerId,
-          subcategories: selectedSubcategoryNames, // CHANGED: Backend expects 'subcategories' array of names
-          slots: [],
-          paymentMethod: this.local.paymentMethod || "Telebirr",
-          priceUnit: "ETB",
-          serviceType: "fixed"
-        };
+        selectedSubcategoryNames.forEach(name => {
+          formData.append('subcategories[]', name);
+        });
 
-        console.log("📤 COMPLETE DATA TO BACKEND:", serviceData);
+        if (this.local.bannerFile) {
+          formData.append('banner', this.local.bannerFile);
+        }
 
         let response;
         const url = this.isEdit ? `/services/${this.local._id}` : "/services";
-
-        // Use JSON format
+        
         const config = {
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Content-Type': 'multipart/form-data'
           }
         };
 
-        console.log("🚀 SENDING TO BACKEND...");
-        response = this.isEdit
-          ? await http.put(url, serviceData, config)
-          : await http.post(url, serviceData, config);
-
-        console.log("✅ SERVER RESPONSE:", response.data);
-        
-        // Check final result
-        if (response.data.subcategoryIds && response.data.subcategoryIds.length > 0) {
-          console.log("🎉 SUCCESS! Subcategories saved in database:");
-          console.log("   IDs:", response.data.subcategoryIds);
-          console.log("   Names:", response.data.subcategories);
-          alert("✅ Service created WITH subcategories!");
+        if (this.isEdit) {
+          response = await http.put(url, formData, config);
         } else {
-          console.log("ℹ️ Service created without subcategories (optional)");
+          response = await http.post(url, formData, config);
+        }
+
+        const savedService = response.data;
+        
+        console.log('✅ Service saved successfully!');
+        console.log('🔍 Full backend response:', savedService);
+        
+        // 🔥 CRITICAL FIX: Handle the banner correctly
+        if (savedService.banner) {
+          console.log('📸 Backend returned banner:', savedService.banner);
+          console.log('📸 Banner type:', typeof savedService.banner);
+          
+          // Fix 1: If banner is an object, extract the URL
+          if (typeof savedService.banner === 'object') {
+            console.log('🔍 Banner is object, extracting URL...');
+            console.log('🔍 Banner object keys:', Object.keys(savedService.banner));
+            
+            // Try all possible URL properties from Cloudinary
+            const possibleUrl = savedService.banner.secure_url || 
+                               savedService.banner.url || 
+                               savedService.banner.public_id ||
+                               savedService.banner.path;
+            
+            if (possibleUrl) {
+              savedService.banner = possibleUrl;
+              console.log('✅ Extracted banner URL:', savedService.banner);
+            } else {
+              console.warn('⚠️ Could not extract URL from banner object');
+              savedService.banner = null;
+            }
+          }
+          
+          // Fix 2: If banner is the string "[object Object]", clear it
+          if (savedService.banner === '[object Object]' || savedService.banner === '[object Object]') {
+            console.warn('⚠️ Banner is "[object Object]" string');
+            savedService.banner = null;
+          }
+          
+          // Fix 3: Ensure banner is a valid URL string
+          if (savedService.banner && typeof savedService.banner === 'string') {
+            if (!savedService.banner.startsWith('http') && !savedService.banner.startsWith('data:')) {
+              console.warn('⚠️ Banner string is not a valid URL:', savedService.banner);
+              savedService.banner = null;
+            }
+          }
+        } else {
+          console.warn('⚠️ No banner in backend response');
         }
         
-        this.$emit("save", response.data);
+        // Final fallback: Use preview image if no valid banner
+        if (!savedService.banner || savedService.banner === '[object Object]') {
+          console.log('✅ Using preview image as banner');
+          savedService.banner = this.previewImage;
+        }
+        
+        console.log('🎯 Final banner after processing:', savedService.banner);
+
+        this.$emit("save", savedService);
 
       } catch (err) {
         console.error("❌ Save error:", err);
-        
         if (err.response) {
-          console.error("Error response:", err.response.data);
-          
-          // Handle subcategory validation errors from backend
-          if (err.response.data.message?.includes("subcategories were not found")) {
-            alert(`❌ Subcategory Error: ${err.response.data.message}`);
-          } else {
-            const errorMsg = err.response.data?.message || 
-                            err.response.data?.error || 
-                            err.message || 
-                            "Failed to save service";
-            alert(`❌ ${errorMsg}`);
-          }
+          console.error("❌ Response error:", err.response.data);
+          const errorMsg = err.response.data?.message || 
+                          err.response.data?.error || 
+                          err.message || 
+                          "Failed to save service";
+          alert(`❌ ${errorMsg}`);
         } else {
           alert(`❌ ${err.message || "Failed to save service"}`);
         }
@@ -539,7 +577,310 @@ export default {
 </script>
 
 <style scoped>
-/* ===== ADD MULTI-SELECT STYLES ===== */
+/* ===== SCROLLABLE WRAPPER (NEW) ===== */
+.service-form-scroll-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  margin: 20px auto;
+  font-family: "Poppins", sans-serif;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.service-form-container {
+  width: 100%;
+  max-width: 720px;
+}
+
+.service-form {
+  padding: 36px;
+  border-radius: 24px;
+  background: white;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.4s ease-out;
+  position: relative;
+  z-index: 10;
+}
+
+.form-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
+}
+
+.form-subtitle {
+  color: #64748b;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.form-row {
+  margin-bottom: 26px;
+}
+
+label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.required {
+  color: #ef4444;
+  font-size: 1.1em;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 14px 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  font-size: 1.02rem;
+  background: #f8fafc;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #22c55e;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
+}
+
+.error {
+  border-color: #ef4444 !important;
+  background: #fef2f2 !important;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 0.92rem;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.file-upload-area {
+  border: 2px dashed #cbd5e1;
+  border-radius: 18px;
+  padding: 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #f0fdf4;
+  position: relative;
+}
+
+.file-upload-area:hover {
+  border-color: #22c55e;
+  background: #ecfdf5;
+  transform: translateY(-2px);
+}
+
+.upload-placeholder i {
+  font-size: 2.8rem;
+  color: #22c55e;
+  margin-bottom: 14px;
+}
+
+.upload-placeholder p {
+  margin: 6px 0;
+  color: #374151;
+  font-size: 1.02rem;
+}
+
+.upload-hint {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.image-preview-container {
+  position: relative;
+  display: inline-block;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.banner-preview {
+  max-width: 100%;
+  display: block;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  border: 2px solid white;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
+}
+
+.remove-image-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1);
+}
+
+.price-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.price-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.price-input label {
+  margin-bottom: 8px;
+}
+
+.status-options {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.status-option {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.status-option input {
+  display: none;
+}
+
+.status-label {
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.25s ease;
+  min-width: 90px;
+  text-align: center;
+}
+
+.status-label.published {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-label.draft {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-option input:checked + .status-label.published {
+  background: #16a34a;
+  color: white;
+}
+
+.status-option input:checked + .status-label.draft {
+  background: #3b82f6;
+  color: white;
+}
+
+.info-message {
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 20px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.info-message i {
+  color: #1d4ed8;
+  font-size: 1.2rem;
+  margin-top: 2px;
+}
+
+.info-message p {
+  color: #1e40af;
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.btn {
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05rem;
+  transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+  border: none;
+  letter-spacing: 0.4px;
+  min-height: 52px;
+  min-width: 140px;
+  justify-content: center;
+}
+
+.cancel-btn {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.cancel-btn:hover {
+  background: #e2e8f0;
+  transform: translateY(-2px);
+}
+
+.save-btn {
+  background: linear-gradient(120deg, #22c55e, #16a34a);
+  color: white;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+}
+
+.save-btn:hover:not(:disabled) {
+  background: linear-gradient(120deg, #16a34a, #15803d);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(34, 197, 94, 0.4);
+}
+
+.save-btn:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .multi-select-container {
   position: relative;
   width: 100%;
@@ -711,320 +1052,6 @@ export default {
   background: #bbf7d0;
 }
 
-.service-form-container {
-  display: flex;
-  justify-content: center;
-  padding: 20px;
-  margin: 20px auto;
-  font-family: "Poppins", sans-serif;
-}
-
-.service-form {
-  width: 100%;
-  max-width: 720px;
-  padding: 36px;
-  border-radius: 24px;
-  background: white;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
-  animation: fadeIn 0.4s ease-out;
-  position: relative;
-  z-index: 10;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.form-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.form-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 10px;
-  letter-spacing: -0.5px;
-}
-
-.form-subtitle {
-  color: #64748b;
-  font-size: 1.05rem;
-  line-height: 1.5;
-}
-
-.form-row {
-  margin-bottom: 26px;
-}
-
-label {
-  display: block;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #334155;
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.required {
-  color: #ef4444;
-  font-size: 1.1em;
-}
-
-input, select, textarea {
-  width: 100%;
-  padding: 14px 18px;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  font-size: 1.02rem;
-  background: #f8fafc;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
-}
-
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: #22c55e;
-  background: white;
-  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.15);
-}
-
-.error {
-  border-color: #ef4444 !important;
-  background: #fef2f2 !important;
-}
-
-.error-message {
-  color: #ef4444;
-  font-size: 0.92rem;
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
-}
-
-/* File Upload */
-.file-upload-area {
-  border: 2px dashed #cbd5e1;
-  border-radius: 18px;
-  padding: 32px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: #f0fdf4;
-  position: relative;
-}
-
-.file-upload-area:hover {
-  border-color: #22c55e;
-  background: #ecfdf5;
-  transform: translateY(-2px);
-}
-
-.upload-placeholder i {
-  font-size: 2.8rem;
-  color: #22c55e;
-  margin-bottom: 14px;
-}
-
-.upload-placeholder p {
-  margin: 6px 0;
-  color: #374151;
-  font-size: 1.02rem;
-}
-
-.upload-hint {
-  font-size: 0.85rem;
-  color: #94a3b8;
-}
-
-.image-preview-container {
-  position: relative;
-  display: inline-block;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-}
-
-.banner-preview {
-  max-width: 100%;
-  display: block;
-}
-
-.remove-image-btn {
-  position: absolute;
-  top: -12px;
-  right: -12px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #ef4444;
-  color: white;
-  border: 2px solid white;
-  cursor: pointer;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: all 0.2s;
-}
-
-.remove-image-btn:hover {
-  background: #dc2626;
-  transform: scale(1.1);
-}
-
-/* Price Section */
-.price-section {
-  display: flex;
-  flex-direction: column;
-}
-
-.price-inputs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-.price-input label {
-  margin-bottom: 8px;
-}
-
-/* Status Options */
-.status-options {
-  display: flex;
-  gap: 18px;
-  flex-wrap: wrap;
-}
-
-.status-option {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-.status-option input {
-  display: none;
-}
-
-.status-label {
-  padding: 10px 20px;
-  border-radius: 50px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  transition: all 0.25s ease;
-  min-width: 90px;
-  text-align: center;
-}
-
-.status-label.published {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.status-label.draft {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
-
-.status-option input:checked + .status-label.published {
-  background: #16a34a;
-  color: white;
-}
-
-.status-option input:checked + .status-label.draft {
-  background: #3b82f6;
-  color: white;
-}
-
-/* Info Message */
-.info-message {
-  background: #dbeafe;
-  border: 1px solid #93c5fd;
-  border-radius: 12px;
-  padding: 16px;
-  margin: 20px 0;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.info-message i {
-  color: #1d4ed8;
-  font-size: 1.2rem;
-  margin-top: 2px;
-}
-
-.info-message p {
-  color: #1e40af;
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-/* Actions */
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 20px;
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.btn {
-  padding: 14px 28px;
-  border-radius: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1.05rem;
-  transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-  border: none;
-  letter-spacing: 0.4px;
-  min-height: 52px;
-  min-width: 140px;
-  justify-content: center;
-}
-
-.cancel-btn {
-  background: #f1f5f9;
-  color: #475569;
-}
-
-.cancel-btn:hover {
-  background: #e2e8f0;
-  transform: translateY(-2px);
-}
-
-.save-btn {
-  background: linear-gradient(120deg, #22c55e, #16a34a);
-  color: white;
-  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
-}
-
-.save-btn:hover:not(:disabled) {
-  background: linear-gradient(120deg, #16a34a, #15803d);
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(34, 197, 94, 0.4);
-}
-
-.save-btn:disabled {
-  opacity: 0.8;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   .service-form {
     padding: 28px;

@@ -31,14 +31,14 @@
           <div class="hero-text">
             <div class="hero-badge">
               <span class="live-dot"></span>
-              Alive With Infinity-Booking • Expanding Your Business Globally
+              Live with Infinity-Booking • Grow Your Service Business
             </div>
             <h1 class="hero-title">
-              Grow Your Service Business with <span class="highlight">Infinity-Booking</span>
+              Manage Your Service Business <span class="highlight">Smarter & Faster</span>
             </h1>
             <p class="hero-subtitle">
-              All-in-one platform to manage bookings, accept payments, and grow your client base. 
-              Used by 150+ professionals across Home Services, Beauty, and Education sectors.
+              All-in-one platform designed for Ethiopian service professionals to manage appointments, 
+              accept payments, and connect with clients. Simple, powerful, and made for you.
             </p>
 
             <div class="hero-buttons">
@@ -48,53 +48,96 @@
               </router-link>
               <a href="#features" class="btn-secondary">
                 <span class="btn-icon">📹</span>
-                Watch Demo
+                Watch Demo (3 min)
               </a>
             </div>
 
-            <!-- Social Proof -->
+            <!-- Social Proof - Made more user-friendly -->
             <div class="social-proof">
               <div class="proof-stats">
-                <strong>150+</strong> Service Providers • 
-                <strong>1,200+</strong> Monthly Bookings • 
-                <strong>98%</strong> Satisfaction Rate
+                <div class="stat-item">
+                  <strong>150+</strong>
+                  <span>Service Providers</span>
+                </div>
+                <div class="stat-item">
+                  <strong>1,200+</strong>
+                  <span>Monthly Bookings</span>
+                </div>
+                <div class="stat-item">
+                  <strong>98%</strong>
+                  <span>Satisfaction Rate</span>
+                </div>
               </div>
               <div class="provider-types">
                 <span class="provider-tag">🏠 Home Services</span>
                 <span class="provider-tag">💇 Beauty & Salon</span>
                 <span class="provider-tag">🎓 Education</span>
+                <span class="provider-tag">🏢 Business Services</span>
               </div>
             </div>
           </div>
           
-          <!-- Feature Showcase -->
+          <!-- Enhanced Feature Showcase - More informative -->
           <div class="feature-showcase">
             <div class="showcase-card">
               <div class="card-header">
-                <h3>Business Growth Dashboard</h3>
-                <div class="card-badge">Live Example</div>
+                <h3>Your Business Dashboard</h3>
+                <div class="card-badge">Live Preview</div>
               </div>
               <div class="card-content">
-                <div class="growth-metric">
-                  <div class="metric">
-                    <div class="metric-title">Monthly Revenue</div>
-                    <div class="metric-value">ETB 45,250</div>
-                    <div class="metric-change positive">+18%</div>
+                <div class="dashboard-preview">
+                  <div class="preview-header">
+                    <div class="business-info">
+                      <div class="business-name">Sample Beauty Salon</div>
+                      <div class="business-status">📍 Addis Ababa • 🟢 Active</div>
+                    </div>
                   </div>
-                  <div class="metric">
-                    <div class="metric-title">New Clients</div>
-                    <div class="metric-value">24</div>
-                    <div class="metric-change positive">+12%</div>
+                  
+                  <!-- Enhanced metrics with clear explanations -->
+                  <div class="growth-metrics">
+                    <div class="metric-card">
+                      <div class="metric-icon">💰</div>
+                      <div class="metric-details">
+                        <div class="metric-title">Monthly Earnings</div>
+                        <div class="metric-value">ETB 45,250</div>
+                        <div class="metric-desc">From 120+ appointments</div>
+                      </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                      <div class="metric-icon">👥</div>
+                      <div class="metric-details">
+                        <div class="metric-title">New Clients This Month</div>
+                        <div class="metric-value">24</div>
+                        <div class="metric-desc">+12% from last month</div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div class="feature-highlights">
-                  <div class="highlight-item">
-                    <span class="highlight-icon">✅</span>
-                    <span>Real-time booking notifications</span>
-                  </div>
-                  <div class="highlight-item">
-                    <span class="highlight-icon">📊</span>
-                    <span>Automated business reports</span>
+                  
+                  <!-- Key features shown as benefits -->
+                  <div class="business-benefits">
+                    <h4>Key Benefits You Get:</h4>
+                    <div class="benefit-item">
+                      <span class="benefit-icon">🔔</span>
+                      <div class="benefit-text">
+                        <strong>Real-time Notifications</strong>
+                        <small>Never miss a booking</small>
+                      </div>
+                    </div>
+                    <div class="benefit-item">
+                      <span class="benefit-icon">📊</span>
+                      <div class="benefit-text">
+                        <strong>Smart Reports</strong>
+                        <small>See what's working</small>
+                      </div>
+                    </div>
+                    <div class="benefit-item">
+                      <span class="benefit-icon">💳</span>
+                      <div class="benefit-text">
+                        <strong>Easy Payments</strong>
+                        <small>Accept all payment types</small>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -104,151 +147,203 @@
       </div>
     </section>
 
-    <!-- Features Grid -->
+    <!-- Features Grid - More benefit-oriented -->
     <section id="features" class="features-section">
       <div class="container">
         <div class="section-header">
-          <h2 class="section-title">Everything You Need to Scale</h2>
+          <h2 class="section-title">Everything You Need to Grow</h2>
           <p class="section-subtitle">
-            Powerful tools designed specifically for service businesses
+            Powerful tools made simple for service businesses
           </p>
         </div>
         
         <div class="features-grid">
           <div class="feature-card">
-            <div class="feature-icon">📊</div>
-            <h3>Smart Dashboard</h3>
-            <p>Real-time analytics, appointment tracking, and performance insights in one place.</p>
-            <ul class="feature-list">
-              <li>Revenue reports</li>
-              <li>Client analytics</li>
-              <li>Performance metrics</li>
+            <div class="feature-icon">📅</div>
+            <h3>Smart Booking System</h3>
+            <p>Let clients book 24/7 from your website, social media, or directly in the app.</p>
+            <ul class="feature-benefits">
+              <li>Online booking anytime</li>
+              <li>Automatic reminders</li>
+              <li>Calendar sync</li>
+            </ul>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">💰</div>
+            <h3>Easy Payments</h3>
+            <p>Accept mobile money, bank transfers, and cash with automatic tracking.</p>
+            <ul class="feature-benefits">
+              <li>CBE Birr, Telebirr</li>
+              <li>Payment tracking</li>
+              <li>Automatic receipts</li>
             </ul>
           </div>
 
           <div class="feature-card">
             <div class="feature-icon">📱</div>
             <h3>Client Management</h3>
-            <p>Automated reminders, client history, and feedback collection system.</p>
-            <ul class="feature-list">
-              <li>SMS/Email reminders</li>
-              <li>Client database</li>
-              <li>Review management</li>
+            <p>Keep all client info, history, and preferences in one organized place.</p>
+            <ul class="feature-benefits">
+              <li>Client profiles</li>
+              <li>Service history</li>
+              <li>Special notes</li>
+            </ul>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Business Insights</h3>
+            <p>See which services are most popular and when you're busiest.</p>
+            <ul class="feature-benefits">
+              <li>Best-selling services</li>
+              <li>Busy hours report</li>
+              <li>Revenue trends</li>
             </ul>
           </div>
 
           <div class="feature-card">
             <div class="feature-icon">🎯</div>
             <h3>Marketing Tools</h3>
-            <p>Promote your services and attract new clients with built-in marketing features.</p>
-            <ul class="feature-list">
-              <li>Service promotions</li>
+            <p>Simple ways to attract more clients and keep them coming back.</p>
+            <ul class="feature-benefits">
+              <li>Special offers</li>
               <li>Client referrals</li>
-              <li>Social media integration</li>
+              <li>Reminder messages</li>
             </ul>
           </div>
 
           <div class="feature-card">
             <div class="feature-icon">🛡️</div>
             <h3>Business Protection</h3>
-            <p>Secure your business with cancellation policies and dispute resolution.</p>
-            <ul class="feature-list">
-              <li>Cancellation protection</li>
-              <li>Dispute mediation</li>
-              <li>Service guarantees</li>
-            </ul>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">📞</div>
-            <h3>Dedicated Support</h3>
-            <p>24/7 customer support in Amharic and English for all your business needs.</p>
-            <ul class="feature-list">
-              <li>Phone & chat support</li>
-              <li>Business consulting</li>
-              <li>Technical assistance</li>
+            <p>Professional features to protect your time and income.</p>
+            <ul class="feature-benefits">
+              <li>No-show protection</li>
+              <li>Cancelation policies</li>
+              <li>Service agreements</li>
             </ul>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Industries Showcase -->
-    <section id="industries" class="industries-section">
+    <!-- How It Works Section - New -->
+    <section class="how-it-works">
       <div class="container">
         <div class="section-header">
-          <h2 class="section-title">Built for Your Industry</h2>
+          <h2 class="section-title">How Infinity-Booking Works</h2>
           <p class="section-subtitle">
-            Tailored solutions for different service professionals
+            Get started in 3 simple steps
           </p>
         </div>
-
-        <div class="industries-grid">
-          <div class="industry-card">
-            <div class="industry-header">
-              <div class="industry-icon">🏠</div>
-              <h3>Home Services</h3>
-            </div>
-            <p>Plumbers, electricians, cleaners, repair technicians</p>
-            <div class="industry-features">
-              <span>📍 Location-based clients</span>
-              <span>🛠️ Service categories</span>
-              <span>⏰ Emergency bookings</span>
+        
+        <div class="steps-container">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3>Create Your Profile</h3>
+              <p>Add your services, prices, and availability. Takes 10 minutes.</p>
             </div>
           </div>
-
-          <div class="industry-card">
-            <div class="industry-header">
-              <div class="industry-icon">💅</div>
-              <h3>Beauty & Salon</h3>
-            </div>
-            <p>Hair stylists, beauticians, spa therapists, nail technicians</p>
-            <div class="industry-features">
-              <span>💇 Service packages</span>
-              <span>⭐ Style portfolios</span>
-              <span>📸 Before/after photos</span>
+          
+          <div class="step-arrow">→</div>
+          
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h3>Share Your Booking Link</h3>
+              <p>Add it to your WhatsApp, Facebook, or website.</p>
             </div>
           </div>
-
-          <div class="industry-card">
-            <div class="industry-header">
-              <div class="industry-icon">🎓</div>
-              <h3>Education</h3>
-            </div>
-            <p>Tutors, trainers, coaches, workshop instructors</p>
-            <div class="industry-features">
-              <span>📚 Course management</span>
-              <span>👥 Group sessions</span>
-              <span>📝 Progress tracking</span>
+          
+          <div class="step-arrow">→</div>
+          
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h3>Start Accepting Bookings</h3>
+              <p>Manage appointments and grow your business.</p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Success Stories Section -->
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing-section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Simple, Transparent Pricing</h2>
+          <p class="section-subtitle">
+            No hidden fees. Cancel anytime.
+          </p>
+        </div>
+        
+        <div class="pricing-cards">
+          <div class="pricing-card">
+            <div class="plan-header">
+              <h3>Starter</h3>
+              <div class="price">Free</div>
+              <p class="plan-desc">Perfect for trying it out</p>
+            </div>
+            <ul class="plan-features">
+              <li>✅ Up to 20 bookings/month</li>
+              <li>✅ Basic scheduling</li>
+              <li>✅ Client management</li>
+              <li>❌ Advanced reports</li>
+              <li>❌ Payment processing</li>
+            </ul>
+            <router-link to="/register" class="plan-button">
+              Start Free
+            </router-link>
+          </div>
+          
+          <div class="pricing-card featured">
+            <div class="plan-badge">Most Popular</div>
+            <div class="plan-header">
+              <h3>Professional</h3>
+              <div class="price">ETB 299<span>/month</span></div>
+              <p class="plan-desc">For growing businesses</p>
+            </div>
+            <ul class="plan-features">
+              <li>✅ Unlimited bookings</li>
+              <li>✅ All scheduling features</li>
+              <li>✅ Full client management</li>
+              <li>✅ Business insights</li>
+              <li>✅ Payment processing</li>
+            </ul>
+            <router-link to="/register" class="plan-button primary">
+              Start 14-Day Trial
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Success Stories Section - Enhanced -->
     <section id="success-stories" class="success-stories">
       <div class="container">
         <div class="section-header">
-          <h2 class="section-title">Success Stories from Ethiopian Entrepreneurs</h2>
+          <h2 class="section-title">Trusted by Ethiopian Business Owners</h2>
           <p class="section-subtitle">
-            See how service professionals are transforming their businesses
+            Real stories from real people
           </p>
         </div>
 
         <div class="stories-grid">
           <div class="story-card">
             <div class="story-content">
-              <div class="quote-icon">❝</div>
-              <p>"Infinity-Booking helped me grow my cleaning business from 5 to 25 regular clients in just 3 months. The automated reminders reduced no-shows by 80%!"</p>
+              <div class="quote-icon">"</div>
+              <p>"Before Infinity-Booking, I spent hours on the phone scheduling appointments. Now clients book online, and I get instant notifications. It changed how I run my business."</p>
             </div>
             <div class="story-author">
               <div class="author-avatar">EB</div>
               <div class="author-info">
                 <div class="author-name">Elena Berhanu</div>
                 <div class="author-business">GreenClean Services</div>
-                <div class="author-stats">
-                  <span>📈 Revenue increased by 150%</span>
+                <div class="author-results">
+                  <span>⏱️ Saves 15 hours/week</span>
+                  <span>📈 40% more clients</span>
                 </div>
               </div>
             </div>
@@ -256,16 +351,17 @@
 
           <div class="story-card">
             <div class="story-content">
-              <div class="quote-icon">❝</div>
-              <p>"As a tutor, managing multiple students was challenging. Now with Infinity-Booking, I save 10+ hours weekly on scheduling and payment collection."</p>
+              <div class="quote-icon">"</div>
+              <p>"My clients love how easy it is to book and pay. I love how organized everything is. The automatic reminders alone have saved me so much time."</p>
             </div>
             <div class="story-author">
               <div class="author-avatar">DM</div>
               <div class="author-info">
                 <div class="author-name">Daniel Mekonnen</div>
                 <div class="author-business">Excel Education Center</div>
-                <div class="author-stats">
-                  <span>🎯 95% client retention rate</span>
+                <div class="author-results">
+                  <span>💰 Payments on time</span>
+                  <span>⭐ 4.9/5 client rating</span>
                 </div>
               </div>
             </div>
@@ -273,16 +369,17 @@
 
           <div class="story-card">
             <div class="story-content">
-              <div class="quote-icon">❝</div>
-              <p>"The platform made everything so easy. My clients love the convenience, and I get to focus on growing my business instead of administrative tasks."</p>
+              <div class="quote-icon">"</div>
+              <p>"The reports helped me understand which services are most popular. I adjusted my schedule and increased my income by 60% in three months."</p>
             </div>
             <div class="story-author">
               <div class="author-avatar">ST</div>
               <div class="author-info">
                 <div class="author-name">Sara Tesfaye</div>
                 <div class="author-business">Glamour Beauty Salon</div>
-                <div class="author-stats">
-                  <span>💰 2.3x more bookings</span>
+                <div class="author-results">
+                  <span>📊 Better scheduling</span>
+                  <span>💸 Higher income</span>
                 </div>
               </div>
             </div>
@@ -295,32 +392,55 @@
     <section class="final-cta">
       <div class="container">
         <div class="cta-content">
-          <h2 class="cta-title">Start Growing Your Service Business Today</h2>
-          <p class="cta-text">Join hundreds of Ethiopian service professionals already scaling their businesses</p>
+          <h2 class="cta-title">Ready to Grow Your Business?</h2>
+          <p class="cta-text">Join hundreds of service professionals who are already saving time and earning more</p>
           
-          <div class="cta-features">
-            <div class="cta-feature">
-              <span class="feature-icon">🎯</span>
-              <span>Perfect for Ethiopian market</span>
+          <div class="cta-benefits">
+            <div class="benefit-card">
+              <span class="benefit-icon">🎯</span>
+              <div>
+                <strong>Made for Ethiopia</strong>
+                <small>Local payment methods, Amharic support</small>
+              </div>
             </div>
-            <div class="cta-feature">
-              <span class="feature-icon">🆓</span>
-              <span>Free setup and training</span>
+            <div class="benefit-card">
+              <span class="benefit-icon">🆓</span>
+              <div>
+                <strong>Free Setup Help</strong>
+                <small>We'll help you get started</small>
+              </div>
+            </div>
+            <div class="benefit-card">
+              <span class="benefit-icon">📱</span>
+              <div>
+                <strong>Works Everywhere</strong>
+                <small>Phone, tablet, computer</small>
+              </div>
             </div>
           </div>
 
           <div class="cta-actions">
             <router-link to="/register" class="cta-btn primary">
-              Start Free Trial - No Credit Card
+              Start Free Trial - No Credit Card Needed
             </router-link>
             <a href="/demo" class="cta-btn secondary">
-              Book a Demo Call
+              📞 Book a Demo Call
             </a>
           </div>
 
           <div class="cta-guarantee">
-            <span class="guarantee-badge">✅</span>
-            <span>30-day money-back guarantee • Amharic & English support • Setup in 10 minutes</span>
+            <div class="guarantee-item">
+              <span>✅</span>
+              <span>30-day free trial</span>
+            </div>
+            <div class="guarantee-item">
+              <span>✅</span>
+              <span>Amharic & English support</span>
+            </div>
+            <div class="guarantee-item">
+              <span>✅</span>
+              <span>Setup in 10 minutes</span>
+            </div>
           </div>
         </div>
       </div>
@@ -331,7 +451,6 @@
 </template>
 
 <style scoped>
-/* Your existing CSS styles remain exactly the same */
 /* ===== BASE STYLES ===== */
 .home {
   font-family: "Poppins", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -523,20 +642,37 @@
   background: rgba(255, 255, 255, 0.25);
 }
 
-/* Social Proof */
+/* Enhanced Social Proof */
 .social-proof {
   margin-top: 32px;
 }
 
 .proof-stats {
-  font-size: 0.9rem;
-  opacity: 0.9;
-  margin-bottom: 12px;
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-item strong {
+  font-size: 1.5rem;
+  display: block;
+}
+
+.stat-item span {
+  font-size: 0.8rem;
+  opacity: 0.8;
 }
 
 .provider-types {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
@@ -547,7 +683,7 @@
   font-size: 0.8rem;
 }
 
-/* Feature Showcase */
+/* Enhanced Feature Showcase */
 .feature-showcase {
   display: flex;
   justify-content: center;
@@ -555,12 +691,12 @@
 
 .showcase-card {
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 24px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   color: #1a1a1a;
   width: 100%;
-  max-width: 320px;
+  max-width: 360px;
 }
 
 .card-header {
@@ -568,6 +704,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .card-header h3 {
@@ -585,61 +723,109 @@
   font-weight: 600;
 }
 
-.growth-metric {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 20px;
+.dashboard-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.metric {
-  text-align: center;
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.business-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #1a1a1a;
+}
+
+.business-status {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.growth-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.metric-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 12px;
   background: #f8fafc;
   border-radius: 8px;
 }
 
+.metric-icon {
+  font-size: 1.5rem;
+}
+
+.metric-details {
+  flex: 1;
+}
+
 .metric-title {
   font-size: 0.8rem;
   color: #6b7280;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .metric-value {
   font-size: 1.25rem;
   font-weight: 700;
   color: #1a1a1a;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
-.metric-change {
+.metric-desc {
   font-size: 0.75rem;
-  font-weight: 600;
+  color: #6b7280;
 }
 
-.metric-change.positive {
-  color: #10b981;
+.business-benefits {
+  background: #f0f9ff;
+  padding: 16px;
+  border-radius: 8px;
 }
 
-.feature-highlights {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.business-benefits h4 {
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+  color: #1a1a1a;
 }
 
-.highlight-item {
+.benefit-item {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 8px 0;
+}
+
+.benefit-icon {
+  font-size: 1.2rem;
+}
+
+.benefit-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.benefit-text strong {
   font-size: 0.85rem;
-  color: #4b5563;
+  color: #1a1a1a;
 }
 
-.highlight-icon {
-  font-size: 1rem;
+.benefit-text small {
+  font-size: 0.75rem;
+  color: #6b7280;
 }
 
-/* ===== NEW SECTIONS STYLES ===== */
+/* ===== SECTIONS ===== */
 .section-header {
   text-align: center;
   margin-bottom: 48px;
@@ -659,7 +845,7 @@
   margin: 0 auto;
 }
 
-/* Features */
+/* Features Grid */
 .features-section {
   padding: 80px 0;
   background: #f8fafc;
@@ -701,74 +887,187 @@
   line-height: 1.5;
 }
 
-.feature-list {
+.feature-benefits {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
-.feature-list li {
+.feature-benefits li {
   padding: 4px 0;
   color: #6b7280;
   font-size: 0.9rem;
+  position: relative;
+  padding-left: 20px;
 }
 
-/* Industries */
-.industries-section {
+.feature-benefits li:before {
+  content: "•";
+  color: #667eea;
+  position: absolute;
+  left: 0;
+}
+
+/* How It Works */
+.how-it-works {
+  padding: 80px 0;
+  background: white;
+}
+
+.steps-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 200px;
+}
+
+.step-number {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+}
+
+.step-content h3 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+}
+
+.step-content p {
+  color: #6b7280;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.step-arrow {
+  font-size: 1.5rem;
+  color: #667eea;
+  opacity: 0.5;
+}
+
+/* Pricing */
+.pricing-section {
   padding: 80px 0;
   background: #f8fafc;
 }
 
-.industries-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-}
-
-.industry-card {
-  background: white;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.industry-header {
+.pricing-cards {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-.industry-icon {
-  font-size: 2rem;
+.pricing-card {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  max-width: 300px;
+  position: relative;
 }
 
-.industry-card h3 {
-  font-size: 1.2rem;
+.pricing-card.featured {
+  border: 2px solid #667eea;
+  transform: scale(1.05);
+}
+
+.plan-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #667eea;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
   font-weight: 600;
+}
+
+.plan-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.plan-header h3 {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
   color: #1a1a1a;
 }
 
-.industry-card p {
+.price {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.price span {
+  font-size: 1rem;
   color: #6b7280;
-  margin-bottom: 16px;
-  line-height: 1.5;
 }
 
-.industry-features {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.industry-features span {
+.plan-desc {
+  color: #6b7280;
   font-size: 0.9rem;
+}
+
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+}
+
+.plan-features li {
+  padding: 8px 0;
   color: #6b7280;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.plan-button {
+  display: block;
+  text-align: center;
+  padding: 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  background: #f3f4f6;
+  color: #4b5563;
+  transition: all 0.2s;
+}
+
+.plan-button.primary {
+  background: #667eea;
+  color: white;
+}
+
+.plan-button:hover {
+  transform: translateY(-2px);
 }
 
 /* Success Stories */
 .success-stories {
   padding: 80px 0;
-  background: #f8fafc;
+  background: white;
 }
 
 .stories-grid {
@@ -783,6 +1082,7 @@
   padding: 32px;
   border-radius: 16px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
   transition: transform 0.2s;
 }
 
@@ -845,13 +1145,21 @@
 .author-business {
   color: #6b7280;
   font-size: 0.85rem;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
-.author-stats {
+.author-results {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.author-results span {
   font-size: 0.8rem;
   color: #059669;
-  font-weight: 500;
+  background: #d1fae5;
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
 /* Enhanced Final CTA */
@@ -878,7 +1186,7 @@
   margin-right: auto;
 }
 
-.cta-features {
+.cta-benefits {
   display: flex;
   justify-content: center;
   gap: 32px;
@@ -886,16 +1194,30 @@
   flex-wrap: wrap;
 }
 
-.cta-feature {
+.benefit-card {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.95rem;
-  opacity: 0.9;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 16px 20px;
+  border-radius: 8px;
+  min-width: 200px;
 }
 
-.feature-icon {
-  font-size: 1.1rem;
+.benefit-icon {
+  font-size: 1.5rem;
+}
+
+.benefit-card strong {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 2px;
+}
+
+.benefit-card small {
+  display: block;
+  font-size: 0.8rem;
+  opacity: 0.8;
 }
 
 .cta-actions {
@@ -939,24 +1261,35 @@
 
 .cta-guarantee {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 24px;
   font-size: 0.9rem;
   opacity: 0.8;
   margin-top: 24px;
+  flex-wrap: wrap;
 }
 
-.guarantee-badge {
-  font-size: 1.1rem;
+.guarantee-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
+/* ===== ENHANCED MOBILE RESPONSIVENESS ===== */
 @media (max-width: 1024px) {
   .hero-content {
     grid-template-columns: 1fr;
     gap: 32px;
     text-align: center;
+  }
+  
+  .steps-container {
+    flex-direction: column;
+    gap: 40px;
+  }
+  
+  .step-arrow {
+    transform: rotate(90deg);
   }
 }
 
@@ -989,19 +1322,33 @@
     justify-content: center;
   }
   
+  .proof-stats {
+    justify-content: center;
+  }
+  
   .provider-types {
     justify-content: center;
   }
   
   .features-grid,
-  .industries-grid,
+  .pricing-cards,
   .stories-grid {
     grid-template-columns: 1fr;
   }
   
-  .cta-features {
+  .pricing-card.featured {
+    transform: none;
+  }
+  
+  .cta-benefits {
     flex-direction: column;
+    align-items: center;
     gap: 16px;
+  }
+  
+  .benefit-card {
+    width: 100%;
+    max-width: 300px;
   }
   
   .cta-actions {
@@ -1013,6 +1360,11 @@
     width: 100%;
     max-width: 280px;
     text-align: center;
+  }
+  
+  .cta-guarantee {
+    flex-direction: column;
+    gap: 16px;
   }
 }
 
@@ -1048,12 +1400,58 @@
     text-align: center;
   }
   
+  .author-results {
+    justify-content: center;
+  }
+  
   .cta-title {
     font-size: 1.75rem;
   }
   
   .cta-text {
     font-size: 1rem;
+  }
+  
+  .showcase-card {
+    margin: 0 -12px;
+    border-radius: 0;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  .feature-card,
+  .story-card,
+  .pricing-card,
+  .cta-btn,
+  .btn-primary,
+  .btn-secondary {
+    transition: none;
+  }
+  
+  .feature-card:hover,
+  .story-card:hover,
+  .pricing-card:hover {
+    transform: none;
+  }
+  
+  .cta-btn.primary:hover,
+  .cta-btn.secondary:hover,
+  .btn-primary:hover,
+  .btn-secondary:hover {
+    transform: none;
+  }
+  
+  /* Larger tap targets for mobile */
+  .nav-link,
+  .nav-login,
+  .nav-register {
+    padding: 12px 16px;
+  }
+  
+  .feature-benefits li,
+  .plan-features li {
+    padding: 12px 0;
   }
 }
 
