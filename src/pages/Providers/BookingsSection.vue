@@ -195,108 +195,45 @@
         </div>
       </div>
 
-      <!-- Timeline Toggle Section -->
-      <div class="timeline-toggle-section">
-        <div class="timeline-header">
-          <div class="timeline-title">
-            <i class="fa-solid fa-timeline"></i> 
-            <h3>Booking Timeline</h3>
-            <button 
-              class="toggle-btn" 
-              @click="toggleTimeline"
-              :class="{ 'active': showTimeline }"
-            >
-              <i class="fa-solid" :class="showTimeline ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-              {{ showTimeline ? 'Hide Timeline' : 'Show Timeline' }}
-            </button>
-          </div>
-          
-          <div class="timeline-filters" v-if="showTimeline">
-            <div class="filter-tabs">
-              <button 
-                v-for="period in timelinePeriods" 
-                :key="period.id"
-                class="filter-tab"
-                :class="{ 'active': selectedPeriod === period.id }"
-                @click="selectedPeriod = period.id"
-              >
-                <i :class="period.icon"></i>
-                {{ period.label }}
-              </button>
-            </div>
-          </div>
+      <!-- Timeline Filter Section (Replaces timeline display) -->
+      <div class="timeline-filter-section">
+        <div class="timeline-filter-header">
+          <h3><i class="fa-solid fa-timeline"></i> Filter by Time Period</h3>
+          <p class="timeline-filter-subtitle">Select a time period to view bookings from that timeframe</p>
         </div>
-
-        <!-- Timeline Content (Toggleable) -->
-        <div v-if="showTimeline" class="timeline-content">
-          <div class="timeline-container">
-            <div v-if="selectedTimelineGroups.length === 0" class="no-timeline-data">
-              <i class="fa-regular fa-calendar-times"></i>
-              <p>No bookings found for the selected period</p>
-            </div>
-            
-            <div 
-              v-for="(group, index) in selectedTimelineGroups" 
-              :key="group.id"
-              class="timeline-group"
-              :class="{ 'collapsed': group.collapsed }"
-            >
-              <div class="timeline-group-header" @click="toggleGroupCollapse(group.id)">
-                <div class="group-marker">
-                  <span class="marker-number">{{ index + 1 }}</span>
-                </div>
-                <div class="group-info">
-                  <h4>{{ group.label }}</h4>
-                  <span class="group-count">{{ group.bookings.length }} bookings</span>
-                  <span class="group-amount">• ${{ group.totalAmount }}</span>
-                </div>
-                <div class="group-toggle">
-                  <i class="fa-solid" :class="group.collapsed ? 'fa-chevron-down' : 'fa-chevron-up'"></i>
-                </div>
-              </div>
-              
-              <div class="timeline-bookings" v-if="!group.collapsed">
-                <div 
-                  v-for="booking in group.bookings" 
-                  :key="booking._id"
-                  class="timeline-booking"
-                  @click="viewBookingDetails(booking)"
-                >
-                  <div class="booking-avatar" :class="{ 'admin-avatar': booking.isAdminBooking }">
-                    {{ getInitials(getCustomerName(booking)) }}
-                  </div>
-                  <div class="booking-info">
-                    <div class="booking-customer">
-                      <span class="customer-name">{{ getCustomerName(booking) }}</span>
-                      <span v-if="booking.isAdminBooking" class="admin-badge">
-                        <i class="fa-solid fa-user-tie"></i> Admin
-                      </span>
-                    </div>
-                    <div class="booking-time">
-                      <i class="fa-solid fa-clock"></i>
-                      <span>{{ booking.startTime }} • {{ formatDateShort(booking.bookingDate) }}</span>
-                    </div>
-                    <div class="booking-service">
-                      <i class="fa-solid fa-scissors"></i>
-                      <span>{{ getServiceName(booking) }}</span>
-                    </div>
-                  </div>
-                  <div class="booking-status">
-                    <span class="status-badge small" :class="booking.status">
-                      {{ formatStatus(booking.status) }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        
+        <div class="timeline-filter-buttons">
+          <button 
+            v-for="period in timelinePeriods" 
+            :key="period.id"
+            class="timeline-filter-btn"
+            :class="{ 'active': selectedPeriod === period.id }"
+            @click="selectTimelinePeriod(period.id)"
+          >
+            <i :class="period.icon"></i>
+            {{ period.label }}
+          </button>
+        </div>
+        
+        <div v-if="selectedPeriodLabel" class="timeline-active-filter">
+          <span class="active-filter-badge">
+            <i class="fa-solid fa-filter"></i>
+            Showing: {{ selectedPeriodLabel }}
+            <button class="clear-period-btn" @click="clearTimelinePeriod">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </span>
+          <span class="filter-count">{{ timelineFilteredBookings.length }} bookings found</span>
         </div>
       </div>
 
       <!-- Bookings List -->
       <div class="bookings-container">
         <div class="section-header">
-          <h2>Recent Bookings ({{ filteredBookings.length }})</h2>
+          <h2>
+            <span v-if="selectedPeriodLabel">{{ selectedPeriodLabel }} </span>
+            Bookings ({{ displayBookings.length }})
+          </h2>
           <div class="view-controls">
             <button 
               class="view-btn" 
@@ -543,7 +480,7 @@
         </div>
 
         <!-- Pagination -->
-        <div v-if="filteredBookings.length > itemsPerPage" class="pagination">
+        <div v-if="displayBookings.length > itemsPerPage" class="pagination">
           <button 
             class="pagination-btn" 
             :disabled="currentPage === 1"
@@ -788,24 +725,23 @@ export default {
     const statusFilter = ref("all");
     const dateFilter = ref("all");
     const viewMode = ref("list");
-    const showTimeline = ref(true);
-    const selectedPeriod = ref("recent"); // recent, weeks, months
+    const selectedPeriod = ref("all"); // all, today, yesterday, week, month, custom
     const currentPage = ref(1);
     const itemsPerPage = ref(10);
     const selectedBooking = ref(null);
     const currentProviderId = ref("");
     const currentEndpoint = ref("");
     const showOriginalData = ref(false);
-    const collapsedGroups = ref({});
     const showDebug = ref(false);
     const usingSampleData = ref(false);
 
-    // Timeline periods
+    // Timeline periods - modified for filtering only
     const timelinePeriods = ref([
-      { id: "recent", label: "Recent", icon: "fa-solid fa-clock-rotate-left" },
-      { id: "weeks", label: "Weeks", icon: "fa-solid fa-calendar-week" },
-      { id: "months", label: "Months", icon: "fa-solid fa-calendar-days" },
-      { id: "custom", label: "Custom", icon: "fa-solid fa-sliders" }
+      { id: "today", label: "Today", icon: "fa-solid fa-calendar-day" },
+      { id: "yesterday", label: "Yesterday", icon: "fa-solid fa-calendar-minus" },
+      { id: "week", label: "This Week", icon: "fa-solid fa-calendar-week" },
+      { id: "month", label: "This Month", icon: "fa-solid fa-calendar" },
+      { id: "custom", label: "Custom Range", icon: "fa-solid fa-sliders" }
     ]);
 
     // Statistics
@@ -822,6 +758,136 @@ export default {
     const knownProviderPids = {
       "691e1659e304653542a825d5": "PROV-1763579481598-1GBEN", // hayelom
       "692b3c78d399bc41c3712380": "PROV-1764441208540-C269P"  // tig-tg
+    };
+
+    // ==================== COMPUTED PROPERTIES ====================
+
+    // Get label for selected period
+    const selectedPeriodLabel = computed(() => {
+      if (selectedPeriod.value === "all") return "";
+      const period = timelinePeriods.value.find(p => p.id === selectedPeriod.value);
+      return period ? period.label : "";
+    });
+
+    // Filter bookings by timeline period
+    const timelineFilteredBookings = computed(() => {
+      if (selectedPeriod.value === "all" || !selectedPeriod.value) {
+        return bookings.value;
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      return bookings.value.filter(booking => {
+        if (!booking.bookingDate) return false;
+        
+        const bookingDate = new Date(booking.bookingDate);
+        bookingDate.setHours(0, 0, 0, 0);
+
+        switch (selectedPeriod.value) {
+          case "today":
+            return bookingDate.getTime() === today.getTime();
+          case "yesterday":
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            return bookingDate.getTime() === yesterday.getTime();
+          case "week":
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay());
+            return bookingDate >= weekStart;
+          case "month":
+            return bookingDate.getMonth() === today.getMonth() && 
+                   bookingDate.getFullYear() === today.getFullYear();
+          case "custom":
+            // For custom, show all (you can implement custom date range later)
+            return true;
+          default:
+            return true;
+        }
+      });
+    });
+
+    // Combined filters (search + status + date + timeline)
+    const filteredBookings = computed(() => {
+      let filtered = timelineFilteredBookings.value;
+
+      // Search filter
+      if (searchQuery.value) {
+        const query = searchQuery.value.toLowerCase();
+        filtered = filtered.filter(booking => 
+          getCustomerName(booking).toLowerCase().includes(query) ||
+          getServiceName(booking).toLowerCase().includes(query) ||
+          getCustomerEmail(booking).toLowerCase().includes(query) ||
+          (booking._id && booking._id.toLowerCase().includes(query))
+        );
+      }
+
+      // Status filter
+      if (statusFilter.value !== 'all') {
+        filtered = filtered.filter(booking => booking.status === statusFilter.value);
+      }
+
+      // Date filter (from the date dropdown)
+      if (dateFilter.value !== 'all') {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        filtered = filtered.filter(booking => {
+          if (!booking.bookingDate) return false;
+          
+          const bookingDate = new Date(booking.bookingDate);
+          bookingDate.setHours(0, 0, 0, 0);
+          
+          switch (dateFilter.value) {
+            case 'today':
+              return bookingDate.getTime() === today.getTime();
+            case 'yesterday':
+              const yesterday = new Date(today);
+              yesterday.setDate(yesterday.getDate() - 1);
+              return bookingDate.getTime() === yesterday.getTime();
+            case 'week':
+              const weekStart = new Date(today);
+              weekStart.setDate(today.getDate() - today.getDay());
+              return bookingDate >= weekStart;
+            case 'month':
+              return bookingDate.getMonth() === today.getMonth() && 
+                     bookingDate.getFullYear() === today.getFullYear();
+            case 'upcoming':
+              return bookingDate >= today;
+            case 'past':
+              return bookingDate < today;
+            default:
+              return true;
+          }
+        });
+      }
+
+      return filtered;
+    });
+
+    // Alias for display bookings
+    const displayBookings = computed(() => filteredBookings.value);
+
+    const paginatedBookings = computed(() => {
+      const start = (currentPage.value - 1) * itemsPerPage.value;
+      const end = start + itemsPerPage.value;
+      return displayBookings.value.slice(start, end);
+    });
+
+    const totalPages = computed(() => 
+      Math.ceil(displayBookings.value.length / itemsPerPage.value)
+    );
+
+    // ==================== TIMELINE FILTER FUNCTIONS ====================
+
+    const selectTimelinePeriod = (periodId) => {
+      selectedPeriod.value = periodId;
+      currentPage.value = 1; // Reset to first page when changing period
+    };
+
+    const clearTimelinePeriod = () => {
+      selectedPeriod.value = "all";
+      currentPage.value = 1;
     };
 
     // ==================== UTILITY FUNCTIONS ====================
@@ -894,13 +960,10 @@ export default {
 
     // ENHANCED CUSTOMER DATA EXTRACTION with admin details
     const extractCustomerData = (booking) => {
-      console.log("🎯 EXTRACTING CUSTOMER DATA FROM BOOKING:", booking._id);
-      
       // Check if this is an admin-created booking (no customer data)
       const isAdminBooking = booking.createdBy === 'admin' || booking.adminId;
       
       if (isAdminBooking) {
-        console.log("👨‍💼 ADMIN BOOKING DETECTED - Extracting admin details");
         return {
           customerId: null,
           fullname: 'Admin',
@@ -920,7 +983,6 @@ export default {
       
       // Check for customer object (standard customer booking)
       if (booking.customer && typeof booking.customer === 'object') {
-        console.log("✅ Found customer object in booking");
         return {
           customerId: booking.customer._id || booking.customer.id,
           fullname: booking.customer.fullname || booking.customer.name || 'Customer',
@@ -935,7 +997,6 @@ export default {
       
       // Check for direct customer fields
       if (booking.customerName || booking.customerEmail) {
-        console.log("✅ Found direct customer fields");
         return {
           customerId: booking.customerId || booking.userId,
           fullname: booking.customerName || 'Customer',
@@ -948,7 +1009,6 @@ export default {
       
       // Check for user object (alternative naming)
       if (booking.user && typeof booking.user === 'object') {
-        console.log("✅ Found user object");
         return {
           customerId: booking.user._id || booking.user.id,
           fullname: booking.user.fullname || booking.user.name || 'Customer',
@@ -961,7 +1021,6 @@ export default {
       }
       
       // If no customer data found at all, treat as admin booking
-      console.log("❌ NO CUSTOMER DATA FOUND - Treating as admin booking");
       return {
         customerId: null,
         fullname: 'Admin',
@@ -1069,290 +1128,7 @@ export default {
         return dateB - dateA;
       });
 
-      // Count admin vs customer bookings
-      const adminBookings = processedBookings.filter(b => b.isAdminBooking).length;
-      const customerBookings = processedBookings.filter(b => !b.isAdminBooking).length;
-      
-      console.log(`📊 Booking Summary: ${adminBookings} admin bookings, ${customerBookings} customer bookings`);
-
       return processedBookings;
-    };
-
-    // ==================== TIMELINE FUNCTIONS ====================
-
-    // GROUP BOOKINGS FOR TIMELINE
-    const selectedTimelineGroups = computed(() => {
-      if (!bookings.value.length) return [];
-      
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      let groups = [];
-      
-      switch (selectedPeriod.value) {
-        case "recent":
-          // Recent: Today, Yesterday, This Week, Last Week, Older
-          const yesterday = new Date(today);
-          yesterday.setDate(yesterday.getDate() - 1);
-          
-          const thisWeekStart = new Date(today);
-          thisWeekStart.setDate(today.getDate() - today.getDay());
-          
-          const lastWeekStart = new Date(thisWeekStart);
-          lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-          
-          const lastWeekEnd = new Date(thisWeekStart);
-          
-          groups = [
-            {
-              id: "today",
-              label: "Today",
-              startDate: today,
-              endDate: new Date(today.getTime() + 24 * 60 * 60 * 1000),
-              collapsed: collapsedGroups.value["today"] || false,
-              bookings: [],
-              totalAmount: 0
-            },
-            {
-              id: "yesterday",
-              label: "Yesterday",
-              startDate: yesterday,
-              endDate: today,
-              collapsed: collapsedGroups.value["yesterday"] || false,
-              bookings: [],
-              totalAmount: 0
-            },
-            {
-              id: "this-week",
-              label: "This Week",
-              startDate: thisWeekStart,
-              endDate: today,
-              collapsed: collapsedGroups.value["this-week"] || false,
-              bookings: [],
-              totalAmount: 0
-            },
-            {
-              id: "last-week",
-              label: "Last Week",
-              startDate: lastWeekStart,
-              endDate: lastWeekEnd,
-              collapsed: collapsedGroups.value["last-week"] || false,
-              bookings: [],
-              totalAmount: 0
-            },
-            {
-              id: "older",
-              label: "Older",
-              startDate: new Date(0),
-              endDate: lastWeekStart,
-              collapsed: collapsedGroups.value["older"] || false,
-              bookings: [],
-              totalAmount: 0
-            }
-          ];
-          break;
-          
-        case "weeks":
-          // Group by weeks (last 4 weeks)
-          for (let i = 0; i < 4; i++) {
-            const weekStart = new Date(today);
-            weekStart.setDate(today.getDate() - (today.getDay() + (i * 7)));
-            weekStart.setHours(0, 0, 0, 0);
-            
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekStart.getDate() + 7);
-            
-            const weekLabel = i === 0 ? "This Week" : i === 1 ? "Last Week" : `${i} Weeks Ago`;
-            
-            groups.push({
-              id: `week-${i}`,
-              label: weekLabel,
-              startDate: weekStart,
-              endDate: weekEnd,
-              collapsed: collapsedGroups.value[`week-${i}`] || false,
-              bookings: [],
-              totalAmount: 0
-            });
-          }
-          groups.push({
-            id: "older-weeks",
-            label: "Older",
-            startDate: new Date(0),
-            endDate: groups[groups.length - 1].startDate,
-            collapsed: collapsedGroups.value["older-weeks"] || false,
-            bookings: [],
-            totalAmount: 0
-          });
-          break;
-          
-        case "months":
-          // Group by months (last 3 months)
-          for (let i = 0; i < 3; i++) {
-            const monthStart = new Date(today.getFullYear(), today.getMonth() - i, 1);
-            const monthEnd = new Date(today.getFullYear(), today.getMonth() - i + 1, 0);
-            monthEnd.setHours(23, 59, 59, 999);
-            
-            const monthLabel = i === 0 ? "This Month" : i === 1 ? "Last Month" : `${i} Months Ago`;
-            
-            groups.push({
-              id: `month-${i}`,
-              label: monthLabel,
-              startDate: monthStart,
-              endDate: monthEnd,
-              collapsed: collapsedGroups.value[`month-${i}`] || false,
-              bookings: [],
-              totalAmount: 0
-            });
-          }
-          groups.push({
-            id: "older-months",
-            label: "Older",
-            startDate: new Date(0),
-            endDate: groups[groups.length - 1].startDate,
-            collapsed: collapsedGroups.value["older-months"] || false,
-            bookings: [],
-            totalAmount: 0
-          });
-          break;
-          
-        case "custom":
-          // Custom grouping - by status
-          const statusGroups = {
-            pending: { label: "Pending", bookings: [], totalAmount: 0 },
-            confirmed: { label: "Confirmed", bookings: [], totalAmount: 0 },
-            completed: { label: "Completed", bookings: [], totalAmount: 0 },
-            cancelled: { label: "Cancelled", bookings: [], totalAmount: 0 }
-          };
-          
-          bookings.value.forEach(booking => {
-            if (statusGroups[booking.status]) {
-              statusGroups[booking.status].bookings.push(booking);
-              statusGroups[booking.status].totalAmount += parseFloat(booking.amount) || 0;
-            }
-          });
-          
-          Object.entries(statusGroups).forEach(([status, group], index) => {
-            if (group.bookings.length > 0) {
-              groups.push({
-                id: `status-${status}`,
-                label: group.label,
-                collapsed: collapsedGroups.value[`status-${status}`] || false,
-                bookings: group.bookings,
-                totalAmount: group.totalAmount.toFixed(2)
-              });
-            }
-          });
-          break;
-      }
-      
-      // Assign bookings to groups (for date-based groups)
-      if (selectedPeriod.value !== "custom") {
-        bookings.value.forEach(booking => {
-          if (!booking.bookingDate) return;
-          
-          const bookingDate = new Date(booking.bookingDate);
-          bookingDate.setHours(0, 0, 0, 0);
-          
-          for (const group of groups) {
-            if (bookingDate >= group.startDate && bookingDate < group.endDate) {
-              group.bookings.push(booking);
-              group.totalAmount += parseFloat(booking.amount) || 0;
-              break;
-            }
-          }
-        });
-      }
-      
-      // Format total amounts and remove empty groups
-      return groups
-        .filter(group => group.bookings.length > 0)
-        .map(group => ({
-          ...group,
-          totalAmount: group.totalAmount.toFixed(2)
-        }));
-    });
-
-    // Toggle timeline visibility
-    const toggleTimeline = () => {
-      showTimeline.value = !showTimeline.value;
-    };
-
-    // Toggle group collapse
-    const toggleGroupCollapse = (groupId) => {
-      collapsedGroups.value = {
-        ...collapsedGroups.value,
-        [groupId]: !collapsedGroups.value[groupId]
-      };
-    };
-
-    // ==================== CUSTOMER DATA GETTERS ====================
-
-    const getCustomerName = (booking) => {
-      if (booking.isAdminBooking) {
-        return booking.originalData?.adminName || 'Admin';
-      }
-      return booking.customerName || 'Customer';
-    };
-
-    const getCustomerEmail = (booking) => {
-      if (booking.isAdminBooking) {
-        return booking.originalData?.adminEmail || '';
-      }
-      return booking.customerEmail || '';
-    };
-
-    const getCustomerPhone = (booking) => {
-      if (booking.isAdminBooking) {
-        return booking.originalData?.adminPhone || '';
-      }
-      return booking.customerPhone || '';
-    };
-
-    const getCustomerLocation = (booking) => {
-      if (booking.isAdminBooking) {
-        return '';
-      }
-      return booking.customerLocation || '';
-    };
-
-    const getServiceName = (booking) => {
-      return booking.serviceName || 
-             booking.originalData?.service?.name ||
-             booking.originalData?.service?.title ||
-             'Unknown Service';
-    };
-
-    const getCategoryName = (booking) => {
-      return booking.serviceCategory || 
-             booking.originalData?.service?.category?.name ||
-             booking.originalData?.category?.name ||
-             'General';
-    };
-
-    const getBookingAmount = (booking) => {
-      return parseFloat(booking.amount || 
-             booking.originalData?.totalPrice || 
-             booking.originalData?.price || 0).toFixed(2);
-    };
-
-    const formatStatus = (status) => {
-      const statusMap = {
-        pending: 'Pending',
-        confirmed: 'Confirmed',
-        completed: 'Completed',
-        cancelled: 'Cancelled'
-      };
-      return statusMap[status] || status;
-    };
-
-    const formatPaymentStatus = (status) => {
-      const statusMap = {
-        paid: 'Paid',
-        pending: 'Pending',
-        failed: 'Failed',
-        refunded: 'Refunded'
-      };
-      return statusMap[status] || status;
     };
 
     // ==================== ERROR HANDLING ====================
@@ -1390,15 +1166,6 @@ export default {
         errorStatus.value = "Client Error";
         error.value = `Error: ${err.message}`;
       }
-      
-      // Add troubleshooting tips for timeout
-      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
-        error.value += "\n\nTroubleshooting tips:";
-        error.value += "\n• The server might be experiencing high traffic";
-        error.value += "\n• Check your internet connection";
-        error.value += "\n• Try refreshing the page";
-        error.value += "\n• Contact support if the issue persists";
-      }
     };
 
     // ==================== DATA LOADING FUNCTIONS ====================
@@ -1409,7 +1176,13 @@ export default {
       
       usingSampleData.value = true;
       
-      // Create sample bookings data
+      // Create sample bookings data with various dates for filtering
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const lastWeek = new Date(today);
+      lastWeek.setDate(lastWeek.getDate() - 7);
+      
       const sampleBookings = [
         {
           _id: "sample_1",
@@ -1425,12 +1198,12 @@ export default {
             category: { name: "Hair Services" },
             price: 45
           },
-          bookingDate: new Date().toISOString().split('T')[0],
+          bookingDate: today.toISOString().split('T')[0], // Today
           startTime: "14:00",
           endTime: "15:00",
           status: "confirmed",
           totalPrice: 45,
-          createdAt: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+          createdAt: yesterday.toISOString(),
           notes: "Regular customer"
         },
         {
@@ -1444,12 +1217,12 @@ export default {
             category: { name: "Grooming" },
             price: 25
           },
-          bookingDate: new Date().toISOString().split('T')[0],
+          bookingDate: today.toISOString().split('T')[0], // Today
           startTime: "16:00",
           endTime: "16:30",
           status: "pending",
           totalPrice: 25,
-          createdAt: new Date().toISOString(),
+          createdAt: today.toISOString(),
           notes: "Walk-in customer"
         },
         {
@@ -1466,12 +1239,12 @@ export default {
             category: { name: "Hair Services" },
             price: 85
           },
-          bookingDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
+          bookingDate: yesterday.toISOString().split('T')[0], // Yesterday
           startTime: "11:00",
           endTime: "13:00",
           status: "pending",
           totalPrice: 85,
-          createdAt: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
+          createdAt: lastWeek.toISOString(),
           notes: "Special color request"
         },
         {
@@ -1485,12 +1258,12 @@ export default {
             category: { name: "Children" },
             price: 30
           },
-          bookingDate: new Date(Date.now() + 172800000).toISOString().split('T')[0], // 2 days
+          bookingDate: lastWeek.toISOString().split('T')[0], // Last week
           startTime: "10:00",
           endTime: "10:45",
           status: "confirmed",
           totalPrice: 30,
-          createdAt: new Date(Date.now() - 43200000).toISOString(), // 12 hours ago
+          createdAt: lastWeek.toISOString(),
           notes: "First time customer"
         },
         {
@@ -1507,12 +1280,12 @@ export default {
             category: { name: "Hair Services" },
             price: 35
           },
-          bookingDate: new Date(Date.now() - 86400000).toISOString().split('T')[0], // Yesterday
+          bookingDate: new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0], // This month
           startTime: "09:00",
           endTime: "09:45",
           status: "completed",
           totalPrice: 35,
-          createdAt: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+          createdAt: lastWeek.toISOString(),
           notes: "Regular appointment"
         }
       ];
@@ -1767,75 +1540,6 @@ export default {
       alert("Redirecting to your services page...");
     };
 
-    // ==================== COMPUTED PROPERTIES ====================
-
-    const filteredBookings = computed(() => {
-      let filtered = bookings.value;
-
-      // Search filter
-      if (searchQuery.value) {
-        const query = searchQuery.value.toLowerCase();
-        filtered = filtered.filter(booking => 
-          getCustomerName(booking).toLowerCase().includes(query) ||
-          getServiceName(booking).toLowerCase().includes(query) ||
-          getCustomerEmail(booking).toLowerCase().includes(query) ||
-          (booking._id && booking._id.toLowerCase().includes(query))
-        );
-      }
-
-      // Status filter
-      if (statusFilter.value !== 'all') {
-        filtered = filtered.filter(booking => booking.status === statusFilter.value);
-      }
-
-      // Date filter
-      if (dateFilter.value !== 'all') {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        filtered = filtered.filter(booking => {
-          if (!booking.bookingDate) return false;
-          
-          const bookingDate = new Date(booking.bookingDate);
-          bookingDate.setHours(0, 0, 0, 0);
-          
-          switch (dateFilter.value) {
-            case 'today':
-              return bookingDate.getTime() === today.getTime();
-            case 'yesterday':
-              const yesterday = new Date(today);
-              yesterday.setDate(yesterday.getDate() - 1);
-              return bookingDate.getTime() === yesterday.getTime();
-            case 'week':
-              const weekStart = new Date(today);
-              weekStart.setDate(today.getDate() - today.getDay());
-              return bookingDate >= weekStart;
-            case 'month':
-              return bookingDate.getMonth() === today.getMonth() && 
-                     bookingDate.getFullYear() === today.getFullYear();
-            case 'upcoming':
-              return bookingDate >= today;
-            case 'past':
-              return bookingDate < today;
-            default:
-              return true;
-          }
-        });
-      }
-
-      return filtered;
-    });
-
-    const paginatedBookings = computed(() => {
-      const start = (currentPage.value - 1) * itemsPerPage.value;
-      const end = start + itemsPerPage.value;
-      return filteredBookings.value.slice(start, end);
-    });
-
-    const totalPages = computed(() => 
-      Math.ceil(filteredBookings.value.length / itemsPerPage.value)
-    );
-
     // ==================== ACTION METHODS ====================
 
     const refreshBookings = () => {
@@ -1846,7 +1550,7 @@ export default {
       searchQuery.value = "";
       statusFilter.value = "all";
       dateFilter.value = "all";
-      currentPage.value = 1;
+      clearTimelinePeriod();
     };
 
     const confirmBooking = async (booking) => {
@@ -1869,9 +1573,74 @@ export default {
       }
     };
 
-    const viewBookingDetails = (booking) => {
-      selectedBooking.value = booking;
-      showOriginalData.value = false;
+    // ==================== CUSTOMER DATA GETTERS ====================
+
+    const getCustomerName = (booking) => {
+      if (booking.isAdminBooking) {
+        return booking.originalData?.adminName || 'Admin';
+      }
+      return booking.customerName || 'Customer';
+    };
+
+    const getCustomerEmail = (booking) => {
+      if (booking.isAdminBooking) {
+        return booking.originalData?.adminEmail || '';
+      }
+      return booking.customerEmail || '';
+    };
+
+    const getCustomerPhone = (booking) => {
+      if (booking.isAdminBooking) {
+        return booking.originalData?.adminPhone || '';
+      }
+      return booking.customerPhone || '';
+    };
+
+    const getCustomerLocation = (booking) => {
+      if (booking.isAdminBooking) {
+        return '';
+      }
+      return booking.customerLocation || '';
+    };
+
+    const getServiceName = (booking) => {
+      return booking.serviceName || 
+             booking.originalData?.service?.name ||
+             booking.originalData?.service?.title ||
+             'Unknown Service';
+    };
+
+    const getCategoryName = (booking) => {
+      return booking.serviceCategory || 
+             booking.originalData?.service?.category?.name ||
+             booking.originalData?.category?.name ||
+             'General';
+    };
+
+    const getBookingAmount = (booking) => {
+      return parseFloat(booking.amount || 
+             booking.originalData?.totalPrice || 
+             booking.originalData?.price || 0).toFixed(2);
+    };
+
+    const formatStatus = (status) => {
+      const statusMap = {
+        pending: 'Pending',
+        confirmed: 'Confirmed',
+        completed: 'Completed',
+        cancelled: 'Cancelled'
+      };
+      return statusMap[status] || status;
+    };
+
+    const formatPaymentStatus = (status) => {
+      const statusMap = {
+        paid: 'Paid',
+        pending: 'Pending',
+        failed: 'Failed',
+        refunded: 'Refunded'
+      };
+      return statusMap[status] || status;
     };
 
     // ==================== UTILITY FUNCTIONS ====================
@@ -1979,7 +1748,6 @@ export default {
       statusFilter,
       dateFilter,
       viewMode,
-      showTimeline,
       selectedPeriod,
       timelinePeriods,
       currentPage,
@@ -1991,13 +1759,14 @@ export default {
       showOriginalData,
       showDebug,
       usingSampleData,
-      collapsedGroups,
       
       // Computed
+      selectedPeriodLabel,
+      timelineFilteredBookings,
       filteredBookings,
+      displayBookings,
       paginatedBookings,
       totalPages,
-      selectedTimelineGroups,
       
       // Methods
       loadBookings,
@@ -2005,13 +1774,12 @@ export default {
       clearFilters,
       confirmBooking,
       completeBooking,
-      viewBookingDetails,
       viewBookingDetailsModal,
       checkProviderStatus,
       promoteServices,
       viewServices,
-      toggleTimeline,
-      toggleGroupCollapse,
+      selectTimelinePeriod,
+      clearTimelinePeriod,
       closeModal,
       loadSampleBookings,
       
@@ -2487,325 +2255,126 @@ export default {
   gap: 24px;
 }
 
-/* TIMELINE TOGGLE SECTION */
-.timeline-toggle-section {
+/* TIMELINE FILTER SECTION (New) */
+.timeline-filter-section {
   background: white;
   border-radius: 16px;
-  padding: 20px;
+  padding: 24px;
   margin-bottom: 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
-.timeline-header {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.timeline-filter-header {
+  margin-bottom: 20px;
 }
 
-.timeline-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.timeline-title h3 {
+.timeline-filter-header h3 {
   color: #1e293b;
   font-size: 1.3rem;
-  margin: 0;
-  flex: 1;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.timeline-title i {
+.timeline-filter-header h3 i {
   color: #3b82f6;
 }
 
-.toggle-btn {
-  padding: 8px 16px;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  color: #4b5563;
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-}
-
-.toggle-btn:hover {
-  background: #e5e7eb;
-  color: #374151;
-}
-
-.toggle-btn.active {
-  background: #3b82f6;
-  border-color: #3b82f6;
-  color: white;
-}
-
-.timeline-filters {
-  border-top: 1px solid #e5e7eb;
-  padding-top: 16px;
-}
-
-.filter-tabs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.filter-tab {
-  padding: 10px 16px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  color: #6b7280;
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-}
-
-.filter-tab:hover {
-  background: #f3f4f6;
-  color: #4b5563;
-}
-
-.filter-tab.active {
-  background: #3b82f6;
-  border-color: #3b82f6;
-  color: white;
-}
-
-.timeline-content {
-  margin-top: 20px;
-  border-top: 1px solid #e5e7eb;
-  padding-top: 20px;
-}
-
-.timeline-container {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.no-timeline-data {
-  text-align: center;
-  padding: 40px;
-  color: #9ca3af;
-}
-
-.no-timeline-data i {
-  font-size: 3rem;
-  margin-bottom: 16px;
-  display: block;
-}
-
-.no-timeline-data p {
-  font-size: 1rem;
+.timeline-filter-subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
   margin: 0;
 }
 
-/* Timeline Groups */
-.timeline-group {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+.timeline-filter-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.timeline-filter-btn {
+  padding: 12px 20px;
+  background: #f8fafc;
+  border: 2px solid #e2e8f0;
   border-radius: 12px;
-  overflow: hidden;
-}
-
-.timeline-group.collapsed {
-  background: #f3f4f6;
-}
-
-.timeline-group-header {
+  color: #475569;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  cursor: pointer;
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
-  transition: background 0.2s ease;
+  gap: 8px;
+  transition: all 0.2s ease;
 }
 
-.timeline-group-header:hover {
-  background: #f9fafb;
+.timeline-filter-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
 }
 
-.group-marker {
-  position: relative;
-}
-
-.marker-number {
-  width: 32px;
-  height: 32px;
-  background: linear-gradient(135deg, #3b82f6, #1e40af);
+.timeline-filter-btn.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
   color: white;
+}
+
+.timeline-filter-btn.active i {
+  color: white;
+}
+
+.timeline-active-filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f0f9ff;
+  border-radius: 12px;
+  border: 1px solid #bae6fd;
+}
+
+.active-filter-badge {
+  background: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0369a1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(3, 105, 161, 0.1);
+}
+
+.active-filter-badge i {
+  color: #0ea5e9;
+}
+
+.clear-period-btn {
+  background: #f1f5f9;
+  border: none;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-}
-
-.group-info {
-  flex: 1;
-}
-
-.group-info h4 {
-  color: #1e293b;
-  font-size: 1.1rem;
-  margin: 0 0 4px 0;
-}
-
-.group-count {
-  color: #6b7280;
-  font-size: 0.85rem;
-  font-weight: 500;
-  margin-right: 8px;
-}
-
-.group-amount {
-  color: #059669;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.group-toggle {
-  color: #6b7280;
-}
-
-/* Timeline Bookings */
-.timeline-bookings {
-  padding: 16px;
-  background: white;
-}
-
-.timeline-booking {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  background: #f9fafb;
-  border-radius: 8px;
-  margin-bottom: 8px;
   cursor: pointer;
+  color: #64748b;
+  font-size: 0.8rem;
   transition: all 0.2s ease;
 }
 
-.timeline-booking:last-child {
-  margin-bottom: 0;
+.clear-period-btn:hover {
+  background: #e2e8f0;
+  color: #475569;
 }
 
-.timeline-booking:hover {
-  background: #f3f4f6;
-  transform: translateX(4px);
-}
-
-.booking-avatar {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #3b82f6, #1e40af);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
+.filter-count {
+  color: #0369a1;
   font-size: 0.9rem;
-  flex-shrink: 0;
-}
-
-.booking-avatar.admin-avatar {
-  background: linear-gradient(135deg, #6b7280, #4b5563);
-}
-
-.booking-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.booking-customer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.customer-name {
-  color: #1e293b;
-  font-weight: 500;
-  font-size: 0.95rem;
-}
-
-.admin-badge {
-  background: #6b7280;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-weight: 500;
-}
-
-.booking-time, .booking-service {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #6b7280;
-  font-size: 0.8rem;
-}
-
-.booking-time i, .booking-service i {
-  width: 14px;
-  color: #9ca3af;
-}
-
-.booking-status {
-  flex-shrink: 0;
-}
-
-.status-badge.small {
-  padding: 4px 8px;
-  font-size: 0.7rem;
-}
-
-.status-badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
   font-weight: 600;
-  text-transform: capitalize;
-  display: inline-block;
-}
-
-.status-badge.pending {
-  background: #fef3c7;
-  color: #d97706;
-}
-
-.status-badge.confirmed {
-  background: #dcfce7;
-  color: #16a34a;
-}
-
-.status-badge.completed {
-  background: #f3e8ff;
-  color: #9333ea;
-}
-
-.status-badge.cancelled {
-  background: #fee2e2;
-  color: #dc2626;
 }
 
 /* Bookings Container */
@@ -3741,23 +3310,14 @@ export default {
     justify-content: center;
   }
   
-  .timeline-toggle-section {
-    padding: 16px;
+  .timeline-filter-buttons {
+    justify-content: center;
   }
   
-  .timeline-title {
+  .timeline-active-filter {
     flex-direction: column;
-    align-items: flex-start;
     gap: 12px;
-  }
-  
-  .toggle-btn {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .filter-tabs {
-    justify-content: center;
+    align-items: flex-start;
   }
   
   .table-header,
@@ -3854,16 +3414,6 @@ export default {
   .customer-badges {
     width: 100%;
     justify-content: flex-start;
-  }
-  
-  .timeline-group-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .group-info {
-    width: 100%;
   }
   
   .view-controls {

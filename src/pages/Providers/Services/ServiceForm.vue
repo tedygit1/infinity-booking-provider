@@ -37,7 +37,7 @@
               :class="{ 'error': showError && !hasValidSubcategories }"
             >
               <span v-if="selectedSubcategories.length === 0" class="placeholder">
-                Choose subcategories (optional)
+                Choose subcategories
               </span>
               <span v-else class="selected-items">
                 {{ selectedSubcategories.length }} subcategory{{ selectedSubcategories.length !== 1 ? 's' : '' }} selected

@@ -221,52 +221,6 @@
         </div>
       </div>
 
-      <!-- Quick Actions -->
-      <div class="quick-actions-section">
-        <h3><i class="fa-solid fa-bolt"></i> Quick Actions</h3>
-        <div class="actions-grid">
-          <button class="action-card" @click="navigateTo('/services/create')">
-            <div class="action-icon">
-              <i class="fa-solid fa-plus-circle"></i>
-            </div>
-            <div class="action-content">
-              <h4>Add New Service</h4>
-              <p>Create a new service offering</p>
-            </div>
-          </button>
-
-          <button class="action-card" @click="navigateTo('/bookings/create')">
-            <div class="action-icon">
-              <i class="fa-solid fa-calendar-plus"></i>
-            </div>
-            <div class="action-content">
-              <h4>Create Booking</h4>
-              <p>Book a new appointment</p>
-            </div>
-          </button>
-
-          <button class="action-card" @click="navigateTo('/schedule')">
-            <div class="action-icon">
-              <i class="fa-solid fa-clock"></i>
-            </div>
-            <div class="action-content">
-              <h4>Manage Schedule</h4>
-              <p>Set your availability</p>
-            </div>
-          </button>
-
-          <button class="action-card" @click="navigateTo('/analytics')">
-            <div class="action-icon">
-              <i class="fa-solid fa-chart-bar"></i>
-            </div>
-            <div class="action-content">
-              <h4>View Analytics</h4>
-              <p>Detailed reports & insights</p>
-            </div>
-          </button>
-        </div>
-      </div>
-
       <!-- Coming Soon Features -->
       <div class="coming-soon-section">
         <h3><i class="fa-solid fa-rocket"></i> Coming Soon</h3>
@@ -1050,76 +1004,6 @@ export default {
   padding: 0 8px;
 }
 
-/* Quick Actions Section */
-.quick-actions-section {
-  margin-bottom: 40px;
-}
-
-.quick-actions-section h3 {
-  color: #1e293b;
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.actions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-}
-
-.action-card {
-  background: white;
-  border: 2px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 24px;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-}
-
-.action-card:hover {
-  border-color: #3b82f6;
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(59, 130, 246, 0.15);
-}
-
-.action-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 12px;
-  background: #f0f9ff;
-  color: #3b82f6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  flex-shrink: 0;
-}
-
-.action-content {
-  flex: 1;
-}
-
-.action-content h4 {
-  color: #1e293b;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-.action-content p {
-  color: #64748b;
-  font-size: 0.9rem;
-  margin: 0;
-}
-
 /* Coming Soon Section */
 .coming-soon-section {
   background: #f8fafc;
@@ -1221,10 +1105,6 @@ export default {
   }
   
   .metrics-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .actions-grid {
     grid-template-columns: 1fr;
   }
   
