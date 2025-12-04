@@ -419,7 +419,7 @@ export default {
   max-width: 1000px;
   margin: 0 auto;
   padding: 0;
-  background: white;
+  background: rgb(201, 201, 210);
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
@@ -429,8 +429,8 @@ export default {
 
 /* Enhanced Header */
 .profile-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 40px 32px 32px;
+  background: linear-gradient(135deg, #4e5368 0%, #7c86e5 100%);
+  padding: 12px 32px 32px;
   position: relative;
   overflow: hidden;
 }
@@ -456,7 +456,7 @@ export default {
   font-size: 2.5rem;
   font-weight: 800;
   margin-bottom: 8px;
-  background: linear-gradient(135deg, #fff 0%, #e2e8f0 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -480,11 +480,11 @@ export default {
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(43, 245, 83, 0.15);
   padding: 10px 16px;
   border-radius: 12px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(15, 247, 66, 0.2);
 }
 
 .status-label {
@@ -502,8 +502,8 @@ export default {
   font-size: 0.85rem;
   font-weight: 700;
   text-transform: capitalize;
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: rgba(30, 205, 120, 0.2);
+  color: rgb(247, 250, 254);
   backdrop-filter: blur(10px);
 }
 
@@ -512,7 +512,7 @@ export default {
 .status-badge.rejected { background: rgba(239, 68, 68, 0.3); }
 
 .edit-btn {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(183, 31, 104, 0.2);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
   padding: 12px 20px;
@@ -544,13 +544,13 @@ export default {
 
 /* Profile Picture Section */
 .profile-picture-section {
-  background: #f8fafc;
+  background: #4c5055;
   padding: 32px;
   border-right: 1px solid #e2e8f0;
 }
 
 .picture-card {
-  background: white;
+  background: rgb(190, 190, 218);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
@@ -600,7 +600,7 @@ export default {
 }
 
 .profile-picture:hover {
-  border-color: #3b82f6;
+  border-color: #394252;
   box-shadow: 0 8px 30px rgba(59, 130, 246, 0.3);
   transform: scale(1.02);
 }
@@ -685,19 +685,20 @@ export default {
 
 /* Profile Information Section */
 .profile-info-section {
-  padding: 32px;
+  padding: 10px;
+  background-color: #a9b3c2;
 }
 
 .info-card {
-  background: white;
-  border-radius: 16px;
+  background: rgb(252, 252, 253);
+  border-radius: 60px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 20px rgba(99, 109, 136, 0.06);
+  border: 1px solid #65717c;
 }
 
 .info-card .card-header {
-  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  background: linear-gradient(135deg, #2b3741, #b2b9c1);
   padding: 24px;
   border-bottom: 1px solid #e2e8f0;
   display: flex;
@@ -709,7 +710,7 @@ export default {
   margin: 0;
   font-size: 1.3rem;
   font-weight: 600;
-  color: #1e293b;
+  color: #fafcff;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -723,7 +724,7 @@ export default {
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 12px;
 }
 
 .form-group {
@@ -740,9 +741,9 @@ export default {
   align-items: center;
   gap: 10px;
   font-weight: 600;
-  color: #374151;
+  color: #5786d0;
   margin-bottom: 8px;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 .form-label i {
@@ -762,7 +763,7 @@ export default {
   border-radius: 12px;
   font-size: 0.95rem;
   transition: all 0.3s ease;
-  background: #fafafa;
+  background: #26209d;
   font-family: inherit;
 }
 
@@ -770,7 +771,7 @@ export default {
 .form-textarea:focus {
   outline: none;
   border-color: #3b82f6;
-  background: white;
+  background: rgb(43, 40, 54);
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
   transform: translateY(-1px);
 }
@@ -778,7 +779,7 @@ export default {
 .form-input:disabled,
 .form-textarea:disabled {
   background: #f8fafc;
-  color: #64748b;
+  color: #a6adb6;
   cursor: not-allowed;
 }
 
@@ -795,7 +796,7 @@ export default {
 }
 
 .field-note {
-  color: #6b7280;
+  color: #294782;
   font-size: 0.85rem;
   margin-top: 6px;
   font-style: italic;

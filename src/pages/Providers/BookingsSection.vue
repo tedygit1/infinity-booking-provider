@@ -346,21 +346,44 @@
                 <span class="service-category">{{ getCategoryName(booking) }}</span>
               </div>
 
+              <!-- Enhanced Date & Time Cell -->
               <div class="table-cell datetime-cell">
-                <div class="date">{{ formatDate(booking.bookingDate || booking.date) }}</div>
-                <div class="time">{{ booking.startTime }} - {{ booking.endTime }}</div>
+                <div class="datetime-container">
+                  <div class="date-section">
+                    <i class="fa-solid fa-calendar"></i>
+                    <span class="date">{{ formatDate(booking.bookingDate || booking.date) }}</span>
+                  </div>
+                  <div class="time-section">
+                    <i class="fa-solid fa-clock"></i>
+                    <span class="time">{{ booking.startTime }} - {{ booking.endTime }}</span>
+                  </div>
+                </div>
               </div>
+              
+              <!-- Duration Cell -->
               <div class="table-cell duration-cell">
-                {{ calculateDuration(booking.startTime, booking.endTime) || booking.duration || 60 }} mins
+                <div class="duration-container">
+                  <i class="fa-solid fa-hourglass-half"></i>
+                  <span>{{ calculateDuration(booking.startTime, booking.endTime) || booking.duration || 60 }} mins</span>
+                </div>
               </div>
+              
+              <!-- Status Cell -->
               <div class="table-cell status-cell">
                 <span class="status-badge" :class="booking.status">
                   {{ formatStatus(booking.status) }}
                 </span>
               </div>
+              
+              <!-- Amount Cell -->
               <div class="table-cell amount-cell">
-                <strong>${{ getBookingAmount(booking) }}</strong>
+                <div class="amount-container">
+                  <i class="fa-solid fa-dollar-sign"></i>
+                  <strong>${{ getBookingAmount(booking) }}</strong>
+                </div>
               </div>
+              
+              <!-- Actions Cell -->
               <div class="table-cell actions-cell">
                 <div class="action-buttons">
                   <button 
@@ -451,46 +474,71 @@
               </div>
             </div>
             
-            <!-- Booking Details -->
-            <div class="booking-details">
-              <div class="detail-row">
-                <div class="detail-item">
-                  <i class="fa-solid fa-calendar"></i>
-                  <div>
-                    <span class="detail-label">Date</span>
-                    <span class="detail-value">{{ formatDate(booking.bookingDate || booking.date) }}</span>
+            <!-- BEAUTIFUL Booking Details Grid -->
+            <div class="booking-details-grid">
+              <div class="details-header">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Booking Details</span>
+              </div>
+              
+              <div class="details-container">
+                <!-- Date & Time Row -->
+                <div class="detail-row combined">
+                  <div class="detail-item">
+                    <div class="detail-icon">
+                      <i class="fa-solid fa-calendar"></i>
+                    </div>
+                    <div class="detail-content">
+                      <span class="detail-label">DATE</span>
+                      <span class="detail-value">{{ formatDate(booking.bookingDate || booking.date) }}</span>
+                    </div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-icon">
+                      <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div class="detail-content">
+                      <span class="detail-label">TIME</span>
+                      <span class="detail-value">{{ booking.startTime }} - {{ booking.endTime }}</span>
+                    </div>
                   </div>
                 </div>
-                <div class="detail-item">
-                  <i class="fa-solid fa-clock"></i>
-                  <div>
-                    <span class="detail-label">Time</span>
-                    <span class="detail-value">{{ booking.startTime }} - {{ booking.endTime }}</span>
+                
+                <!-- Duration & Amount Row -->
+                <div class="detail-row combined">
+                  <div class="detail-item">
+                    <div class="detail-icon">
+                      <i class="fa-solid fa-hourglass-half"></i>
+                    </div>
+                    <div class="detail-content">
+                      <span class="detail-label">DURATION</span>
+                      <span class="detail-value">{{ calculateDuration(booking.startTime, booking.endTime) || booking.duration || 60 }} mins</span>
+                    </div>
+                  </div>
+                  <div class="detail-item">
+                    <div class="detail-icon">
+                      <i class="fa-solid fa-dollar-sign"></i>
+                    </div>
+                    <div class="detail-content">
+                      <span class="detail-label">AMOUNT</span>
+                      <span class="detail-value amount">${{ getBookingAmount(booking) }}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Timestamp Row (Full Width) -->
+                <div class="detail-row full-width">
+                  <div class="detail-item timestamp-item">
+                    <div class="detail-icon">
+                      <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div class="detail-content">
+                      <span class="detail-label">BOOKED</span>
+                      <span class="detail-value">{{ formatRelativeTime(booking.createdAt) }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div class="detail-row">
-                <div class="detail-item">
-                  <i class="fa-solid fa-hourglass"></i>
-                  <div>
-                    <span class="detail-label">Duration</span>
-                    <span class="detail-value">{{ calculateDuration(booking.startTime, booking.endTime) || booking.duration || 60 }} mins</span>
-                  </div>
-                </div>
-                <div class="detail-item">
-                  <i class="fa-solid fa-dollar-sign"></i>
-                  <div>
-                    <span class="detail-label">Amount</span>
-                    <span class="detail-value">${{ getBookingAmount(booking) }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Timestamp -->
-            <div class="timestamp">
-              <i class="fa-solid fa-clock"></i>
-              Booked {{ formatRelativeTime(booking.createdAt) }}
             </div>
             
             <!-- Action Buttons -->
@@ -2657,15 +2705,58 @@ export default {
   gap: 2px;
 }
 
-.datetime-cell .date {
+.datetime-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.date-section, .time-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-section i, .time-section i {
+  color: #64748b;
+  font-size: 0.9rem;
+  width: 16px;
+  text-align: center;
+}
+
+.date-section .date {
   color: #1e293b;
   font-weight: 500;
   font-size: 0.9rem;
 }
 
-.datetime-cell .time {
+.time-section .time {
   color: #64748b;
   font-size: 0.85rem;
+}
+
+/* Duration Cell */
+.duration-cell .duration-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.duration-container i {
+  color: #d97706;
+  font-size: 0.9rem;
+}
+
+/* Amount Cell */
+.amount-cell .amount-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.amount-container i {
+  color: #059669;
+  font-size: 0.9rem;
 }
 
 /* Action Buttons */
@@ -2716,6 +2807,135 @@ export default {
 
 .btn-action.view:hover {
   background: #e2e8f0;
+}
+
+/* ====== AMAZING BOOKING DETAILS GRID ====== */
+.booking-details-grid {
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.details-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.details-header i {
+  color: #3b82f6;
+  font-size: 1rem;
+}
+
+.details-header span {
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.details-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-row {
+  display: flex;
+  gap: 12px;
+}
+
+.detail-row.combined {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.detail-row.full-width {
+  display: block;
+}
+
+.detail-item {
+  flex: 1;
+  background: white;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.detail-item:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+  transform: translateY(-1px);
+}
+
+.detail-icon {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.detail-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detail-label {
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  color: #1e293b;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.detail-value.amount {
+  color: #059669;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.timestamp-item {
+  background: linear-gradient(to right, #f0f9ff, #f8fafc);
+  border-color: #bae6fd;
+}
+
+.timestamp-item .detail-icon {
+  background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+  color: white;
+}
+
+.timestamp-item .detail-label {
+  color: #0369a1;
+}
+
+.timestamp-item .detail-value {
+  color: #0c4a6e;
+  font-weight: 500;
 }
 
 /* AMAZING BOOKINGS GRID */
@@ -2888,79 +3108,6 @@ export default {
   font-size: 0.8rem;
   font-weight: 500;
   display: inline-block;
-}
-
-/* Booking Details */
-.booking-details {
-  background: white;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
-  border: 1px solid #e5e7eb;
-}
-
-.detail-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
-.detail-row:last-child {
-  margin-bottom: 0;
-}
-
-.detail-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.detail-item i {
-  width: 32px;
-  height: 32px;
-  background: #f3f4f6;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6b7280;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-}
-
-.detail-item div {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.detail-label {
-  color: #6b7280;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.detail-value {
-  color: #1e293b;
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-/* Timestamp */
-.timestamp {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #9ca3af;
-  font-size: 0.8rem;
-  margin-bottom: 20px;
-}
-
-.timestamp i {
-  font-size: 0.75rem;
 }
 
 /* Action Buttons */
@@ -3355,7 +3502,7 @@ export default {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive Design */
+/* ====== RESPONSIVE DESIGN ====== */
 @media (max-width: 768px) {
   .bookings-section {
     padding: 16px;
@@ -3426,9 +3573,24 @@ export default {
     gap: 16px;
   }
   
-  .detail-row {
+  .detail-row.combined {
     grid-template-columns: 1fr;
-    gap: 12px;
+  }
+  
+  .booking-details-grid {
+    padding: 16px;
+  }
+  
+  .detail-item {
+    padding: 12px;
+  }
+  
+  .datetime-container {
+    gap: 4px;
+  }
+  
+  .date-section, .time-section {
+    gap: 6px;
   }
   
   .card-actions {
@@ -3510,6 +3672,24 @@ export default {
   
   .date-input-group {
     min-width: 100%;
+  }
+  
+  .details-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .detail-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  
+  .detail-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
   }
 }
 </style>

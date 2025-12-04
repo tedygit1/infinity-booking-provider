@@ -786,7 +786,7 @@ export default {
 .time-slot-item {
   background: white;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 80px;
   padding: 8px 10px;
   transition: all 0.2s ease;
 }
@@ -821,7 +821,7 @@ export default {
 .time-range-compact {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
   flex: 1;
   min-width: 180px;
 }
@@ -856,7 +856,8 @@ export default {
 .time-with-period {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
+ 
 }
 .time-input {
   width: 70px;
@@ -864,16 +865,15 @@ export default {
   padding: 6px 8px;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   text-align: center;
   font-family: 'Inter', monospace;
   color: #1e40af;
   background: white;
   box-sizing: border-box;
-  
 }
 .time-period {
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   color: #64748b;
   font-weight: 600;
   min-width: 28px;
@@ -929,7 +929,7 @@ export default {
 /* SMALLER TOGGLE SWITCH */
 .toggle-container {
   flex-shrink: 0;
-  
+  margin-left: 3rem;
 }
 .toggle-switch-small {
   display: inline-block;
@@ -937,7 +937,6 @@ export default {
   width: 30px;
   height: 20px;
   cursor: pointer;
- 
 }
 .toggle-switch-small input {
   opacity: 0;
