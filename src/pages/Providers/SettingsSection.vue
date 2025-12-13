@@ -34,7 +34,6 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
-          
           <div class="toggle-item">
             <div class="toggle-label">
               <i class="fa-solid fa-phone"></i>
@@ -48,7 +47,6 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
-          
           <div class="card-footer">
             <button class="btn btn-primary" @click="savePrivacy">
               <i v-if="savingPrivacy" class="fa-solid fa-spinner fa-spin"></i>
@@ -79,7 +77,6 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
-          
           <div class="toggle-item">
             <div class="toggle-label">
               <i class="fa-solid fa-comment-sms"></i>
@@ -93,7 +90,6 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
-          
           <div class="toggle-item">
             <div class="toggle-label">
               <i class="fa-solid fa-mobile-screen"></i>
@@ -107,7 +103,6 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
-          
           <div class="card-footer">
             <button class="btn btn-primary" @click="saveNotifications">
               <i v-if="savingNotifications" class="fa-solid fa-spinner fa-spin"></i>
@@ -147,7 +142,6 @@
               <span class="strength-text">{{ getPasswordStrengthText() }}</span>
             </div>
           </div>
-          
           <div class="form-group">
             <label class="form-label">
               <i class="fa-solid fa-key"></i>
@@ -171,7 +165,6 @@
               Passwords do not match
             </div>
           </div>
-          
           <div class="toggle-item">
             <div class="toggle-label">
               <i class="fa-solid fa-shield"></i>
@@ -185,7 +178,6 @@
               <span class="toggle-slider"></span>
             </label>
           </div>
-          
           <div class="card-footer">
             <button
               class="btn btn-primary"
@@ -214,17 +206,12 @@
             </label>
             <div class="select-wrapper">
               <select v-model="localization.language" class="form-select">
-                <option value="en">
-                  <i class="fa-solid fa-flag-usa"></i> English
-                </option>
-                <option value="am">
-                  <i class="fa-solid fa-flag-eth"></i> አማርኛ
-                </option>
+                <option value="en">English</option>
+                <option value="am">አማርኛ</option>
               </select>
               <i class="fa-solid fa-chevron-down select-arrow"></i>
             </div>
           </div>
-          
           <div class="form-group">
             <label class="form-label">
               <i class="fa-solid fa-clock"></i>
@@ -232,17 +219,12 @@
             </label>
             <div class="select-wrapper">
               <select v-model="localization.timezone" class="form-select">
-                <option value="Africa/Addis_Ababa">
-                  <i class="fa-solid fa-location-dot"></i> Africa/Addis Ababa (EAT)
-                </option>
-                <option value="UTC">
-                  <i class="fa-solid fa-earth-americas"></i> UTC (Coordinated Universal Time)
-                </option>
+                <option value="Africa/Addis_Ababa">Africa/Addis Ababa (EAT)</option>
+                <option value="UTC">UTC (Coordinated Universal Time)</option>
               </select>
               <i class="fa-solid fa-chevron-down select-arrow"></i>
             </div>
           </div>
-          
           <div class="card-footer">
             <button class="btn btn-primary" @click="saveLocalization">
               <i v-if="savingLocalization" class="fa-solid fa-spinner fa-spin"></i>
@@ -264,7 +246,7 @@
             <i class="fa-solid fa-circle-exclamation"></i>
             <p>Critical actions that affect your account access and data. These actions cannot be undone.</p>
           </div>
-          
+
           <!-- Logout Action -->
           <div class="danger-action">
             <div class="action-info">
@@ -379,21 +361,13 @@ export default {
     // API Configuration - USING PROXY PATH
     const getApiBaseUrl = () => {
       if (import.meta.env.MODE === 'development') {
-        // In development, use relative path through proxy
         return '';
       } else {
-        // In production, use the actual backend URL
         return import.meta.env.VITE_API_BASE_URL || 'https://infinity-booking-backend1.onrender.com';
       }
     };
-
     const API_BASE_URL = getApiBaseUrl();
-    
-    // IMPORTANT: Use /api as defined in your proxy, which will be rewritten to /infinity-booking
     const LOGOUT_ENDPOINT = `/api/auth/logout`;
-    console.log('Environment:', import.meta.env.MODE);
-    console.log('API Base URL:', API_BASE_URL);
-    console.log('Logout Endpoint:', LOGOUT_ENDPOINT);
 
     // State
     const loggingOut = ref(false);
@@ -411,19 +385,16 @@ export default {
       publicProfile: true,
       hidePhone: false,
     });
-
     const notifications = ref({
       email: true,
       sms: false,
       inApp: true,
     });
-
     const security = ref({
       newPassword: "",
       confirmPassword: "",
       twoFactor: false,
     });
-
     const localization = ref({
       language: "en",
       timezone: "Africa/Addis_Ababa",
@@ -433,15 +404,11 @@ export default {
     const showToast = (message, type = 'info') => {
       const id = Date.now() + Math.random();
       toasts.value.push({ id, message, type });
-      setTimeout(() => {
-        removeToast(id);
-      }, 5000);
+      setTimeout(() => removeToast(id), 5000);
     };
-
     const removeToast = (id) => {
       toasts.value = toasts.value.filter(t => t.id !== id);
     };
-
     const getToastIcon = (type) => {
       const icons = {
         success: 'fa-solid fa-circle-check',
@@ -455,59 +422,44 @@ export default {
     const getPasswordStrength = () => {
       const password = security.value.newPassword;
       if (!password) return 0;
-      
       let strength = 0;
       if (password.length >= 8) strength++;
       if (/[A-Z]/.test(password)) strength++;
       if (/[a-z]/.test(password)) strength++;
       if (/[0-9]/.test(password)) strength++;
       if (/[^A-Za-z0-9]/.test(password)) strength++;
-      
       return Math.min(strength, 4);
     };
-
     const getPasswordStrengthClass = () => {
       const strength = getPasswordStrength();
       const classes = ['strength-1', 'strength-2', 'strength-3', 'strength-4'];
       return classes[strength - 1] || '';
     };
-
     const getPasswordStrengthText = () => {
       const strength = getPasswordStrength();
       const texts = ['Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong'];
       return texts[strength];
     };
-
     const passwordsMatch = () => {
       return security.value.newPassword === security.value.confirmPassword;
     };
 
-    // Real logout functionality using proxy
-    const confirmLogout = () => {
-      showLogoutModal.value = true;
-    };
-
+    // Logout
+    const confirmLogout = () => showLogoutModal.value = true;
     const performLogout = async () => {
       loggingOut.value = true;
       showLogoutModal.value = false;
-      
       try {
-        // Get token from localStorage
         const token = localStorage.getItem("provider_token") || 
                      localStorage.getItem("userToken") || 
                      localStorage.getItem("token");
-        
         if (!token) {
-          console.log("No token found - clearing local data");
           clearAllAuthData();
           showToast('Logged out!', 'info');
           await router.push({ name: "Login" });
           return;
         }
 
-        console.log("Calling logout endpoint:", LOGOUT_ENDPOINT);
-        
-        // Use relative path (proxy will handle it)
         const response = await fetch(LOGOUT_ENDPOINT, {
           method: 'POST',
           headers: {
@@ -518,96 +470,56 @@ export default {
         });
 
         if (response.ok) {
-          console.log("Backend logout successful");
           showToast('Logged out successfully!', 'success');
         } else {
-          console.warn("Backend logout failed with status:", response.status);
           showToast('Logged out locally.', 'info');
         }
-        
-        // Clear all authentication data
+
         clearAllAuthData();
-        
-        // Wait a moment for user to see the message
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Redirect to login page
         await router.push({ name: "Login" });
-        
       } catch (error) {
         console.error("Logout error:", error);
-        
-        // Fallback: still clear everything and redirect
         clearAllAuthData();
         showToast('Logged out locally.', 'info');
-        
-        setTimeout(() => {
-          router.push({ name: "Login" });
-        }, 1000);
+        setTimeout(() => router.push({ name: "Login" }), 1000);
       } finally {
         loggingOut.value = false;
       }
     };
 
-    // Helper function to clear all authentication data
     const clearAllAuthData = () => {
-      console.log("Clearing all authentication data...");
-      
-      // List all possible auth storage keys
       const authKeys = [
         "provider_token", "provider_id", "loggedProvider",
         "userToken", "userId", "token", "refreshToken",
         "user", "auth_token", "access_token", "session",
         "admin_token", "customer_token"
       ];
-      
-      // Clear localStorage
       authKeys.forEach(key => {
         localStorage.removeItem(key);
-      });
-      
-      // Clear sessionStorage
-      authKeys.forEach(key => {
         sessionStorage.removeItem(key);
       });
-      
-      // Clear auth cookies
       document.cookie.split(";").forEach(cookie => {
         const [name] = cookie.trim().split("=");
         const cookieName = name.toLowerCase();
-        if (cookieName.includes("auth") || 
-            cookieName.includes("token") || 
-            cookieName.includes("session")) {
+        if (cookieName.includes("auth") || cookieName.includes("token") || cookieName.includes("session")) {
           document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
         }
       });
-      
-      console.log("Authentication data cleared");
     };
 
-    // Save handlers using proxy paths
+    // Save handlers
     const savePrivacy = async () => {
       savingPrivacy.value = true;
       try {
         const token = localStorage.getItem("provider_token") || localStorage.getItem("token");
-        
-        if (!token) {
-          throw new Error("Authentication required");
-        }
-
+        if (!token) throw new Error("Authentication required");
         const response = await fetch(`/api/user/privacy`, {
           method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(privacy.value)
         });
-
-        if (!response.ok) {
-          throw new Error("Failed to save privacy settings");
-        }
-
+        if (!response.ok) throw new Error("Failed to save privacy settings");
         showToast('Privacy settings saved successfully!', 'success');
       } catch (error) {
         console.error("Save privacy error:", error);
@@ -621,24 +533,13 @@ export default {
       savingNotifications.value = true;
       try {
         const token = localStorage.getItem("provider_token") || localStorage.getItem("token");
-        
-        if (!token) {
-          throw new Error("Authentication required");
-        }
-
+        if (!token) throw new Error("Authentication required");
         const response = await fetch(`/api/user/notifications`, {
           method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(notifications.value)
         });
-
-        if (!response.ok) {
-          throw new Error("Failed to save notification preferences");
-        }
-
+        if (!response.ok) throw new Error("Failed to save notification preferences");
         showToast('Notification preferences updated!', 'success');
       } catch (error) {
         console.error("Save notifications error:", error);
@@ -652,24 +553,13 @@ export default {
       savingLocalization.value = true;
       try {
         const token = localStorage.getItem("provider_token") || localStorage.getItem("token");
-        
-        if (!token) {
-          throw new Error("Authentication required");
-        }
-
+        if (!token) throw new Error("Authentication required");
         const response = await fetch(`/api/user/localization`, {
           method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify(localization.value)
         });
-
-        if (!response.ok) {
-          throw new Error("Failed to save preferences");
-        }
-
+        if (!response.ok) throw new Error("Failed to save preferences");
         showToast('Language and timezone updated!', 'success');
       } catch (error) {
         console.error("Save localization error:", error);
@@ -681,51 +571,25 @@ export default {
 
     const changePassword = async () => {
       const { newPassword, confirmPassword } = security.value;
-      
-      if (!newPassword) {
-        showToast('Please enter a new password.', 'error');
-        return;
-      }
-      
-      if (newPassword.length < 6) {
-        showToast('Password must be at least 6 characters long.', 'error');
-        return;
-      }
-      
-      if (!passwordsMatch()) {
-        showToast('Passwords do not match.', 'error');
-        return;
-      }
-      
+      if (!newPassword) return showToast('Please enter a new password.', 'error');
+      if (newPassword.length < 6) return showToast('Password must be at least 6 characters long.', 'error');
+      if (!passwordsMatch()) return showToast('Passwords do not match.', 'error');
+
       changingPassword.value = true;
       try {
         const token = localStorage.getItem("provider_token") || localStorage.getItem("token");
-        
-        if (!token) {
-          throw new Error("Authentication required");
-        }
-
+        if (!token) throw new Error("Authentication required");
         const response = await fetch(`/api/auth/change-password`, {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            newPassword: newPassword,
-            confirmPassword: confirmPassword
-          })
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ newPassword, confirmPassword })
         });
-
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.message || "Failed to update password");
         }
-
-        // Clear password fields
         security.value.newPassword = "";
         security.value.confirmPassword = "";
-        
         showToast('Password updated successfully!', 'success');
       } catch (error) {
         console.error("Change password error:", error);
@@ -745,14 +609,11 @@ export default {
       if (confirm("⚠️ This action cannot be undone! All your data will be permanently deleted. Continue?")) {
         clearAllAuthData();
         showToast('Account deleted successfully. Redirecting...', 'info');
-        setTimeout(() => {
-          router.push({ name: "Login" });
-        }, 2000);
+        setTimeout(() => router.push({ name: "Login" }), 2000);
       }
     };
 
     return {
-      // State
       loggingOut,
       showLogoutModal,
       savingPrivacy,
@@ -762,14 +623,10 @@ export default {
       showNewPassword,
       showConfirmPassword,
       toasts,
-      
-      // Settings
       privacy,
       notifications,
       security,
       localization,
-      
-      // Methods
       showToast,
       removeToast,
       getToastIcon,
@@ -790,7 +647,7 @@ export default {
 </script>
 
 <style scoped>
-/* ===== ENHANCED PROFESSIONAL SETTINGS SECTION ===== */
+/* ===== ENHANCED PROFESSIONAL & FULLY RESPONSIVE STYLES ===== */
 .settings-section {
   max-width: 1200px;
   margin: 0 auto;
@@ -798,34 +655,28 @@ export default {
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
-/* Professional Header */
+/* Header */
 .settings-header {
   background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
-  padding: 48px 40px;
+  padding: clamp(32px, 8vw, 48px) clamp(20px, 6vw, 40px);
   position: relative;
   overflow: hidden;
   border-radius: 0 0 24px 24px;
 }
-
 .header-background {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
     radial-gradient(circle at 10% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
     radial-gradient(circle at 90% 80%, rgba(255,255,255,0.05) 0%, transparent 50%);
 }
-
 .header-content {
   position: relative;
   z-index: 2;
   text-align: center;
 }
-
 .title-gradient {
-  font-size: 3rem;
+  font-size: clamp(1.8rem, 6vw, 3rem);
   font-weight: 800;
   margin-bottom: 12px;
   background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
@@ -835,49 +686,41 @@ export default {
   letter-spacing: -0.5px;
   line-height: 1.1;
 }
-
 .subtitle {
   color: rgba(255, 255, 255, 0.9);
-  font-size: 1.25rem;
-  margin: 0;
+  font-size: clamp(1rem, 3.5vw, 1.25rem);
+  margin: 0 auto;
   font-weight: 500;
   max-width: 600px;
-  margin: 0 auto;
 }
 
 /* Main Settings Grid */
 .settings-grid {
-  padding: 40px;
+  padding: clamp(16px, 4vw, 40px);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(280px, 90vw, 380px), 1fr));
+  gap: clamp(12px, 3.5vw, 24px);
 }
 
-/* Professional Card Design */
 .setting-card {
   background: white;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 
-    0 10px 40px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
   border: 1px solid #f1f5f9;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 .setting-card:hover {
   transform: translateY(-4px);
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.12),
-    0 0 0 1px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(99, 102, 241, 0.1);
 }
-
 .setting-card.danger-zone {
+  grid-column: 1 / -1;
   border-color: rgba(239, 68, 68, 0.2);
   background: linear-gradient(135deg, #fef2f2, #fee2e2);
 }
 
-/* Card Header */
+/* Card Header & Body */
 .card-header {
   background: linear-gradient(135deg, #f8fafc, #f1f5f9);
   padding: 24px 28px;
@@ -886,34 +729,25 @@ export default {
   align-items: center;
   gap: 16px;
 }
-
 .card-icon {
   font-size: 1.4rem;
   color: #6366f1;
   background: white;
-  width: 48px;
-  height: 48px;
+  width: 48px; height: 48px;
   border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
 }
-
 .danger-zone .card-icon {
   color: #ef4444;
   background: rgba(239, 68, 68, 0.1);
 }
-
 .card-header h3 {
   margin: 0;
   font-size: 1.3rem;
   font-weight: 700;
   color: #1f2937;
-  letter-spacing: -0.3px;
 }
-
-/* Card Body */
 .card-body {
   padding: 28px;
 }
@@ -926,37 +760,40 @@ export default {
   padding: 20px 0;
   border-bottom: 1px solid #f1f5f9;
 }
-
 .toggle-item:last-child {
   border-bottom: none;
   padding-bottom: 0;
 }
-
+@media (max-width: 374px) {
+  .toggle-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .toggle-switch {
+    align-self: flex-end;
+  }
+}
 .toggle-label {
   display: flex;
   align-items: center;
   gap: 16px;
   flex: 1;
 }
-
 .toggle-label i {
   color: #6366f1;
-  font-size: 1.2rem;
   width: 24px;
   text-align: center;
 }
-
 .toggle-title {
   font-weight: 600;
   color: #1f2937;
   margin-bottom: 4px;
   font-size: 1rem;
 }
-
 .toggle-description {
   font-size: 0.9rem;
   color: #6b7280;
-  line-height: 1.4;
 }
 
 /* Toggle Switch */
@@ -967,46 +804,32 @@ export default {
   height: 28px;
   cursor: pointer;
 }
-
 .toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+  opacity: 0; width: 0; height: 0;
 }
-
 .toggle-slider {
   position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background-color: #e5e7eb;
   transition: .4s;
   border-radius: 34px;
 }
-
 .toggle-slider:before {
-  position: absolute;
   content: "";
-  height: 22px;
-  width: 22px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: .4s;
+  position: absolute;
+  height: 22px; width: 22px;
+  left: 3px; bottom: 3px;
+  background: white;
   border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: .4s;
 }
-
 .toggle-switch input:checked + .toggle-slider {
   background-color: #10b981;
 }
-
 .toggle-switch input:checked + .toggle-slider:before {
   transform: translateX(24px);
 }
-
 .toggle-switch input:disabled + .toggle-slider {
   background-color: #d1d5db;
   cursor: not-allowed;
@@ -1016,7 +839,6 @@ export default {
 .form-group {
   margin-bottom: 24px;
 }
-
 .form-label {
   display: flex;
   align-items: center;
@@ -1026,13 +848,6 @@ export default {
   margin-bottom: 10px;
   font-size: 0.95rem;
 }
-
-.form-label i {
-  color: #6b7280;
-  width: 16px;
-  font-size: 0.9rem;
-}
-
 .form-input,
 .form-select {
   width: 100%;
@@ -1045,19 +860,15 @@ export default {
   color: #1f2937;
   font-family: inherit;
 }
-
 .form-input:focus,
 .form-select:focus {
   outline: none;
   border-color: #6366f1;
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
-
-/* Password Input */
 .password-input {
   position: relative;
 }
-
 .password-toggle {
   position: absolute;
   right: 12px;
@@ -1068,20 +879,13 @@ export default {
   color: #6b7280;
   cursor: pointer;
   padding: 8px;
-  font-size: 0.9rem;
 }
-
-.password-toggle:hover {
-  color: #374151;
-}
-
 .password-strength {
   margin-top: 10px;
   display: flex;
   align-items: center;
   gap: 12px;
 }
-
 .strength-bar {
   flex: 1;
   height: 6px;
@@ -1090,44 +894,21 @@ export default {
   overflow: hidden;
   position: relative;
 }
-
 .strength-bar::after {
   content: '';
   position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 0;
+  left: 0; top: 0; height: 100%; width: 0;
   transition: width 0.3s ease;
 }
-
-.strength-bar.strength-1::after {
-  width: 25%;
-  background: #ef4444;
-}
-
-.strength-bar.strength-2::after {
-  width: 50%;
-  background: #f59e0b;
-}
-
-.strength-bar.strength-3::after {
-  width: 75%;
-  background: #3b82f6;
-}
-
-.strength-bar.strength-4::after {
-  width: 100%;
-  background: #10b981;
-}
-
+.strength-bar.strength-1::after { width: 25%; background: #ef4444; }
+.strength-bar.strength-2::after { width: 50%; background: #f59e0b; }
+.strength-bar.strength-3::after { width: 75%; background: #3b82f6; }
+.strength-bar.strength-4::after { width: 100%; background: #10b981; }
 .strength-text {
   font-size: 0.85rem;
   font-weight: 600;
   min-width: 80px;
 }
-
-/* Error Message */
 .error-message {
   color: #ef4444;
   font-size: 0.85rem;
@@ -1136,12 +917,9 @@ export default {
   align-items: center;
   gap: 6px;
 }
-
-/* Select Wrapper */
 .select-wrapper {
   position: relative;
 }
-
 .select-arrow {
   position: absolute;
   right: 16px;
@@ -1162,20 +940,17 @@ export default {
   gap: 12px;
   align-items: flex-start;
 }
-
 .danger-note i {
   color: #ef4444;
   font-size: 1.2rem;
   flex-shrink: 0;
 }
-
 .danger-note p {
   margin: 0;
   color: #7f1d1d;
   font-size: 0.9rem;
   line-height: 1.5;
 }
-
 .danger-action {
   display: flex;
   justify-content: space-between;
@@ -1183,22 +958,18 @@ export default {
   padding: 20px 0;
   border-bottom: 1px solid rgba(239, 68, 68, 0.1);
 }
-
 .danger-action:last-child {
   border-bottom: none;
   padding-bottom: 0;
 }
-
 .action-info {
   display: flex;
   align-items: center;
   gap: 16px;
   flex: 1;
 }
-
 .action-icon {
-  width: 48px;
-  height: 48px;
+  width: 48px; height: 48px;
   border-radius: 12px;
   background: rgba(239, 68, 68, 0.1);
   display: flex;
@@ -1207,23 +978,8 @@ export default {
   color: #ef4444;
   font-size: 1.2rem;
 }
-
-.action-details {
-  flex: 1;
-}
-
-.action-title {
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 4px;
-  font-size: 1rem;
-}
-
-.action-description {
-  font-size: 0.9rem;
-  color: #6b7280;
-  line-height: 1.4;
-}
+.action-title { font-weight: 600; color: #1f2937; margin-bottom: 4px; }
+.action-description { font-size: 0.9rem; color: #6b7280; }
 
 /* Card Footer */
 .card-footer {
@@ -1232,6 +988,15 @@ export default {
   border-top: 1px solid #f1f5f9;
   display: flex;
   justify-content: flex-end;
+}
+@media (max-width: 575px) {
+  .card-footer {
+    justify-content: stretch;
+  }
+  .card-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 /* Buttons */
@@ -1248,64 +1013,51 @@ export default {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: inherit;
 }
-
 .btn-primary {
   background: linear-gradient(135deg, #6366f1, #4f46e5);
   color: white;
   box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
 }
-
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
   background: linear-gradient(135deg, #4f46e5, #4338ca);
 }
-
 .btn-secondary {
   background: #f1f5f9;
   color: #374151;
   border: 1px solid #e2e8f0;
 }
-
-.btn-secondary:hover {
-  background: #e2e8f0;
-}
-
+.btn-secondary:hover { background: #e2e8f0; }
 .btn-logout {
   background: linear-gradient(135deg, #ef4444, #dc2626);
   color: white;
   box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
 }
-
 .btn-logout:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
   background: linear-gradient(135deg, #dc2626, #b91c1c);
 }
-
 .btn-outline-danger {
   background: transparent;
   color: #dc2626;
   border: 2px solid #dc2626;
 }
-
 .btn-outline-danger:hover {
   background: #fef2f2;
   transform: translateY(-2px);
 }
-
 .btn-danger {
   background: linear-gradient(135deg, #dc2626, #b91c1c);
   color: white;
   box-shadow: 0 6px 20px rgba(220, 38, 38, 0.3);
 }
-
 .btn-danger:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 30px rgba(220, 38, 38, 0.4);
   background: linear-gradient(135deg, #b91c1c, #991b1b);
 }
-
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -1313,27 +1065,18 @@ export default {
   box-shadow: none !important;
 }
 
-/* Enhanced Modal */
+/* Modal */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   backdrop-filter: blur(8px);
-  animation: fadeIn 0.3s ease;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 .modal-content {
   background: white;
   padding: 40px;
@@ -1342,62 +1085,36 @@ export default {
   width: 90%;
   text-align: center;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
-  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modal-icon {
-  font-size: 4rem;
-  color: #ef4444;
-  margin-bottom: 20px;
-}
-
-.modal-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 12px;
-}
-
-.modal-message {
-  color: #6b7280;
-  margin-bottom: 32px;
-  line-height: 1.5;
-  font-size: 1rem;
-}
-
+.modal-icon { font-size: 4rem; color: #ef4444; margin-bottom: 20px; }
+.modal-title { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 12px; }
+.modal-message { color: #6b7280; margin-bottom: 32px; line-height: 1.5; }
 .modal-actions {
   display: flex;
   gap: 16px;
   justify-content: center;
 }
-
-.modal-actions .btn {
-  min-width: 120px;
+@media (max-width: 575px) {
+  .modal-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .modal-actions .btn {
+    width: 100%;
+  }
 }
 
-/* Toast Notifications */
+/* Toasts */
 .toast-container {
   position: fixed;
-  top: 24px;
-  right: 24px;
+  top: max(24px, env(safe-area-inset-top));
+  right: max(24px, env(safe-area-inset-right));
   z-index: 5000;
   display: flex;
   flex-direction: column;
   gap: 16px;
   pointer-events: none;
 }
-
 .toast {
   display: flex;
   align-items: center;
@@ -1406,385 +1123,54 @@ export default {
   border-radius: 16px;
   color: white;
   font-weight: 500;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
   max-width: 420px;
   pointer-events: all;
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(20px);
-  animation: toastIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-@keyframes toastIn {
-  from {
-    opacity: 0;
-    transform: translateX(100px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.toast--success {
-  background: linear-gradient(135deg, #10b981, #34d399);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-}
-
-.toast--error {
-  background: linear-gradient(135deg, #ef4444, #f87171);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.toast--info {
-  background: linear-gradient(135deg, #3b82f6, #60a5fa);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.toast-icon {
-  font-size: 1.4rem;
-  flex-shrink: 0;
-}
-
-.toast-content {
-  flex: 1;
-}
-
-.toast-message {
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
+.toast--success { background: linear-gradient(135deg, #10b981, #34d399); border: 1px solid rgba(34,197,94,0.3); }
+.toast--error { background: linear-gradient(135deg, #ef4444, #f87171); border: 1px solid rgba(239,68,68,0.3); }
+.toast--info { background: linear-gradient(135deg, #3b82f6, #60a5fa); border: 1px solid rgba(59,130,246,0.3); }
+.toast-icon { font-size: 1.4rem; flex-shrink: 0; }
+.toast-message { font-size: 0.95rem; line-height: 1.5; }
 .toast-close {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255,255,255,0.2);
   border: none;
   color: white;
   cursor: pointer;
-  padding: 8px;
+  width: 32px; height: 32px;
   border-radius: 8px;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
 }
-
-.toast-close:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: rotate(90deg);
-}
-
+.toast-close:hover { background: rgba(255,255,255,0.3); }
 .toast-progress {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.6);
+  bottom: 0; left: 0; height: 4px;
+  background: rgba(255,255,255,0.6);
   animation: toastProgress 5s linear forwards;
   border-radius: 0 0 16px 16px;
 }
+@keyframes toastProgress { from { width: 100%; } to { width: 0%; } }
 
-@keyframes toastProgress {
-  from { width: 100%; }
-  to { width: 0%; }
-}
-
-.toast-slide-enter-active {
-  animation: toastIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.toast-slide-leave-active {
-  animation: toastOut 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes toastOut {
-  to {
-    opacity: 0;
-    transform: translateX(100px);
-  }
-}
-
-/* ===== PROFESSIONAL RESPONSIVE DESIGN ===== */
-
-/* Large Desktop (≥1440px) */
-@media (min-width: 1440px) {
-  .settings-section {
-    max-width: 1400px;
-  }
-  
-  .settings-grid {
-    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-    gap: 32px;
-    padding: 48px;
-  }
-}
-
-/* Desktop (1024px - 1199px) */
-@media (max-width: 1199px) and (min-width: 1024px) {
-  .settings-section {
-    margin: 0 24px;
-  }
-  
-  .settings-grid {
-    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-    gap: 24px;
-    padding: 32px;
-  }
-  
-  .card-header {
-    padding: 20px 24px;
-  }
-  
-  .card-body {
-    padding: 24px;
-  }
-}
-
-/* Tablet Landscape (768px - 1023px) */
-@media (max-width: 1023px) and (min-width: 768px) {
-  .settings-header {
-    padding: 40px 32px;
-  }
-  
-  .title-gradient {
-    font-size: 2.5rem;
-  }
-  
-  .subtitle {
-    font-size: 1.1rem;
-  }
-  
-  .settings-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    padding: 32px;
-  }
-  
-  .setting-card.danger-zone {
-    grid-column: 1 / -1;
-  }
-  
-  .danger-action {
-    padding: 16px 0;
-  }
-}
-
-/* Tablet Portrait (576px - 767px) */
-@media (max-width: 767px) and (min-width: 576px) {
-  .settings-section {
-    margin: 0 16px;
-  }
-  
-  .settings-header {
-    padding: 36px 24px;
-    border-radius: 0 0 20px 20px;
-  }
-  
-  .title-gradient {
-    font-size: 2.25rem;
-  }
-  
-  .subtitle {
-    font-size: 1.05rem;
-  }
-  
-  .settings-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 24px;
-  }
-  
-  .toggle-item {
-    padding: 16px 0;
-  }
-  
-  .danger-action {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-    padding: 20px 0;
-  }
-  
-  .modal-content {
-    padding: 32px;
-    max-width: 350px;
-  }
-}
-
-/* Mobile (375px - 575px) */
-@media (max-width: 575px) and (min-width: 375px) {
-  .settings-section {
-    margin: 0 12px;
-  }
-  
-  .settings-header {
-    padding: 32px 20px;
-    border-radius: 0 0 16px 16px;
-  }
-  
-  .title-gradient {
-    font-size: 1.9rem;
-  }
-  
-  .subtitle {
-    font-size: 1rem;
-  }
-  
-  .settings-grid {
-    padding: 20px;
-    gap: 16px;
-  }
-  
-  .card-header {
-    padding: 20px;
-  }
-  
-  .card-body {
-    padding: 20px;
-  }
-  
-  .toggle-label {
-    gap: 12px;
-  }
-  
-  .toggle-title {
-    font-size: 0.95rem;
-  }
-  
-  .toggle-description {
-    font-size: 0.85rem;
-  }
-  
-  .form-input,
-  .form-select {
-    padding: 12px 14px;
-    font-size: 0.9rem;
-  }
-  
-  .btn {
-    padding: 12px 20px;
-    font-size: 0.95rem;
-  }
-  
-  .modal-content {
-    padding: 24px;
-    max-width: 320px;
-  }
-  
-  .modal-actions {
-    flex-direction: column;
-  }
-  
-  .modal-actions .btn {
-    width: 100%;
-  }
-}
-
-/* Small Mobile (<375px) */
-@media (max-width: 374px) {
-  .settings-section {
-    margin: 0 8px;
-  }
-  
-  .settings-header {
-    padding: 28px 16px;
-  }
-  
-  .title-gradient {
-    font-size: 1.7rem;
-  }
-  
-  .subtitle {
-    font-size: 0.95rem;
-  }
-  
-  .settings-grid {
-    padding: 16px;
-    gap: 12px;
-  }
-  
-  .card-header {
-    padding: 16px;
-  }
-  
-  .card-body {
-    padding: 16px;
-  }
-  
-  .toggle-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .toggle-switch {
-    align-self: flex-end;
-  }
-  
-  .btn {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .card-footer {
-    justify-content: stretch;
-  }
-  
-  .danger-action {
-    padding: 16px 0;
-  }
-  
-  .action-info {
-    margin-bottom: 12px;
-  }
-  
-  .modal-content {
-    padding: 20px;
-    max-width: 280px;
-  }
-}
-
-/* Utility for touch devices */
+/* Touch Devices */
 @media (hover: none) and (pointer: coarse) {
-  .setting-card:hover {
-    transform: none;
-  }
-  
-  .btn:hover:not(:disabled) {
-    transform: none;
-  }
-  
-  .toast-close:hover {
-    transform: none;
-  }
+  .setting-card:hover { transform: none; }
+  .btn:hover:not(:disabled) { transform: none; }
 }
 
-/* Print styles */
+/* Print Styles */
 @media print {
-  .settings-section {
-    box-shadow: none;
-    border-radius: 0;
-  }
-  
-  .btn,
-  .modal-overlay,
-  .toast-container {
-    display: none;
-  }
-  
-  .settings-header {
-    background: #f0f0f0 !important;
-  }
-  
+  .settings-section { box-shadow: none; border-radius: 0; }
+  .btn, .modal-overlay, .toast-container { display: none !important; }
+  .settings-header { background: #f0f0f0 !important; }
   .title-gradient {
-    background: #000 !important;
-    -webkit-text-fill-color: #000 !important;
+    -webkit-text-fill-color: black !important;
+    background: transparent !important;
   }
-  
-  .toggle-switch {
-    display: none;
-  }
+  .toggle-switch { display: none; }
 }
 </style>

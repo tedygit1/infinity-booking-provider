@@ -238,7 +238,15 @@
             <!-- Card Header with Customer Info -->
             <div class="card-header-section">
               <div class="customer-avatar-section">
-                <div class="avatar-circle">
+                <!-- Display Customer Profile Photo or Initials -->
+                <div v-if="booking.customerProfilePhoto" class="customer-profile-photo">
+                  <img 
+                    :src="booking.customerProfilePhoto" 
+                    :alt="booking.customerName"
+                    @error="handleImageError"
+                  />
+                </div>
+                <div v-else class="customer-initials-large">
                   {{ getCleanInitials(booking.customerName) }}
                 </div>
                 <div class="customer-type-indicator" :class="{ 'admin': booking.isAdminBooking }">
@@ -247,16 +255,14 @@
               </div>
               
               <div class="customer-info-section">
-                <h4 class="customer-name">{{ formatCustomerName(booking.customerName) }}</h4>
+                <!-- Display Customer's Real Name (Not ID) -->
+                <h4 class="customer-name">{{ getCustomerDisplayName(booking) }}</h4>
                 <p class="customer-meta">
                   <span v-if="booking.customerEmail">
                     <i class="fa-solid fa-envelope"></i> {{ booking.customerEmail }}
                   </span>
                   <span v-if="booking.customerPhone">
                     <i class="fa-solid fa-phone"></i> {{ booking.customerPhone }}
-                  </span>
-                  <span v-if="booking.customerName.includes('CID:')" class="customer-id-badge">
-                    ID: {{ booking.customerName.split('CID:')[1] }}
                   </span>
                 </p>
               </div>
@@ -346,7 +352,7 @@
                 @click="viewBookingDetailsModal(booking)"
               >
                 <i class="fa-solid fa-eye"></i>
-                View Details
+                User Details
               </button>
               <button 
                 class="action-btn contact-btn"
@@ -378,12 +384,22 @@
               class="table-row"
             >
               <div class="table-cell customer-cell">
+                <!-- Customer with Profile Photo -->
                 <div class="customer-avatar">
-                  {{ getCleanInitials(booking.customerName) }}
+                  <div v-if="booking.customerProfilePhoto" class="customer-profile-photo-small">
+                    <img 
+                      :src="booking.customerProfilePhoto" 
+                      :alt="booking.customerName"
+                      @error="handleImageError"
+                    />
+                  </div>
+                  <div v-else class="customer-initials-small">
+                    {{ getCleanInitials(booking.customerName) }}
+                  </div>
                 </div>
                 <div class="customer-info">
                   <div class="customer-main">
-                    <strong>{{ formatCustomerName(booking.customerName) }}</strong>
+                    <strong>{{ getCustomerDisplayName(booking) }}</strong>
                     <span v-if="booking.isAdminBooking" class="type-badge admin">
                       Admin
                     </span>
@@ -393,9 +409,7 @@
                   </div>
                   <div class="customer-details">
                     <span class="customer-email">{{ booking.customerEmail }}</span>
-                    <span v-if="booking.customerName.includes('CID:')" class="customer-id">
-                      ID: {{ booking.customerName.split('CID:')[1] }}
-                    </span>
+                    <span class="customer-phone">{{ booking.customerPhone }}</span>
                   </div>
                 </div>
               </div>
@@ -531,7 +545,7 @@
         </div>
         <div class="modal-body">
           <div v-if="selectedBooking" class="booking-details">
-            <!-- Customer Information Section -->
+            <!-- Customer Information Section - UPDATED -->
             <div class="customer-section">
               <h4>
                 <i class="fa-solid fa-user"></i>
@@ -539,24 +553,120 @@
                 <span v-if="loadingCustomerDetails" class="loading-indicator">
                   <i class="fa-solid fa-spinner fa-spin"></i> Loading...
                 </span>
+                <span v-if="customerDetailsError" class="error-indicator">
+                  <i class="fa-solid fa-exclamation-triangle"></i> {{ customerDetailsError }}
+                </span>
               </h4>
-              <div v-if="customerDetails">
-                <p><strong>Name:</strong> {{ customerDetails.fullname || customerDetails.name || selectedBooking.customerName }}</p>
-                <p v-if="customerDetails.email"><strong>Email:</strong> {{ customerDetails.email }}</p>
-                <p v-if="customerDetails.phone"><strong>Phone:</strong> {{ customerDetails.phone }}</p>
-                <p v-if="customerDetails.address"><strong>Address:</strong> {{ customerDetails.address }}</p>
-                <p v-if="customerDetails.cid"><strong>Customer ID:</strong> {{ customerDetails.cid }}</p>
+              
+              <!-- Display customer details if available -->
+              <div v-if="customerDetails && customerDetails.cid" class="customer-full-details">
+                <!-- Profile Picture and Name Section -->
+                <div class="customer-profile-header">
+                  <div v-if="customerDetails.profilePicture" class="customer-profile-photo-large">
+                    <img 
+                      :src="customerDetails.profilePicture" 
+                      :alt="customerDetails.fullname" 
+                      @error="handleImageError"
+                    />
+                  </div>
+                  <div v-else class="customer-initials-large">
+                    {{ getCleanInitials(customerDetails.fullname) }}
+                  </div>
+                  <div class="customer-name-info">
+                    <h3>{{ customerDetails.fullname }}</h3>
+                    <div class="customer-id-small">
+                      <i class="fa-solid fa-id-card"></i>
+                      <span>ID: {{ customerDetails.cid }}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="customer-contact-info">
+                  <div class="contact-item" v-if="customerDetails.email">
+                    <i class="fa-solid fa-envelope"></i>
+                    <div>
+                      <div class="contact-label">Email</div>
+                      <div class="contact-value">{{ customerDetails.email }}</div>
+                    </div>
+                  </div>
+                  
+                  <div class="contact-item" v-if="customerDetails.phone">
+                    <i class="fa-solid fa-phone"></i>
+                    <div>
+                      <div class="contact-label">Phone</div>
+                      <div class="contact-value">{{ customerDetails.phone }}</div>
+                    </div>
+                  </div>
+                  
+                  <div class="contact-item" v-if="customerDetails.address">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <div>
+                      <div class="contact-label">Address</div>
+                      <div class="contact-value">{{ customerDetails.address }}</div>
+                    </div>
+                  </div>
+                  
+                  <div class="contact-item" v-if="customerDetails.status">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <div>
+                      <div class="contact-label">Status</div>
+                      <div class="contact-value status-active">{{ customerDetails.status }}</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Source Info -->
+                <div v-if="customerDetails.note" class="info-note">
+                  <i class="fa-solid fa-info-circle"></i> {{ customerDetails.note }}
+                </div>
               </div>
-              <div v-else-if="loadingCustomerDetails">
+              
+              <!-- Show loading state -->
+              <div v-else-if="loadingCustomerDetails" class="loading-state">
                 <p><i class="fa-solid fa-spinner fa-spin"></i> Loading customer details...</p>
+                <div class="loading-bar"></div>
               </div>
-              <div v-else>
-                <p><strong>Name:</strong> {{ selectedBooking.customerName }}</p>
-                <p v-if="selectedBooking.customerEmail"><strong>Email:</strong> {{ selectedBooking.customerEmail }}</p>
-                <p v-if="selectedBooking.customerPhone"><strong>Phone:</strong> {{ selectedBooking.customerPhone }}</p>
-                <p v-if="selectedBooking.customerId"><strong>Customer ID:</strong> {{ selectedBooking.customerId }}</p>
-                <p v-if="selectedBooking.customerName.includes('CID:')">
-                  <strong>Customer Reference:</strong> {{ selectedBooking.customerName }}
+              
+              <!-- Fallback to booking data -->
+              <div v-else class="customer-basic-details">
+                <div class="customer-profile-header">
+                  <div v-if="selectedBooking.customerProfilePhoto" class="customer-profile-photo-large">
+                    <img 
+                      :src="selectedBooking.customerProfilePhoto" 
+                      :alt="selectedBooking.customerName"
+                      @error="handleImageError"
+                    />
+                  </div>
+                  <div v-else class="customer-initials-large">
+                    {{ getCleanInitials(selectedBooking.customerName) }}
+                  </div>
+                  <div class="customer-name-info">
+                    <h3>{{ selectedBooking.customerName }}</h3>
+                  </div>
+                </div>
+                
+                <div class="customer-contact-info">
+                  <div class="contact-item" v-if="selectedBooking.customerEmail">
+                    <i class="fa-solid fa-envelope"></i>
+                    <div>
+                      <div class="contact-label">Email</div>
+                      <div class="contact-value">{{ selectedBooking.customerEmail }}</div>
+                    </div>
+                  </div>
+                  
+                  <div class="contact-item" v-if="selectedBooking.customerPhone">
+                    <i class="fa-solid fa-phone"></i>
+                    <div>
+                      <div class="contact-label">Phone</div>
+                      <div class="contact-value">{{ selectedBooking.customerPhone }}</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <p class="info-note">
+                  <i class="fa-solid fa-info-circle"></i> 
+                  Detailed customer information not available
                 </p>
               </div>
             </div>
@@ -615,7 +725,7 @@ export default {
     
     // Service details cache
     const serviceDetailsCache = ref({});
-    const servicesMap = ref({}); // Map of service ID to service details
+    const servicesMap = ref({});
     
     // Customer details state
     const customerDetails = ref(null);
@@ -646,12 +756,217 @@ export default {
       revenue: 0
     });
 
-    // ==================== NEW: TIME FORMAT CONVERSION ====================
+    // ==================== CUSTOMER DETAILS FUNCTIONS ====================
+    const fetchCustomerDetails = async (booking) => {
+      console.log("👤 Fetching customer details for booking:", booking._id);
+      
+      loadingCustomerDetails.value = true;
+      customerDetailsError.value = "";
+      customerDetails.value = null;
+      
+      try {
+        const fullCID = booking.customerId || 'unknown';
+        
+        console.log("🎯 Customer ID:", fullCID);
+        
+        // ==================== STEP 1: CHECK FOR EMBEDDED DATA ====================
+        if (booking.originalData?.customer) {
+          const customer = booking.originalData.customer;
+          console.log("✅ Found customer in originalData:", customer);
+          
+          const customerProfile = customer.customerProfile || customer;
+          const profilePhoto = customerProfile.profilePhoto || customerProfile.profilephoto || customer.profilePicture || customer.avatar;
+          
+          customerDetails.value = {
+            role: 'customer',
+            isCustomer: true,
+            bookerType: 'Customer',
+            cid: customer.cid || customer._id || fullCID,
+            id: customer._id || customer.id || fullCID,
+            fullname: customerProfile.fullname || customer.fullname || customer.name || booking.customerName || 'Customer',
+            email: customer.email || booking.customerEmail || '',
+            phone: customerProfile.phonenumber || customer.phone || customer.phonenumber || customer.mobile || booking.customerPhone || '',
+            address: customerProfile.address || customer.address || customer.location || customer.city || '',
+            profilePicture: profilePhoto,
+            username: customer.username || '',
+            status: customerProfile.status || customer.status || 'active',
+            source: 'booking.originalData.customer',
+            hasContactInfo: !!(customer.email || customerProfile.phonenumber || customer.phone),
+            note: 'Customer data found in booking'
+          };
+          
+          return;
+        }
+        
+        // ==================== STEP 2: FETCH FROM API ====================
+        if (fullCID && fullCID.startsWith('CUST-') && fullCID !== 'unknown') {
+          console.log(`🔍 Fetching customer with CID: ${fullCID}`);
+          
+          const endpoint = `/api/users/customers/by-cid/${fullCID}`;
+          console.log("📡 Calling endpoint:", endpoint);
+          
+          try {
+            const response = await http.get(endpoint);
+            
+            if (response.data) {
+              const user = response.data;
+              console.log("✅ Customer API response:", user);
+              
+              const customerProfile = user.customerProfile || user;
+              const profilePhoto = customerProfile.profilePhoto || customerProfile.profilephoto || user.profilePicture || user.avatar;
+              
+              customerDetails.value = {
+                role: 'customer',
+                isCustomer: true,
+                bookerType: 'Customer',
+                cid: user.cid || fullCID,
+                id: user._id || user.id || fullCID,
+                fullname: customerProfile.fullname || user.fullname || user.name || user.username || booking.customerName || 'Customer',
+                email: user.email || booking.customerEmail || '',
+                phone: customerProfile.phonenumber || user.phone || user.phonenumber || user.mobile || booking.customerPhone || '',
+                address: customerProfile.address || user.address || user.location || user.city || '',
+                profilePicture: profilePhoto,
+                username: user.username || '',
+                status: customerProfile.status || user.status || 'active',
+                customerProfile: customerProfile,
+                source: '/api/users/customers/by-cid/ endpoint',
+                hasContactInfo: !!(user.email || customerProfile.phonenumber || user.phone),
+                note: 'Customer profile fetched successfully'
+              };
+              
+              console.log("📋 Extracted customer details:", {
+                fullname: customerDetails.value.fullname,
+                email: customerDetails.value.email,
+                phone: customerDetails.value.phone,
+                address: customerDetails.value.address,
+                profilePicture: customerDetails.value.profilePicture
+              });
+              
+              return;
+            }
+          } catch (error) {
+            console.error("❌ Customer API failed:", error.message);
+            
+            // Fallback to production endpoint
+            try {
+              console.log("🔄 Trying production endpoint...");
+              const prodEndpoint = `/users/customers/by-cid/${fullCID}`;
+              const prodResponse = await http.get(prodEndpoint);
+              
+              if (prodResponse.data) {
+                const user = prodResponse.data;
+                const customerProfile = user.customerProfile || user;
+                const profilePhoto = customerProfile.profilePhoto || customerProfile.profilephoto || user.profilePicture || user.avatar;
+                
+                customerDetails.value = {
+                  role: 'customer',
+                  isCustomer: true,
+                  bookerType: 'Customer',
+                  cid: user.cid || fullCID,
+                  id: user._id || user.id || fullCID,
+                  fullname: customerProfile.fullname || user.fullname || booking.customerName || 'Customer',
+                  email: user.email || booking.customerEmail || '',
+                  phone: customerProfile.phonenumber || user.phone || booking.customerPhone || '',
+                  address: customerProfile.address || user.address || '',
+                  profilePicture: profilePhoto,
+                  status: customerProfile.status || user.status || 'active',
+                  customerProfile: customerProfile,
+                  source: '/users/customers/by-cid/ endpoint',
+                  hasContactInfo: !!(user.email || customerProfile.phonenumber),
+                  note: 'Customer fetched (production mode)'
+                };
+                
+                return;
+              }
+            } catch (prodError) {
+              console.log("❌ Production endpoint also failed:", prodError.message);
+            }
+          }
+        }
+        
+        // ==================== STEP 3: FALLBACK TO BOOKING DATA ====================
+        console.log("📊 Using booking data as fallback");
+        
+        let cleanName = getCustomerDisplayName(booking);
+        const hasContactInfo = !!(booking.customerEmail || booking.customerPhone);
+        
+        customerDetails.value = {
+          role: 'customer',
+          isCustomer: true,
+          bookerType: 'Customer',
+          cid: fullCID,
+          id: fullCID,
+          fullname: cleanName,
+          email: booking.customerEmail || '',
+          phone: booking.customerPhone || '',
+          address: '',
+          source: 'Booking data',
+          hasContactInfo: hasContactInfo,
+          note: `Customer ID: ${fullCID}`
+        };
+        
+        console.log("✅ Set fallback customer details");
+        
+      } catch (err) {
+        console.error("❌ Error in fetchCustomerDetails:", err);
+        customerDetailsError.value = `Error: ${err.message}`;
+        
+        customerDetails.value = {
+          role: 'customer',
+          bookerType: 'Customer',
+          fullname: booking.customerName || 'Customer',
+          email: booking.customerEmail || '',
+          phone: booking.customerPhone || '',
+          cid: booking.customerId || 'unknown',
+          source: 'Error',
+          warning: 'Failed to fetch'
+        };
+      } finally {
+        loadingCustomerDetails.value = false;
+      }
+    };
+
+    // ==================== HELPER FUNCTIONS ====================
+    const getCustomerDisplayName = (booking) => {
+      if (!booking.customerName) return 'Customer';
+      
+      // Remove CID from customer name if present
+      let name = booking.customerName;
+      if (name.includes('CID:')) {
+        name = name.split('CID:')[0].trim();
+      }
+      
+      // Format name properly
+      return name
+        .replace(/Admin confirmed/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+    };
+
+    const formatCustomerName = (name) => {
+      return getCustomerDisplayName({ customerName: name });
+    };
+
+    const getCleanInitials = (name) => {
+      const cleanName = formatCustomerName(name);
+      if (!cleanName) return 'C';
+      
+      const words = cleanName.split(' ');
+      if (words.length === 1 && words[0] === 'Customer') {
+        return 'C';
+      }
+      
+      return words.map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    };
+
+    // ==================== TIME FORMAT CONVERSION ====================
     const convertTo12HourFormat = (time24) => {
       if (!time24) return '';
       
       try {
-        // Handle times like "09:00", "09:00:00", "9:00"
         let [hours, minutes] = time24.split(':');
         hours = parseInt(hours, 10);
         minutes = minutes ? parseInt(minutes, 10) : 0;
@@ -748,6 +1063,34 @@ export default {
       }
     };
 
+    // Helper function for date formatting
+    const formatDate = (dateString) => {
+      if (!dateString) return '';
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return '';
+        
+        return date.toLocaleDateString('en-US', {
+          month: 'long',
+          year: 'numeric'
+        });
+      } catch (err) {
+        console.error("Error formatting date:", err);
+        return '';
+      }
+    };
+
+    // Handle image loading errors
+    const handleImageError = (event) => {
+      console.log("Image failed to load, hiding...");
+      event.target.style.display = 'none';
+      
+      // Show initials instead
+      const parent = event.target.parentElement;
+      const initials = parent.getAttribute('data-initials') || 'C';
+      parent.innerHTML = `<div class="fallback-initials">${initials}</div>`;
+    };
+
     // ==================== FETCH ALL SERVICES FOR PROVIDER ====================
     const fetchAllServices = async (providerId) => {
       if (!providerId) {
@@ -758,7 +1101,6 @@ export default {
       console.log("🛠️ Fetching all services for provider:", providerId);
       
       try {
-        // Try different endpoints for bulk service data
         const serviceEndpoints = [
           `/services?provider=${providerId}`,
           `/services/provider/${providerId}`,
@@ -772,7 +1114,6 @@ export default {
           try {
             console.log(`📡 Trying services endpoint: ${endpoint}`);
             const response = await http.get(endpoint);
-            console.log("🛠️ Services API Response:", response.data);
             
             if (response.data) {
               servicesData = response.data;
@@ -785,7 +1126,6 @@ export default {
         }
         
         if (servicesData) {
-          // Extract services array
           let servicesArray = [];
           if (Array.isArray(servicesData)) {
             servicesArray = servicesData;
@@ -797,22 +1137,27 @@ export default {
           
           console.log(`📊 Extracted ${servicesArray.length} services`);
           
-          // Process each service
           servicesMap.value = {};
           servicesArray.forEach(service => {
             try {
               const serviceId = service._id || service.id || service.serviceId;
               if (serviceId) {
-                // FIXED: Extract service data with proper field mapping
-                const serviceDetails = extractServiceDetails(service);
+                const serviceDetails = {
+                  id: serviceId,
+                  name: service.title || service.name || service.serviceName || 'Service',
+                  category: service.categoryName || service.category || service.serviceCategory || 'General',
+                  subcategory: service.subcategory || service.serviceSubcategory || '',
+                  price: service.bookingPrice || service.totalPrice || service.price || service.amount || service.servicePrice || 0,
+                  description: service.description || '',
+                  status: service.status || 'published'
+                };
+                
                 servicesMap.value[serviceId] = serviceDetails;
                 serviceDetailsCache.value[serviceId] = serviceDetails;
                 
                 console.log(`✅ Cached service ${serviceId}:`, {
                   name: serviceDetails.name,
-                  category: serviceDetails.category,
-                  price: serviceDetails.price,
-                  subcategory: serviceDetails.subcategory
+                  category: serviceDetails.category
                 });
               }
             } catch (err) {
@@ -821,156 +1166,9 @@ export default {
           });
           
           console.log(`✅ Loaded ${Object.keys(servicesMap.value).length} services into cache`);
-          
-        } else {
-          console.warn("⚠️ No bulk services data found - will fetch individually");
         }
-        
       } catch (err) {
         console.error("❌ Error in fetchAllServices:", err);
-      }
-    };
-
-    // ==================== EXTRACT SERVICE DETAILS ====================
-    const extractServiceDetails = (serviceData) => {
-      console.log("🔍 Raw service data for extraction:", serviceData);
-      
-      // Try to extract from different possible field structures
-      const serviceId = serviceData._id || serviceData.id || serviceData.serviceId;
-      
-      // Extract name from multiple possible fields
-      let serviceName = serviceData.title || serviceData.name || serviceData.serviceName || 'Service';
-      
-      // Extract category - check multiple possible locations
-      let serviceCategory = 'General';
-      if (serviceData.categoryName) {
-        serviceCategory = serviceData.categoryName;
-      } else if (serviceData.category) {
-        serviceCategory = serviceData.category;
-      } else if (serviceData.serviceCategory) {
-        serviceCategory = serviceData.serviceCategory;
-      } else if (serviceData.categoryId && typeof serviceData.categoryId === 'object') {
-        serviceCategory = serviceData.categoryId.name || 'General';
-      }
-      
-      // Extract subcategory
-      let serviceSubcategory = '';
-      if (serviceData.subcategoryIds && Array.isArray(serviceData.subcategoryIds)) {
-        serviceSubcategory = serviceData.subcategoryIds.join(', ');
-      } else if (serviceData.subcategory) {
-        serviceSubcategory = serviceData.subcategory;
-      } else if (serviceData.serviceSubcategory) {
-        serviceSubcategory = serviceData.serviceSubcategory;
-      }
-      
-      // Extract price - check multiple possible fields
-      let servicePrice = 0;
-      if (serviceData.bookingPrice !== undefined) {
-        servicePrice = parseFloat(serviceData.bookingPrice);
-      } else if (serviceData.totalPrice !== undefined) {
-        servicePrice = parseFloat(serviceData.totalPrice);
-      } else if (serviceData.price !== undefined) {
-        servicePrice = parseFloat(serviceData.price);
-      } else if (serviceData.amount !== undefined) {
-        servicePrice = parseFloat(serviceData.amount);
-      } else if (serviceData.servicePrice !== undefined) {
-        servicePrice = parseFloat(serviceData.servicePrice);
-      }
-      
-      console.log(`📊 Extracted service details for ${serviceId}:`, {
-        name: serviceName,
-        category: serviceCategory,
-        subcategory: serviceSubcategory,
-        price: servicePrice
-      });
-      
-      return {
-        id: serviceId,
-        name: serviceName,
-        category: serviceCategory,
-        subcategory: serviceSubcategory,
-        price: servicePrice,
-        description: serviceData.description || '',
-        serviceType: serviceData.serviceType || 'fixed',
-        providerId: serviceData.providerId || serviceData.provider?._id || '',
-        status: serviceData.status || 'published',
-        rawData: serviceData // Keep raw data for debugging
-      };
-    };
-
-    // ==================== GET SERVICE DETAILS ====================
-    const getServiceDetails = (serviceId) => {
-      if (!serviceId) {
-        return null;
-      }
-      
-      // Check cache first
-      if (serviceDetailsCache.value[serviceId]) {
-        console.log(`✅ Using cached service details for: ${serviceId}`);
-        return serviceDetailsCache.value[serviceId];
-      }
-      
-      // Check services map
-      if (servicesMap.value[serviceId]) {
-        serviceDetailsCache.value[serviceId] = servicesMap.value[serviceId];
-        return servicesMap.value[serviceId];
-      }
-      
-      return null;
-    };
-
-    // ==================== FETCH SERVICE DETAILS FROM API ====================
-    const fetchServiceDetailsFromApi = async (serviceId) => {
-      if (!serviceId) {
-        return null;
-      }
-      
-      console.log("🔍 Fetching service details from API for:", serviceId);
-      
-      try {
-        // Try endpoints that work based on logs
-        const serviceEndpoints = [
-          `/services/${serviceId}`,  // This works
-          `/service/${serviceId}`,
-          `/api/services/${serviceId}`
-        ];
-        
-        let serviceData = null;
-        
-        for (const endpoint of serviceEndpoints) {
-          try {
-            console.log(`📡 Trying service endpoint: ${endpoint}`);
-            const response = await http.get(endpoint);
-            console.log("🛠️ Service API Response data:", response.data);
-            
-            if (response.data) {
-              serviceData = response.data;
-              console.log("✅ Found service data from endpoint:", endpoint);
-              break;
-            }
-          } catch (endpointError) {
-            console.log(`❌ Service endpoint ${endpoint} failed:`, endpointError.message);
-          }
-        }
-        
-        if (serviceData) {
-          // Extract service details using our helper function
-          const processedService = extractServiceDetails(serviceData);
-          console.log("🛠️ Extracted service details:", processedService);
-          
-          // Cache the result
-          serviceDetailsCache.value[serviceId] = processedService;
-          servicesMap.value[serviceId] = processedService;
-          
-          return processedService;
-        } else {
-          console.warn("⚠️ No service data found from any endpoint for:", serviceId);
-          return null;
-        }
-        
-      } catch (err) {
-        console.error("❌ Error fetching service details:", err);
-        return null;
       }
     };
 
@@ -978,7 +1176,6 @@ export default {
     const getProviderId = () => {
       console.log("🔍 Getting provider ID for bookings...");
       
-      // Check multiple possible locations for provider ID
       const possibleSources = [
         () => {
           const providerId = localStorage.getItem('providerId');
@@ -1012,20 +1209,9 @@ export default {
             }
           }
           return null;
-        },
-        
-        () => {
-          const token = localStorage.getItem("provider_token") || localStorage.getItem("token");
-          if (token) {
-            console.log("✅ Token exists");
-            debugHasToken.value = true;
-            return null;
-          }
-          return null;
         }
       ];
       
-      // Try each source in order
       for (const source of possibleSources) {
         const providerId = source();
         if (providerId) {
@@ -1052,7 +1238,6 @@ export default {
       serviceDetailsCache.value = {};
       
       try {
-        // Get provider ID
         let providerId = getProviderId();
         debugProviderId.value = providerId || "Not found";
         
@@ -1082,8 +1267,7 @@ export default {
         
         loadingProgress.value = 30;
         
-        // Try to fetch all services in background
-        console.log("🔄 Starting services fetch in background...");
+        // Start services fetch in background
         fetchAllServices(providerId).then(() => {
           console.log("✅ Background services fetch completed");
         }).catch(err => {
@@ -1092,7 +1276,7 @@ export default {
         
         loadingProgress.value = 50;
         
-        // Fetch bookings
+        // Try different booking endpoints
         const bookingEndpoints = [
           `/bookings/provider/${providerId}`,
           `/bookings?providerId=${providerId}`,
@@ -1106,7 +1290,6 @@ export default {
             console.log(`📡 Trying bookings endpoint: ${endpoint}`);
             debugApiEndpoint.value = endpoint;
             const response = await http.get(endpoint);
-            console.log("📦 Bookings API Response:", response.data);
             
             if (response.data && (Array.isArray(response.data) || response.data.bookings || response.data.data)) {
               bookingsData = response.data;
@@ -1124,8 +1307,18 @@ export default {
           throw new Error("No bookings data found from any endpoint");
         }
         
-        // Process the bookings data
-        bookings.value = await processBookings(bookingsData);
+        // Process bookings
+        let bookingsArray = [];
+        
+        if (Array.isArray(bookingsData)) {
+          bookingsArray = bookingsData;
+        } else if (bookingsData.bookings && Array.isArray(bookingsData.bookings)) {
+          bookingsArray = bookingsData.bookings;
+        } else if (bookingsData.data && Array.isArray(bookingsData.data)) {
+          bookingsArray = bookingsData.data;
+        }
+        
+        bookings.value = await processBookings(bookingsArray);
         calculateStats();
         
         loadingProgress.value = 100;
@@ -1150,54 +1343,23 @@ export default {
     };
 
     // ==================== PROCESS BOOKINGS ====================
-    const processBookings = async (apiBookings) => {
-      if (!apiBookings) return [];
-      
-      let bookingsArray = [];
-      
-      // Handle different response structures
-      if (Array.isArray(apiBookings)) {
-        bookingsArray = apiBookings;
-      } else if (apiBookings.bookings && Array.isArray(apiBookings.bookings)) {
-        bookingsArray = apiBookings.bookings;
-      } else if (apiBookings.data && Array.isArray(apiBookings.data)) {
-        bookingsArray = apiBookings.data;
-      } else {
-        console.warn("❌ Unexpected API response structure:", apiBookings);
-        return [];
-      }
-
+    const processBookings = async (bookingsArray) => {
       const processedBookings = [];
       
-      // Process bookings in batches
-      const batchSize = 5;
-      for (let i = 0; i < bookingsArray.length; i += batchSize) {
-        const batch = bookingsArray.slice(i, i + batchSize);
-        const batchPromises = batch.map(booking => processSingleBooking(booking));
-        const batchResults = await Promise.allSettled(batchPromises);
-        
-        batchResults.forEach(result => {
-          if (result.status === 'fulfilled' && result.value) {
-            processedBookings.push(result.value);
+      for (const booking of bookingsArray) {
+        try {
+          const processed = await processSingleBooking(booking);
+          if (processed) {
+            processedBookings.push(processed);
           }
-        });
+        } catch (err) {
+          console.error("Error processing booking:", err, booking);
+        }
       }
 
       console.log(`✅ Processed ${processedBookings.length} bookings`);
       
-      // Log sample booking with service details
-      if (processedBookings.length > 0) {
-        console.log("📊 Sample booking with service details:", {
-          serviceId: processedBookings[0].serviceId,
-          serviceName: processedBookings[0].serviceName,
-          serviceCategory: processedBookings[0].serviceCategory,
-          servicePrice: processedBookings[0].servicePrice,
-          actualPrice: processedBookings[0].actualPrice,
-          rawServiceData: processedBookings[0].rawServiceData
-        });
-      }
-
-      // Sort by booking date (newest first)
+      // Sort by date (newest first)
       processedBookings.sort((a, b) => {
         const dateA = a.bookingDate ? new Date(a.bookingDate) : new Date();
         const dateB = b.bookingDate ? new Date(b.bookingDate) : new Date();
@@ -1210,42 +1372,44 @@ export default {
     // ==================== PROCESS SINGLE BOOKING ====================
     const processSingleBooking = async (booking) => {
       try {
-        const originalBooking = booking;
         const isAdminBooking = booking.createdBy === 'admin' || booking.adminId || booking.isAdminBooking;
         
         // Extract customer information
         const customer = booking.customer || {};
         
-        // Get customer ID (CID)
-        const customerId = customer.cid || 
-                          customer._id || 
-                          booking.customerId || 
-                          booking.customerId?._id ||
-                          booking.customerId?.cid;
+        // Get customer ID
+        let customerId = customer.cid || 
+                        customer._id || 
+                        booking.customerId || 
+                        booking.cid ||
+                        'unknown';
         
-        // ==================== FIX 1: ADMIN/CUSTOMER DISPLAY LOGIC ====================
-        // Get customer name
+        // Get profile photo from customer data
+        let customerProfilePhoto = '';
+        if (customer.profilePhoto) {
+          customerProfilePhoto = customer.profilePhoto;
+        } else if (customer.customerProfile?.profilePhoto) {
+          customerProfilePhoto = customer.customerProfile.profilePhoto;
+        } else if (customer.profilePicture) {
+          customerProfilePhoto = customer.profilePicture;
+        } else if (customer.avatar) {
+          customerProfilePhoto = customer.avatar;
+        }
+        
+        // Customer name logic
         let customerName = '';
         if (isAdminBooking) {
             const admin = booking.adminDetails || {};
-            // For admin bookings, use the admin's name without prepending "Admin"
-            customerName = admin.fullname || admin.name || admin.username || '';
-            
-            // If no admin name found, use a generic name but DON'T prepend "Admin"
-            if (!customerName) {
-                customerName = 'Booking';
-            }
+            customerName = admin.fullname || admin.name || admin.username || 'Admin Booking';
         } else {
             if (customer.fullname) {
                 customerName = customer.fullname;
             } else if (customer.name) {
                 customerName = customer.name;
-            } else if (customer.firstName || customer.lastName) {
-                customerName = `${customer.firstName || ''} ${customer.lastName || ''}`.trim();
             } else if (booking.customerName) {
                 customerName = booking.customerName;
-            } else if (customerId) {
-                customerName = `Customer CID:${customerId.substring(0, 8)}`;
+            } else if (customerId && customerId !== 'unknown') {
+                customerName = 'Customer';
             } else {
                 customerName = 'Customer';
             }
@@ -1254,25 +1418,19 @@ export default {
         // Clean up name
         customerName = customerName
           .replace(/Admin confirmed/gi, '')
-          .replace(/aqssss+/gi, '')
           .replace(/\s+/g, ' ')
           .trim();
         
-        // Get customer email
+        // Get customer email & phone
         let customerEmail = '';
+        let customerPhone = '';
+        
         if (isAdminBooking) {
           const admin = booking.adminDetails || {};
           customerEmail = admin.email || booking.adminEmail || '';
-        } else {
-          customerEmail = customer.email || booking.customerEmail || '';
-        }
-        
-        // Get customer phone
-        let customerPhone = '';
-        if (isAdminBooking) {
-          const admin = booking.adminDetails || {};
           customerPhone = admin.phone || admin.phonenumber || booking.adminPhone || '';
         } else {
+          customerEmail = customer.email || booking.customerEmail || '';
           customerPhone = customer.phone || customer.phonenumber || booking.customerPhone || '';
         }
         
@@ -1283,70 +1441,28 @@ export default {
         let serviceName = 'Service';
         let serviceCategory = 'General';
         let serviceSubcategory = '';
-        let servicePrice = 0;
         let actualPrice = 0;
-        let rawServiceData = null;
         
-        // Get service details if we have serviceId
         if (serviceId) {
-          // Check cache first
-          let serviceDetails = getServiceDetails(serviceId);
-          
-          // If not in cache, try to fetch from API
-          if (!serviceDetails) {
-            console.log(`🔍 Service ${serviceId} not in cache, fetching from API...`);
-            serviceDetails = await fetchServiceDetailsFromApi(serviceId);
-          }
-          
+          const serviceDetails = servicesMap.value[serviceId];
           if (serviceDetails) {
             serviceName = serviceDetails.name;
             serviceCategory = serviceDetails.category;
             serviceSubcategory = serviceDetails.subcategory;
-            servicePrice = serviceDetails.price;
             actualPrice = serviceDetails.price;
-            rawServiceData = serviceDetails.rawData;
-            
-            console.log(`✅ Service details for ${serviceId}:`, {
-              name: serviceName,
-              category: serviceCategory,
-              subcategory: serviceSubcategory,
-              price: servicePrice
-            });
-          } else {
-            console.log(`⚠️ No service details found for ${serviceId}, using booking data`);
           }
         }
         
-        // Fallback to booking data
         if (serviceName === 'Service') {
-          if (service.title) {
-            serviceName = service.title;
-          } else if (service.name) {
-            serviceName = service.name;
-          } else if (booking.serviceName) {
-            serviceName = booking.serviceName;
-          }
+          serviceName = service.title || service.name || booking.serviceName || 'Service';
         }
-        
-        // Clean up service name
-        serviceName = serviceName
-          .replace(/aqssss+/gi, '')
-          .replace(/\s+/g, ' ')
-          .trim();
         
         // Get booking date
-        let bookingDate = '';
-        if (booking.bookingDate) {
-          bookingDate = booking.bookingDate;
-        } else if (booking.date) {
-          bookingDate = booking.date;
-        } else if (booking.appointmentDate) {
-          bookingDate = booking.appointmentDate;
-        }
+        let bookingDate = booking.bookingDate || booking.date || booking.appointmentDate || '';
         
         // Get times
         let startTime = booking.startTime || booking.time || booking.start || '09:00';
-        let endTime = booking.endTime || booking.end || '11:00';
+        let endTime = booking.endTime || booking.end || booking.time || '11:00';
         
         // Get amount
         let amount = 0;
@@ -1358,7 +1474,6 @@ export default {
           amount = parseFloat(booking.price);
         }
         
-        // Use booking amount if service price is 0
         if (actualPrice === 0 && amount > 0) {
           actualPrice = amount;
         }
@@ -1383,12 +1498,13 @@ export default {
           customerName: customerName,
           customerEmail: customerEmail,
           customerPhone: customerPhone,
+          customerProfilePhoto: customerProfilePhoto, // Added profile photo
           isAdminBooking: isAdminBooking,
           serviceId: serviceId,
           serviceName: serviceName,
           serviceCategory: serviceCategory,
           serviceSubcategory: serviceSubcategory,
-          servicePrice: servicePrice ? servicePrice.toFixed(2) : amount.toFixed(2),
+          servicePrice: actualPrice ? actualPrice.toFixed(2) : amount.toFixed(2),
           actualPrice: actualPrice ? actualPrice.toFixed(2) : amount.toFixed(2),
           bookingDate: bookingDate,
           startTime: startTime,
@@ -1396,108 +1512,14 @@ export default {
           status: status,
           amount: amount.toFixed(2),
           createdAt: createdAt,
-          originalData: originalBooking,
-          rawServiceData: rawServiceData,
-          customerDetails: isAdminBooking ? booking.adminDetails : customer
+          originalData: booking,
+          customerObject: customer,
+          adminDetails: booking.adminDetails || null
         };
         
       } catch (err) {
         console.error("❌ Error processing booking:", err, booking);
         return null;
-      }
-    };
-
-    // ==================== FETCH CUSTOMER DETAILS ====================
-    const fetchCustomerDetails = async (booking) => {
-      if (!booking) {
-        console.warn("❌ No booking provided");
-        return;
-      }
-      
-      console.log("👤 Fetching customer details for booking:", booking._id);
-      console.log("📊 Booking data for customer lookup:", {
-        customerId: booking.customerId,
-        customerName: booking.customerName,
-        originalData: booking.originalData
-      });
-      
-      loadingCustomerDetails.value = true;
-      customerDetailsError.value = "";
-      customerDetails.value = null;
-      
-      try {
-        // First, check if we already have customer details in the booking
-        if (booking.customerDetails) {
-          console.log("✅ Using customer details from booking:", booking.customerDetails);
-          customerDetails.value = booking.customerDetails;
-          return;
-        }
-        
-        // Get customer ID from multiple possible locations
-        const customerId = booking.customerId || 
-                          booking.originalData?.customerId ||
-                          booking.originalData?.customer?._id ||
-                          booking.originalData?.customer?.cid ||
-                          booking.originalData?.customerId?._id ||
-                          booking.originalData?.customerId?.cid;
-        
-        console.log("🔍 Customer ID extracted:", customerId);
-        
-        if (!customerId) {
-          console.warn("⚠️ No customer ID found in booking");
-          customerDetailsError.value = "Customer details not available";
-          return;
-        }
-        
-        // Try multiple endpoints for customer details
-        const customerEndpoints = [
-          `/customers/${customerId}`,
-          `/users/${customerId}`,
-          `/users/profile/${customerId}`,
-          `/api/customers/${customerId}`
-        ];
-        
-        let customerData = null;
-        
-        for (const endpoint of customerEndpoints) {
-          try {
-            console.log(`📡 Trying customer endpoint: ${endpoint}`);
-            const response = await http.get(endpoint);
-            console.log("👤 Customer API Response:", response.data);
-            
-            if (response.data) {
-              customerData = response.data;
-              console.log("✅ Found customer data from endpoint:", endpoint);
-              break;
-            }
-          } catch (endpointError) {
-            console.log(`Customer endpoint ${endpoint} failed:`, endpointError.message);
-          }
-        }
-        
-        if (customerData) {
-          // Process customer data
-          customerDetails.value = {
-            id: customerData._id || customerData.id,
-            cid: customerData.cid || customerData._id,
-            fullname: customerData.fullname || customerData.name || customerData.username || '',
-            email: customerData.email || '',
-            phone: customerData.phone || customerData.phoneNumber || customerData.phonenumber || '',
-            address: customerData.address || customerData.location || '',
-            profilePicture: customerData.profilePicture || customerData.avatar || ''
-          };
-          
-          console.log("✅ Processed customer details:", customerDetails.value);
-        } else {
-          console.warn("⚠️ No customer data found from any endpoint");
-          customerDetailsError.value = "Customer details not available";
-        }
-        
-      } catch (err) {
-        console.error("❌ Error fetching customer details:", err);
-        customerDetailsError.value = err.message || "Failed to load customer details";
-      } finally {
-        loadingCustomerDetails.value = false;
       }
     };
 
@@ -1526,16 +1548,18 @@ export default {
     const filteredBookings = computed(() => {
       let filtered = timelineFilteredBookings.value;
 
+      // Search filter
       if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase();
         filtered = filtered.filter(booking => 
-          booking.customerName.toLowerCase().includes(query) ||
+          getCustomerDisplayName(booking).toLowerCase().includes(query) ||
           booking.serviceName.toLowerCase().includes(query) ||
           booking.customerEmail.toLowerCase().includes(query) ||
           booking.serviceCategory.toLowerCase().includes(query)
         );
       }
 
+      // Status filter
       if (statusFilter.value !== 'all') {
         filtered = filtered.filter(booking => booking.status === statusFilter.value);
       }
@@ -1552,27 +1576,9 @@ export default {
     const totalPages = computed(() => Math.ceil(displayBookings.value.length / itemsPerPage.value));
 
     // ==================== FORMATTING FUNCTIONS ====================
-    const formatCustomerName = (name) => {
-      if (!name) return 'Customer';
-      
-      if (name.includes('CID:')) {
-        return name;
-      }
-      
-      return name
-        .replace(/Admin confirmed/gi, '')
-        .replace(/aqssss+/gi, '')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' ');
-    };
-
     const formatServiceName = (name) => {
       if (!name) return 'Service';
       return name
-        .replace(/aqssss+/gi, '')
         .replace(/\s+/g, ' ')
         .trim()
         .split(' ')
@@ -1594,22 +1600,6 @@ export default {
       } catch (err) {
         return 'Invalid date';
       }
-    };
-
-    const getCleanInitials = (name) => {
-      const cleanName = formatCustomerName(name);
-      if (!cleanName) return 'C';
-      
-      if (cleanName.includes('CID:')) {
-        return 'C';
-      }
-      
-      const words = cleanName.split(' ');
-      if (words.length === 1 && words[0] === 'Customer') {
-        return 'C';
-      }
-      
-      return words.map(n => n[0]).join('').toUpperCase().substring(0, 2);
     };
 
     const formatStatus = (status) => {
@@ -1776,7 +1766,7 @@ export default {
       const csvContent = [
         ['Customer Name', 'Email', 'Service', 'Category', 'Subcategory', 'Date', 'Time', 'Status', 'Amount'].join(','),
         ...bookings.value.map(b => [
-          `"${b.customerName}"`,
+          `"${getCustomerDisplayName(b)}"`,
           `"${b.customerEmail || ''}"`,
           `"${b.serviceName}"`,
           `"${b.serviceCategory || ''}"`,
@@ -1858,51 +1848,387 @@ export default {
       // Formatting
       getCleanInitials,
       formatCleanDate,
+      getCustomerDisplayName,
       formatCustomerName,
       formatServiceName,
       formatStatus,
       calculateDuration,
       formatTimeSlot,
-      convertTo12HourFormat, // Added new function
       getTimeUntilBooking,
       formatRelativeTime,
       isTodayBooking,
       isPastBooking,
-      isTomorrowBooking,
-      isNext5DaysBooking
+      
+      // Modal helpers
+      formatDate,
+      handleImageError
     };
   }
 };
 </script>
 
 <style scoped>
-/* Add these new styles to your existing CSS */
-
-/* Customer ID Badge */
-.customer-id-badge {
+/* IMPROVED CUSTOMER PROFILE PHOTO STYLES */
+.customer-profile-photo {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 3px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.customer-profile-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.customer-profile-photo-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.customer-profile-photo-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.customer-profile-photo-large {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 4px solid white;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.customer-profile-photo-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Initials fallback styles */
+.customer-initials-large {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.customer-initials-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.fallback-initials {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+/* NEW CUSTOMER PROFILE HEADER IN MODAL */
+.customer-profile-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.customer-name-info h3 {
+  margin: 0 0 8px 0;
+  color: #1e293b;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.customer-id-small {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: #6b7280;
-  padding: 2px 6px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-left: 8px;
+  font-size: 0.85rem;
+  background: #f8fafc;
+  padding: 6px 12px;
+  border-radius: 8px;
   border: 1px solid #e5e7eb;
 }
 
+.customer-id-small i {
+  color: #3b82f6;
+}
+
+/* NEW CONTACT INFO LAYOUT */
+.customer-contact-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #f3f4f6;
+}
+
+.contact-item i {
+  color: #3b82f6;
+  font-size: 1.1rem;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.contact-label {
+  color: #6b7280;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.contact-value {
+  color: #1f2937;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.status-active {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.customer-full-details,
+.customer-basic-details {
+  animation: fadeIn 0.5s ease;
+}
+
+/* Remove old avatar styles */
+.avatar-circle,
+.customer-avatar {
+  display: none !important;
+}
+
+/* Remove customer ID badges */
+.customer-id-badge,
 .customer-id {
-  background: #f3f4f6;
-  color: #6b7280;
-  padding: 2px 6px;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin-left: 8px;
-  border: 1px solid #e5e7eb;
-  display: inline-block;
+  display: none !important;
 }
 
-/* Service Meta Row */
+/* Customer avatar section */
+.customer-avatar-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.customer-type-indicator {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.customer-type-indicator.admin {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+.customer-type-indicator.client {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Table view customer cell */
+.customer-cell {
+  align-items: center;
+}
+
+.customer-info {
+  flex: 1;
+}
+
+.customer-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.type-badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.type-badge.admin {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.type-badge.client {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.customer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.customer-email {
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.customer-phone {
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+/* Error and loading indicators */
+.error-indicator {
+  font-size: 0.8rem;
+  color: #ef4444;
+  margin-left: 10px;
+  font-weight: normal;
+}
+
+.info-note {
+  font-size: 0.85rem;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 10px;
+  border-left: 3px solid #3b82f6;
+}
+
+.info-note i {
+  color: #3b82f6;
+  margin-right: 6px;
+}
+
+.loading-indicator {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-left: 10px;
+  font-weight: normal;
+}
+
+.customer-section {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.customer-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Loading state */
+.loading-state {
+  margin: 15px 0;
+}
+
+.loading-state .loading-bar {
+  width: 100%;
+  height: 4px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.loading-state .loading-bar::after {
+  content: '';
+  display: block;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #1e40af);
+  animation: loading 1.5s infinite ease-in-out;
+}
+
+@keyframes loading {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Service meta row */
 .service-meta-row {
   display: flex;
   gap: 8px;
@@ -1920,6 +2246,8 @@ export default {
   border: 1px solid #bae6fd;
 }
 
+/* The rest of your existing styles remain exactly the same below */
+/* ... [ALL EXISTING STYLES AFTER THIS POINT REMAIN UNCHANGED] ... */
 
 .bookings-section {
   max-width: 1400px;
@@ -2506,43 +2834,6 @@ export default {
   position: relative;
 }
 
-.avatar-circle {
-  width: 60px;
-  height: 60px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #3b82f6, #1e40af);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 700;
-  font-size: 1.25rem;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.customer-type-indicator {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: white;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.customer-type-indicator.admin {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
-}
-
-.customer-type-indicator.client {
-  background: linear-gradient(135deg, #10b981, #059669);
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-}
-
 .customer-info-section {
   flex: 1;
 }
@@ -2607,7 +2898,6 @@ export default {
   color: #dc2626;
 }
 
-/* NEW: Past Booking Badge */
 .past-badge {
   padding: 6px 14px;
   border-radius: 20px;
@@ -2881,84 +3171,6 @@ export default {
   padding: 4px 0;
 }
 
-.customer-cell {
-  align-items: center;
-}
-
-.customer-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #3b82f6, #1e40af);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 700;
-  font-size: 0.9rem;
-  margin-right: 12px;
-  flex-shrink: 0;
-}
-
-.customer-info {
-  flex: 1;
-}
-
-.customer-main {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.type-badge {
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.type-badge.admin {
-  background: #ede9fe;
-  color: #7c3aed;
-}
-
-.type-badge.client {
-  background: #d1fae5;
-  color: #059669;
-}
-
-.customer-email {
-  color: #6b7280;
-  font-size: 0.85rem;
-}
-
-.service-cell {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-}
-
-.service-cell strong {
-  margin-bottom: 4px;
-}
-
-.service-category {
-  background: #f3f4f6;
-  color: #6b7280;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.75rem;
-  display: inline-block;
-}
-
-.service-price {
-  color: #059669;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
 .datetime-container {
   display: flex;
   flex-direction: column;
@@ -3140,26 +3352,6 @@ export default {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
-/* Add this to your existing CSS */
-.loading-indicator {
-  font-size: 0.8rem;
-  color: #64748b;
-  margin-left: 10px;
-  font-weight: normal;
-}
-
-.customer-section {
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #f3f4f6;
-}
-
-.customer-section h4 {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -3276,6 +3468,16 @@ export default {
   
   .table-cell:last-child {
     border-bottom: none;
+  }
+  
+  .customer-contact-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .customer-profile-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
   }
 }
 

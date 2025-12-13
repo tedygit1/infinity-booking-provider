@@ -126,21 +126,26 @@
           {{ getServiceStatus(service) === 'draft' ? 'Draft' : 'Active' }}
         </div>
 
-        <!-- Banner -->
+        <!-- Banner - SIMPLIFIED -->
         <div class="card-banner">
-          <!-- 🗑️ REMOVED: Add Images button from banner -->
           <div class="banner-gradient"></div>
           <img
-            v-if="getValidBannerUrl(service)"
-            :src="getValidBannerUrl(service)"
+            v-if="getBannerUrl(service)"
+            :src="getBannerUrl(service)"
             :alt="service?.title || 'Service'"
             class="banner-img"
-            @error="handleBannerError(service)"
+            @error="handleBannerError"
           />
           <div v-else class="banner-placeholder">
             <i class="fa-solid fa-scissors"></i>
           </div>
         </div>
+
+        <button class="btn upload-btn" @click="uploadImages" :disabled="selectedImages.length === 0 || uploadingImages">
+  <i v-if="uploadingImages" class="fa-solid fa-spinner fa-spin"></i>
+  <i v-else class="fa-solid fa-upload"></i>
+  {{ uploadingImages ? 'Uploading...' : 'Upload Images' }}
+</button>
 
         <!-- Content -->
         <div class="card-content">
@@ -441,7 +446,7 @@
       </div>
     </transition>
 
-    <!-- 🆕 ADDED: Service Images Editor Modal -->
+    <!-- Service Images Editor Modal -->
     <transition name="modal-fade">
       <div v-if="showImagesEditor" class="modal-overlay" @click.self="closeImagesEditor">
         <div class="modal images-editor-modal" @click.stop>
@@ -679,6 +684,8 @@
   </div>
 </template>
 
+
+
 <script>
 import ServiceForm from './ServiceForm.vue';
 import TimeSlots from './TimeSlots.vue';
@@ -720,7 +727,7 @@ export default {
         { key: 'sunday', name: 'sunday', label: 'Sunday' }
       ],
       
-      // 🆕 ADDED: Service Images Editor State
+      // Service Images Editor State
       showImagesEditor: false,
       imagesEditorService: null,
       serviceImages: [],
@@ -730,14 +737,15 @@ export default {
       uploadingImages: false,
       imagesUploadProgress: 0,
       imagesUploadError: null,
+      uploadSuccessMessage: null,
       
-      // Reviews State (UPDATED)
+      // Reviews State
       showReviewsModal: false,
-      showReviewsContent: false, // ✅ NEW: Control when to show content
+      showReviewsContent: false,
       selectedServiceForReviews: null,
       selectedServiceReviews: [],
       loadingReviews: false,
-      serviceReviews: {}, // Cache for reviews
+      serviceReviews: {},
       reviewsStats: {
         total: 0,
         averageRating: 0,
@@ -772,7 +780,7 @@ export default {
     selectedServiceRating() {
       if (this.selectedServiceReviews.length === 0) return 0;
       const sum = this.selectedServiceReviews.reduce((acc, review) => acc + (review.rating || 0), 0);
-      return Math.round((sum / this.selectedServiceReviews.length) * 10) / 10; // Round to 1 decimal
+      return Math.round((sum / this.selectedServiceReviews.length) * 10) / 10;
     },
     ratingDistribution() {
       const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
@@ -798,163 +806,82 @@ export default {
         default:
           return reviews;
       }
-    },
-    // ✅ NEW: Computed property to get service rating from cache
-    getServiceRating() {
-      return (service) => {
-        const serviceId = this.getServiceId(service);
-        if (!serviceId) return 0;
-        
-        if (this.serviceReviews[serviceId]) {
-          return this.serviceReviews[serviceId].averageRating || 0;
-        }
-        return 0;
-      };
-    },
-    // ✅ NEW: Computed property to get review count from cache
-    getReviewCount() {
-      return (service) => {
-        const serviceId = this.getServiceId(service);
-        if (!serviceId) return 0;
-        
-        if (this.serviceReviews[serviceId]) {
-          return this.serviceReviews[serviceId].count || 0;
-        }
-        return 0;
-      };
-    },
-    // ✅ NEW: Check if service has reviews
-    hasReviews() {
-      return (service) => {
-        const serviceId = this.getServiceId(service);
-        if (!serviceId) return false;
-        
-        if (this.serviceReviews[serviceId]) {
-          return (this.serviceReviews[serviceId].count || 0) > 0;
-        }
-        
-        // Also check if service has reviews in its data
-        if (service.reviews && Array.isArray(service.reviews)) {
-          return service.reviews.length > 0;
-        }
-        
-        return false;
-      };
     }
   },
   async created() {
     await this.fetchCategories();
     await this.fetchServices();
-    // ✅ UPDATED: Load reviews for all services but don't block UI
     this.loadAllReviews().catch(error => {
       console.warn('Could not load reviews initially:', error);
     });
   },
   methods: {
-    // ===== BANNER HELPER METHODS =====
-    getValidBannerUrl(service) {
+    // ===== SIMPLIFIED BANNER METHODS =====
+    getBannerUrl(service) {
       if (!service || !service.banner) return null;
       
-      // If banner is a string URL, return it
       if (typeof service.banner === 'string') {
         return service.banner;
       }
       
-      // If banner is an object, try to extract URL
-      if (typeof service.banner === 'object') {
-        console.log('🔍 Banner is object, trying to extract URL:', service.banner);
-        
-        // Try to stringify and parse to see the structure
-        try {
-          const bannerStr = JSON.stringify(service.banner);
-          console.log('🔍 Banner object stringified:', bannerStr);
-        } catch (e) {
-          console.log('🔍 Could not stringify banner object');
-        }
-        
-        // Check if it has a toString method
-        if (service.banner.toString && service.banner.toString !== Object.prototype.toString) {
-          const stringValue = service.banner.toString();
-          if (stringValue && typeof stringValue === 'string' && stringValue.startsWith('http')) {
-            console.log('🔍 Found URL via toString():', stringValue);
-            return stringValue;
-          }
-        }
-        
-        // Try common properties where URL might be stored
-        const possibleKeys = ['url', 'imageUrl', 'src', 'path', 'bannerUrl', 'image', 'link', 'uri'];
-        for (const key of possibleKeys) {
-          if (service.banner[key] && typeof service.banner[key] === 'string') {
-            console.log(`✅ Found banner URL in property "${key}":`, service.banner[key]);
-            return service.banner[key];
-          }
-        }
-        
-        // If it's an array, take the first string element
-        if (Array.isArray(service.banner) && service.banner.length > 0) {
-          const firstItem = service.banner[0];
-          if (typeof firstItem === 'string') {
-            return firstItem;
-          } else if (typeof firstItem === 'object') {
-            return this.getValidBannerUrl({ banner: firstItem });
-          }
-        }
-        
-        // Last resort: try any string property
-        for (const key in service.banner) {
-          if (typeof service.banner[key] === 'string' && 
-              (service.banner[key].startsWith('http') || service.banner[key].startsWith('/'))) {
-            console.log(`✅ Found possible banner URL in property "${key}":`, service.banner[key]);
-            return service.banner[key];
-          }
-        }
+      if (typeof service.banner === 'object' && service.banner.url) {
+        return service.banner.url;
       }
       
-      console.log('❌ Could not extract banner URL from:', service.banner);
+      if (Array.isArray(service.banner) && service.banner.length > 0) {
+        const firstItem = service.banner[0];
+        if (typeof firstItem === 'string') return firstItem;
+        if (typeof firstItem === 'object' && firstItem.url) return firstItem.url;
+      }
+      
       return null;
     },
     
-    handleBannerError(service) {
-      console.error('❌ Banner failed to load for service:', service?.title, 'Banner data:', service?.banner);
-      
-      // Set banner to null to show placeholder
-      if (service) {
-        // Find the service in the array and update it
-        const serviceIndex = this.services.findIndex(s => this.getServiceId(s) === this.getServiceId(service));
-        if (serviceIndex !== -1) {
-          this.services[serviceIndex].banner = null;
-        }
-      }
+    handleBannerError(event) {
+      event.target.style.display = 'none';
     },
 
     // ===== SERVICE IMAGES METHODS =====
     getServiceImages(service) {
-      if (!service || !service.images) return [];
-      return Array.isArray(service.images) ? service.images : [service.images];
+      if (!service) return [];
+      
+      if (!service.images) {
+        return [];
+      }
+      
+      if (Array.isArray(service.images)) {
+        return service.images.filter(img => img && img.trim() !== '');
+      }
+      
+      if (typeof service.images === 'string' && service.images.trim() !== '') {
+        return [service.images];
+      }
+      
+      return [];
     },
     
     getValidImageUrl(image) {
       if (!image) return '';
       
-      // If image is a string URL, return it
       if (typeof image === 'string') {
-        return image;
+        // Check if it's already a full URL or data URL
+        if (image.startsWith('http') || image.startsWith('data:') || image.startsWith('/')) {
+          return image;
+        }
+        // If it's just a filename, add the uploads path
+        return `/uploads/${image}`;
       }
       
-      // If image is an object, try to extract URL
       if (typeof image === 'object') {
+        // Try to extract URL from object
         const possibleKeys = ['url', 'imageUrl', 'src', 'path', 'image', 'link', 'uri'];
         for (const key of possibleKeys) {
           if (image[key] && typeof image[key] === 'string') {
-            return image[key];
-          }
-        }
-        
-        // Try any string property that looks like a URL
-        for (const key in image) {
-          if (typeof image[key] === 'string' && 
-              (image[key].startsWith('http') || image[key].startsWith('/'))) {
-            return image[key];
+            const url = image[key];
+            if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('/')) {
+              return url;
+            }
+            return `/uploads/${url}`;
           }
         }
       }
@@ -963,14 +890,11 @@ export default {
     },
     
     handleImageError(index) {
-      console.error('❌ Service image failed to load at index:', index);
-      // You could set a placeholder or remove the broken image
-      if (this.serviceImages[index]) {
-        // Replace with a placeholder or remove
-        this.serviceImages.splice(index, 1, 'https://via.placeholder.com/150?text=Image+Error');
-      }
+      console.error('Image failed to load at index:', index);
+      // You can show a placeholder or hide the image
     },
 
+    // ===== OPEN IMAGES EDITOR =====
     openImagesEditor(service) {
       if (!service) {
         this.setError("Cannot edit images: Service data is missing");
@@ -983,25 +907,35 @@ export default {
         return;
       }
       
-      this.imagesEditorService = { ...service };
+      this.imagesEditorService = service;
       this.serviceImages = this.getServiceImages(service);
       this.selectedImages = [];
       this.imagesPreview = [];
       this.imagesUploadError = null;
+      this.uploadSuccessMessage = null;
       this.imagesUploadProgress = 0;
       this.showImagesEditor = true;
       
-      console.log('📸 Opening images editor for service:', service.title, 'Images:', this.serviceImages);
+      console.log('Opening images editor for service:', {
+        title: service.title,
+        id: serviceId,
+        currentImages: this.serviceImages
+      });
     },
 
     closeImagesEditor() {
-      if (this.uploadingImages) return;
+      if (this.uploadingImages) {
+        if (!confirm('Upload is in progress. Are you sure you want to cancel?')) {
+          return;
+        }
+      }
       this.showImagesEditor = false;
       this.imagesEditorService = null;
       this.serviceImages = [];
       this.selectedImages = [];
       this.imagesPreview = [];
       this.imagesUploadError = null;
+      this.uploadSuccessMessage = null;
       this.imagesDragover = false;
       this.imagesUploadProgress = 0;
     },
@@ -1013,7 +947,7 @@ export default {
     handleImagesSelect(event) {
       const files = Array.from(event.target.files);
       if (files.length > 0) {
-        console.log('📁 Files selected:', files.length);
+        console.log('Files selected:', files.length);
         this.validateAndSetImages(files);
       }
     },
@@ -1022,7 +956,7 @@ export default {
       this.imagesDragover = false;
       const files = Array.from(event.dataTransfer.files);
       if (files.length > 0) {
-        console.log('📁 Files dropped:', files.length);
+        console.log('Files dropped:', files.length);
         this.validateAndSetImages(files);
       }
     },
@@ -1031,10 +965,10 @@ export default {
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       const maxSize = 5 * 1024 * 1024; // 5MB
       const maxFiles = 10;
+      const currentSelected = this.selectedImages.length;
       
-      // Check total files count
-      if (this.selectedImages.length + files.length > maxFiles) {
-        this.imagesUploadError = `Maximum ${maxFiles} images allowed`;
+      if (currentSelected + files.length > maxFiles) {
+        this.imagesUploadError = `Maximum ${maxFiles} images allowed. You have ${currentSelected} selected.`;
         return;
       }
 
@@ -1042,15 +976,13 @@ export default {
       const invalidFiles = [];
 
       files.forEach(file => {
-        // Check file type
-        if (!validTypes.includes(file.type)) {
-          invalidFiles.push(`${file.name}: Invalid file type (${file.type})`);
+        if (!validTypes.includes(file.type.toLowerCase())) {
+          invalidFiles.push(`${file.name}: Invalid file type. Use JPG, PNG, GIF, or WebP.`);
           return;
         }
 
-        // Check file size
         if (file.size > maxSize) {
-          invalidFiles.push(`${file.name}: File size (${this.formatFileSize(file.size)}) exceeds 5MB`);
+          invalidFiles.push(`${file.name}: File size (${this.formatFileSize(file.size)}) exceeds 5MB limit.`);
           return;
         }
 
@@ -1058,14 +990,14 @@ export default {
       });
 
       if (invalidFiles.length > 0) {
-        this.imagesUploadError = invalidFiles.join(', ');
+        this.imagesUploadError = invalidFiles.join('<br>');
       }
 
       if (validFiles.length > 0) {
         this.selectedImages = [...this.selectedImages, ...validFiles];
         this.generateImagesPreview(validFiles);
-        this.imagesUploadError = null; // Clear previous errors
-        console.log('✅ Valid files selected:', validFiles.length);
+        this.imagesUploadError = null;
+        console.log('Valid files selected:', validFiles.length);
       }
     },
 
@@ -1082,40 +1014,63 @@ export default {
     removeSelectedImage(index) {
       this.selectedImages.splice(index, 1);
       this.imagesPreview.splice(index, 1);
-      console.log('🗑️ Removed selected image at index:', index);
+      console.log('Removed selected image at index:', index);
     },
 
     async deleteImage(index) {
       const serviceId = this.getServiceId(this.imagesEditorService);
-      if (!serviceId) return;
+      if (!serviceId) {
+        this.setError("Cannot delete image: Service ID is missing");
+        return;
+      }
+
+      if (!confirm('Are you sure you want to delete this image?')) {
+        return;
+      }
 
       try {
-        const images = [...this.serviceImages];
-        images.splice(index, 1);
+        // Remove the image from local state first
+        const imageToDelete = this.serviceImages[index];
+        const updatedImages = [...this.serviceImages];
+        updatedImages.splice(index, 1);
         
-        // Update service with new images array
-        await http.put(`/services/${serviceId}`, {
+        // Update the service with the new images array
+        const updateData = {
           ...this.imagesEditorService,
-          images: images
-        });
-
+          images: updatedImages
+        };
+        
+        const response = await http.put(`/services/${serviceId}`, updateData);
+        
         // Update local state
-        this.serviceImages = images;
+        this.serviceImages = updatedImages;
+        this.imagesEditorService.images = updatedImages;
+        
+        // Update the service in the main services list
         const serviceIndex = this.services.findIndex(s => this.getServiceId(s) === serviceId);
         if (serviceIndex !== -1) {
-          this.services[serviceIndex].images = images;
+          this.services[serviceIndex].images = updatedImages;
         }
-
-        this.setSuccess("Image removed successfully!");
+        
+        this.setSuccess("Image deleted successfully!");
+        
       } catch (error) {
         console.error("Failed to delete image:", error);
         this.setError("Failed to delete image. Please try again.");
       }
     },
 
+    // ===== FIXED: UPLOAD IMAGES METHOD =====
     async uploadImages() {
-      if (this.selectedImages.length === 0 || !this.imagesEditorService) {
-        this.imagesUploadError = "Please select images to upload";
+      console.log('🚀 Starting image upload process...');
+      
+      if (this.selectedImages.length === 0) {
+        this.imagesUploadError = "Please select images to upload first";
+        return;
+      }
+      
+      if (!this.imagesEditorService) {
+        this.imagesUploadError = "Service data is missing";
         return;
       }
       
@@ -1125,79 +1080,163 @@ export default {
         return;
       }
       
+      console.log('Uploading images for service:', {
+        serviceId: serviceId,
+        serviceTitle: this.imagesEditorService.title,
+        filesToUpload: this.selectedImages.length
+      });
+      
       this.uploadingImages = true;
       this.imagesUploadError = null;
-      this.imagesUploadProgress = 10;
-      
-      console.log('🚀 Starting upload of', this.selectedImages.length, 'images for service:', serviceId);
+      this.uploadSuccessMessage = null;
+      this.imagesUploadProgress = 0;
       
       try {
-        // Create FormData for all images
-        const formData = new FormData();
-        this.selectedImages.forEach((file, index) => {
-          formData.append('images', file);
-          console.log(`📤 Adding file to FormData: ${file.name} (${this.formatFileSize(file.size)})`);
-        });
+        const uploadedUrls = [];
+        const totalFiles = this.selectedImages.length;
         
-        // Simulate upload progress
-        const progressInterval = setInterval(() => {
-          if (this.imagesUploadProgress < 90) {
-            this.imagesUploadProgress += 10;
+        // Upload each image
+        for (let i = 0; i < totalFiles; i++) {
+          const file = this.selectedImages[i];
+          
+          console.log(`Uploading file ${i + 1}/${totalFiles}: ${file.name}`);
+          
+          // Update progress
+          this.imagesUploadProgress = Math.round((i / totalFiles) * 100);
+          
+          // Create FormData for this file
+          const formData = new FormData();
+          formData.append('image', file);
+          formData.append('serviceId', serviceId);
+          
+          try {
+            // Upload to backend
+            const response = await http.post('/upload/image', formData, {
+              headers: {
+                'Content-Type': 'multipart/form-data'
+              },
+              timeout: 30000
+            });
+            
+            console.log('Upload response:', response.data);
+            
+            // Extract image URL from response
+            let imageUrl = null;
+            const data = response.data;
+            
+            if (data) {
+              // Try different response structures
+              if (data.url) imageUrl = data.url;
+              else if (data.imageUrl) imageUrl = data.imageUrl;
+              else if (data.data?.url) imageUrl = data.data.url;
+              else if (data.image) imageUrl = data.image;
+              else if (data.path) imageUrl = data.path;
+              else if (typeof data === 'string') imageUrl = data;
+              else if (Array.isArray(data) && data[0]?.url) imageUrl = data[0].url;
+            }
+            
+            if (imageUrl) {
+              // Format the URL if needed
+              if (!imageUrl.startsWith('http') && !imageUrl.startsWith('/') && !imageUrl.startsWith('data:')) {
+                imageUrl = `/uploads/${imageUrl}`;
+              }
+              uploadedUrls.push(imageUrl);
+              console.log(`✅ Uploaded: ${file.name} -> ${imageUrl}`);
+            } else {
+              console.warn(`Could not extract URL from response for ${file.name}`);
+              this.imagesUploadError = `Could not get image URL for ${file.name}. Please try again.`;
+            }
+            
+          } catch (uploadError) {
+            console.error(`Upload failed for ${file.name}:`, uploadError);
+            let errorMsg = `Failed to upload ${file.name}: `;
+            
+            if (uploadError.response) {
+              errorMsg += `Server error ${uploadError.response.status}`;
+              if (uploadError.response.data?.message) {
+                errorMsg += ` - ${uploadError.response.data.message}`;
+              }
+            } else if (uploadError.code === 'ECONNABORTED') {
+              errorMsg += 'Timeout - file might be too large';
+            } else if (uploadError.message) {
+              errorMsg += uploadError.message;
+            }
+            
+            this.imagesUploadError = errorMsg;
+            continue; // Continue with next file
           }
-        }, 200);
-        
-        // 🚀 UPDATED: Use the correct endpoint for uploading images
-        console.log(`🌐 Making POST request to: /services/${serviceId}/images`);
-        const response = await http.post(`/services/${serviceId}/images`, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        });
-        
-        clearInterval(progressInterval);
-        this.imagesUploadProgress = 100;
-        
-        console.log('✅ Upload response:', response.data);
-        const uploadedImages = response.data.images || response.data || [];
-        console.log('✅ Uploaded images:', uploadedImages);
-        
-        // Update service with new images (append to existing)
-        const existingImages = this.serviceImages;
-        const newImages = [...existingImages, ...uploadedImages];
-        
-        console.log('🔄 Updating service with new images array:', newImages);
-        await http.put(`/services/${serviceId}`, {
-          ...this.imagesEditorService,
-          images: newImages
-        });
-        
-        // Update local state
-        this.serviceImages = newImages;
-        const serviceIndex = this.services.findIndex(s => this.getServiceId(s) === serviceId);
-        if (serviceIndex !== -1) {
-          this.services[serviceIndex].images = newImages;
         }
         
-        this.setSuccess(`Successfully uploaded ${uploadedImages.length} image(s)!`);
+        // Update progress to 100%
+        this.imagesUploadProgress = 100;
         
-        // Clear selected images and close modal after delay
-        this.selectedImages = [];
-        this.imagesPreview = [];
-        setTimeout(() => {
-          this.closeImagesEditor();
-        }, 1500);
+        // If we have uploaded images, update the service
+        if (uploadedUrls.length > 0) {
+          try {
+            // Get current service images
+            const currentImages = this.serviceImages;
+            const newImages = [...currentImages, ...uploadedUrls];
+            
+            console.log('Updating service with new images:', {
+              oldCount: currentImages.length,
+              newCount: newImages.length,
+              newImages: newImages
+            });
+            
+            // Prepare update data
+            const updateData = {
+              ...this.imagesEditorService,
+              images: newImages
+            };
+            
+            // Update the service in backend
+            const updateResponse = await http.put(`/services/${serviceId}`, updateData);
+            
+            console.log('Service update response:', updateResponse.data);
+            
+            // Update local state
+            this.serviceImages = newImages;
+            this.imagesEditorService.images = newImages;
+            
+            // Update in main services list
+            const serviceIndex = this.services.findIndex(s => this.getServiceId(s) === serviceId);
+            if (serviceIndex !== -1) {
+              this.services[serviceIndex].images = newImages;
+            }
+            
+            this.uploadSuccessMessage = `✅ Successfully uploaded ${uploadedUrls.length} image(s)!`;
+            
+            // Clear selected images and previews
+            this.selectedImages = [];
+            this.imagesPreview = [];
+            
+            // Show success and close after delay
+            setTimeout(() => {
+              this.closeImagesEditor();
+              this.setSuccess(`Successfully uploaded ${uploadedUrls.length} image(s)!`);
+              
+              // Refresh services to ensure data is up to date
+              this.fetchServices();
+            }, 2000);
+            
+          } catch (updateError) {
+            console.error('Failed to update service with images:', updateError);
+            this.imagesUploadError = `Images uploaded but failed to update service: ${updateError.message}`;
+          }
+        } else {
+          this.imagesUploadError = "No images were successfully uploaded. Please try again.";
+        }
         
       } catch (error) {
-        console.error("❌ Failed to upload images:", error);
-        console.error("❌ Error response:", error.response?.data);
-        this.imagesUploadError = error.response?.data?.message || error.message || "Failed to upload images. Please try again.";
+        console.error('General upload error:', error);
+        this.imagesUploadError = `Upload failed: ${error.message || 'Unknown error'}`;
       } finally {
         this.uploadingImages = false;
         this.imagesUploadProgress = 0;
       }
     },
 
-    // ===== EXISTING METHODS (preserved) =====
+    // ===== SERVICE METHODS =====
     getServiceStatus(service) {
       if (!service) return 'draft';
       if (!service.slots || !Array.isArray(service.slots) || service.slots.length === 0) {
@@ -1272,7 +1311,7 @@ export default {
         await this.fetchServices();
         this.showNotification('Time slots saved successfully!', 'success');
       } catch (error) {
-        console.error('❌ Error handling time slots save:', error);
+        console.error('Error handling time slots save:', error);
         this.showNotification('Time slots saved successfully!', 'success');
       } finally {
         this.closeTimeSlotsPanel();
@@ -1377,9 +1416,25 @@ export default {
         let processedServices = [];
         
         if (Array.isArray(servicesData)) {
-          processedServices = servicesData.filter(service => 
-            service != null && typeof service === 'object'
-          );
+          processedServices = servicesData.filter(service => {
+            if (!service || typeof service !== 'object') return false;
+            
+            const serviceId = this.getServiceId(service);
+            
+            if (serviceId === 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa') {
+              console.warn('Removing test service with malformed ID:', serviceId);
+              return false;
+            }
+            
+            if (serviceId && serviceId.match(/^a+$/)) {
+              console.warn('Removing service with suspicious ID pattern:', serviceId);
+              return false;
+            }
+            
+            return true;
+          });
+          
+          console.log(`Loaded ${processedServices.length} valid services`);
         } else {
           console.warn('Unexpected services data format:', typeof servicesData);
           processedServices = [];
@@ -1531,32 +1586,28 @@ export default {
       }
     },
 
-    // ===== REVIEWS METHODS (IMPROVED) =====
+    // ===== REVIEWS METHODS =====
     async loadAllReviews() {
       try {
-        console.log('📊 Loading reviews for all services...');
+        console.log('Loading reviews for all services...');
         
-        // Only load if we have services
         if (!this.services || this.services.length === 0) {
-          console.log('📊 No services to load reviews for');
+          console.log('No services to load reviews for');
           return;
         }
         
-        // Load reviews for each service in parallel
         const reviewPromises = this.services.map(async (service) => {
           const serviceId = this.getServiceId(service);
           if (!serviceId) return null;
           
           try {
-            // ✅ FIXED: Try the correct endpoint format
             const endpoint = `/reviews/service/${serviceId}`;
-            console.log(`🌐 Fetching reviews from: ${endpoint}`);
+            console.log(`Fetching reviews from: ${endpoint}`);
             
             const response = await http.get(endpoint);
             const data = response.data;
             
             let reviews = [];
-            // Handle different response structures
             if (Array.isArray(data)) {
               reviews = data;
             } else if (data && data.reviews && Array.isArray(data.reviews)) {
@@ -1565,9 +1616,8 @@ export default {
               reviews = data.data;
             }
             
-            console.log(`📊 Found ${reviews.length} reviews for service ${service.title}`);
+            console.log(`Found ${reviews.length} reviews for service ${service.title}`);
             
-            // Process reviews
             const processedReviews = reviews.map(review => ({
               _id: review._id || review.id || Math.random().toString(36).substr(2, 9),
               reviewerName: review.customerName || review.reviewerName || review.user?.name || review.customer?.name || 'Anonymous',
@@ -1579,13 +1629,11 @@ export default {
               reply: review.reply || review.response || ''
             }));
             
-            // Calculate average rating
             let averageRating = 0;
             if (processedReviews.length > 0) {
               averageRating = processedReviews.reduce((sum, r) => sum + (r.rating || 0), 0) / processedReviews.length;
             }
             
-            // Cache the reviews
             this.serviceReviews[serviceId] = {
               reviews: processedReviews,
               count: processedReviews.length,
@@ -1598,8 +1646,7 @@ export default {
               averageRating
             };
           } catch (error) {
-            console.log(`⚠️ Could not load reviews for service ${serviceId}:`, error.message);
-            // Initialize empty reviews cache
+            console.log(`Could not load reviews for service ${serviceId}:`, error.message);
             this.serviceReviews[serviceId] = {
               reviews: [],
               count: 0,
@@ -1612,9 +1659,8 @@ export default {
         const results = await Promise.all(reviewPromises);
         const successfulLoads = results.filter(r => r !== null && r.count > 0);
         
-        console.log(`📊 Reviews loaded: ${successfulLoads.length} services have reviews`);
+        console.log(`Reviews loaded: ${successfulLoads.length} services have reviews`);
         
-        // Update overall stats
         this.updateReviewsStats();
         
       } catch (error) {
@@ -1632,46 +1678,43 @@ export default {
       this.selectedServiceForReviews = service;
       this.loadingReviews = true;
       this.showReviewsModal = true;
-      this.showReviewsContent = false; // ✅ NEW: Hide content initially
+      this.showReviewsContent = false;
       this.selectedServiceReviews = [];
       
-      console.log(`🔍 Opening reviews for service: ${service.title} (${serviceId})`);
+      console.log(`Opening reviews for service: ${service.title} (${serviceId})`);
       
       try {
-        // Check if we have cached reviews
         if (this.serviceReviews[serviceId]?.reviews && this.serviceReviews[serviceId].reviews.length > 0) {
-          console.log(`✅ Using cached reviews: ${this.serviceReviews[serviceId].reviews.length} reviews found`);
+          console.log(`Using cached reviews: ${this.serviceReviews[serviceId].reviews.length} reviews found`);
           this.selectedServiceReviews = this.serviceReviews[serviceId].reviews;
           this.loadingReviews = false;
-          this.showReviewsContent = true; // ✅ NEW: Show content after loading
+          this.showReviewsContent = true;
           return;
         }
         
-        // Try to fetch fresh reviews
         const endpoint = `/reviews/service/${serviceId}`;
-        console.log(`🌐 Fetching reviews from: ${endpoint}`);
+        console.log(`Fetching reviews from: ${endpoint}`);
         
         const response = await http.get(endpoint);
         const data = response.data;
         
         let reviews = [];
         
-        // Handle different response structures
         if (Array.isArray(data)) {
           reviews = data;
-          console.log(`✅ Got array of ${reviews.length} reviews`);
+          console.log(`Got array of ${reviews.length} reviews`);
         } else if (data && data.reviews && Array.isArray(data.reviews)) {
           reviews = data.reviews;
-          console.log(`✅ Got reviews array in 'reviews' property: ${reviews.length} reviews`);
+          console.log(`Got reviews array in 'reviews' property: ${reviews.length} reviews`);
         } else if (data && data.data && Array.isArray(data.data)) {
           reviews = data.data;
-          console.log(`✅ Got reviews array in 'data' property: ${reviews.length} reviews`);
+          console.log(`Got reviews array in 'data' property: ${reviews.length} reviews`);
         } else {
-          console.log(`⚠️ Unexpected response structure:`, data);
+          console.log(`Unexpected response structure:`, data);
         }
         
         if (reviews.length === 0) {
-          console.log('ℹ️ No reviews found for this service');
+          console.log('No reviews found for this service');
           this.selectedServiceReviews = [];
           this.serviceReviews[serviceId] = {
             reviews: [],
@@ -1679,11 +1722,10 @@ export default {
             averageRating: 0
           };
           this.loadingReviews = false;
-          this.showReviewsContent = true; // ✅ NEW: Show content even if no reviews
+          this.showReviewsContent = true;
           return;
         }
         
-        // Process the reviews
         this.selectedServiceReviews = reviews.map(review => ({
           _id: review._id || review.id || Math.random().toString(36).substr(2, 9),
           reviewerName: review.customerName || review.reviewerName || review.user?.name || review.customer?.name || 'Anonymous',
@@ -1695,9 +1737,8 @@ export default {
           reply: review.reply || review.response || ''
         }));
         
-        console.log(`✅ Processed ${this.selectedServiceReviews.length} reviews`);
+        console.log(`Processed ${this.selectedServiceReviews.length} reviews`);
         
-        // Cache the reviews
         this.serviceReviews[serviceId] = {
           reviews: this.selectedServiceReviews,
           count: this.selectedServiceReviews.length,
@@ -1709,10 +1750,9 @@ export default {
         this.updateReviewsStats();
         
       } catch (error) {
-        console.error('❌ Error fetching reviews:', error);
-        console.error('❌ Error details:', error.response?.data || error.message);
+        console.error('Error fetching reviews:', error);
+        console.error('Error details:', error.response?.data || error.message);
         
-        // Even if there's an error, show the modal with no reviews
         this.selectedServiceReviews = [];
         this.serviceReviews[serviceId] = {
           reviews: [],
@@ -1720,10 +1760,9 @@ export default {
           averageRating: 0
         };
         
-        // Don't show error to user, just show empty state
       } finally {
         this.loadingReviews = false;
-        this.showReviewsContent = true; // ✅ NEW: Show content after loading
+        this.showReviewsContent = true;
       }
     },
     
@@ -1764,7 +1803,7 @@ export default {
     
     closeReviewsModal() {
       this.showReviewsModal = false;
-      this.showReviewsContent = false; // ✅ NEW: Hide content
+      this.showReviewsContent = false;
       this.selectedServiceForReviews = null;
       this.selectedServiceReviews = [];
       this.reviewsSortBy = 'newest';
@@ -1821,7 +1860,248 @@ export default {
 </script>
 
 <style scoped>
+/* Keep all your existing styles - they're already correct */
+/* Just ensure the CSS is included as is from your original code */
+
 /* 🆕 ADDED: Images Editor Modal Styles */
+.images-editor-modal {
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.images-editor-modal .modal-content {
+  padding: 1.5rem;
+}
+
+.current-images-section,
+.upload-images-section {
+  margin-bottom: 1.5rem;
+}
+
+.current-images-section h4,
+.upload-images-section h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.75rem;
+}
+
+.images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.image-item {
+  position: relative;
+  height: 120px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.service-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.image-item:hover .image-overlay {
+  opacity: 1;
+}
+
+.delete-image-btn {
+  background: #e53e3e;
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.delete-image-btn:hover {
+  background: #c53030;
+  transform: scale(1.1);
+}
+
+.upload-area {
+  border: 2px dashed #cbd5e0;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  background: #f7fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 1rem;
+}
+
+.upload-area.dragover {
+  border-color: #3182ce;
+  background: #ebf8ff;
+}
+
+.upload-prompt i {
+  font-size: 2.5rem;
+  color: #a0aec0;
+  margin-bottom: 1rem;
+}
+
+.upload-prompt p {
+  color: #718096;
+  margin-bottom: 0.5rem;
+}
+
+.upload-subtext {
+  font-size: 0.875rem;
+  color: #a0aec0;
+}
+
+.browse-btn {
+  background: #3182ce;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  transition: all 0.2s ease;
+}
+
+.browse-btn:hover {
+  background: #2c5282;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.selected-files-info {
+  margin-top: 1.5rem;
+}
+
+.selected-files-info h5 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.75rem;
+}
+
+.selected-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.5rem;
+}
+
+.selected-image-item {
+  position: relative;
+  height: 80px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-selected-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-selected-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
+}
+
+.upload-progress {
+  margin: 1rem 0;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #3182ce;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 0.875rem;
+  color: #718096;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.upload-error {
+  background: #fed7d7;
+  border: 1px solid #fc8181;
+  color: #c53030;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* 🆕 ADDED: Add Images action button */
+.action-btn.add-images {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.action-btn.add-images:hover:not(:disabled) {
+  background: #bfdbfe;
+}
+
+
 .images-editor-modal {
   max-width: 600px;
   max-height: 90vh;
