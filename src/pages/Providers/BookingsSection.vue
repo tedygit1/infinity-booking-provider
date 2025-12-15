@@ -235,7 +235,7 @@
               'past-card': isPastBooking(booking)
             }"
           >
-            <!-- Card Header with Customer Info -->
+            <!-- Card Header with Customer Info - FIXED: Now showing actual customer name -->
             <div class="card-header-section">
               <div class="customer-avatar-section">
                 <!-- Display Customer Profile Photo or Initials -->
@@ -249,14 +249,16 @@
                 <div v-else class="customer-initials-large">
                   {{ getCleanInitials(booking.customerName) }}
                 </div>
-                <div class="customer-type-indicator" :class="{ 'admin': booking.isAdminBooking }">
-                  {{ booking.isAdminBooking ? 'Admin' : 'Client' }}
-                </div>
               </div>
               
               <div class="customer-info-section">
-                <!-- Display Customer's Real Name (Not ID) -->
-                <h4 class="customer-name">{{ getCustomerDisplayName(booking) }}</h4>
+                <!-- FIXED: Show actual customer name, not just "Customer" -->
+                <div class="customer-name-display">
+                  <h4 class="customer-name">{{ booking.customerName }}</h4>
+                  <div class="customer-type-indicator" :class="{ 'admin': booking.isAdminBooking }">
+                    {{ booking.isAdminBooking ? 'Admin' : 'Customer' }}
+                  </div>
+                </div>
                 <p class="customer-meta">
                   <span v-if="booking.customerEmail">
                     <i class="fa-solid fa-envelope"></i> {{ booking.customerEmail }}
@@ -398,13 +400,14 @@
                   </div>
                 </div>
                 <div class="customer-info">
+                  <!-- FIXED: Show actual customer name, not just "Customer" -->
                   <div class="customer-main">
-                    <strong>{{ getCustomerDisplayName(booking) }}</strong>
+                    <strong>{{ booking.customerName }}</strong>
                     <span v-if="booking.isAdminBooking" class="type-badge admin">
                       Admin
                     </span>
                     <span v-else class="type-badge client">
-                      Client
+                      Customer
                     </span>
                   </div>
                   <div class="customer-details">
@@ -887,7 +890,6 @@ export default {
         // ==================== STEP 3: FALLBACK TO BOOKING DATA ====================
         console.log("📊 Using booking data as fallback");
         
-        let cleanName = getCustomerDisplayName(booking);
         const hasContactInfo = !!(booking.customerEmail || booking.customerPhone);
         
         customerDetails.value = {
@@ -896,7 +898,7 @@ export default {
           bookerType: 'Customer',
           cid: fullCID,
           id: fullCID,
-          fullname: cleanName,
+          fullname: booking.customerName || 'Customer',
           email: booking.customerEmail || '',
           phone: booking.customerPhone || '',
           address: '',
@@ -928,15 +930,22 @@ export default {
 
     // ==================== HELPER FUNCTIONS ====================
     const getCustomerDisplayName = (booking) => {
-      if (!booking.customerName) return 'Customer';
-      
-      // Remove CID from customer name if present
-      let name = booking.customerName;
-      if (name.includes('CID:')) {
-        name = name.split('CID:')[0].trim();
+      if (booking.customerName && booking.customerName !== 'Customer') {
+        return booking.customerName;
       }
       
-      // Format name properly
+      // If no customerName, try to extract from other fields
+      const customer = booking.customerObject || booking.originalData?.customer || {};
+      
+      if (customer.fullname && customer.fullname !== 'Customer') return customer.fullname;
+      if (customer.name && customer.name !== 'Customer') return customer.name;
+      if (customer.username && customer.username !== 'Customer') return customer.username;
+      
+      return 'Customer';
+    };
+
+    const formatCustomerName = (name) => {
+      if (!name || name === 'Customer') return 'Customer';
       return name
         .replace(/Admin confirmed/gi, '')
         .replace(/\s+/g, ' ')
@@ -946,13 +955,9 @@ export default {
         .join(' ');
     };
 
-    const formatCustomerName = (name) => {
-      return getCustomerDisplayName({ customerName: name });
-    };
-
     const getCleanInitials = (name) => {
       const cleanName = formatCustomerName(name);
-      if (!cleanName) return 'C';
+      if (!cleanName || cleanName === 'Customer') return 'C';
       
       const words = cleanName.split(' ');
       if (words.length === 1 && words[0] === 'Customer') {
@@ -1396,30 +1401,62 @@ export default {
           customerProfilePhoto = customer.avatar;
         }
         
-        // Customer name logic
+        // FIXED: CUSTOMER NAME LOGIC - Get actual customer name
         let customerName = '';
+        
         if (isAdminBooking) {
             const admin = booking.adminDetails || {};
             customerName = admin.fullname || admin.name || admin.username || 'Admin Booking';
         } else {
-            if (customer.fullname) {
+            // Try multiple sources for customer name in order of priority
+            if (customer.fullname && customer.fullname.trim() !== '' && customer.fullname !== 'Customer') {
                 customerName = customer.fullname;
-            } else if (customer.name) {
+            } else if (customer.name && customer.name.trim() !== '' && customer.name !== 'Customer') {
                 customerName = customer.name;
-            } else if (booking.customerName) {
+            } else if (booking.customerName && booking.customerName.trim() !== '' && booking.customerName !== 'Customer') {
                 customerName = booking.customerName;
+            } else if (customer.username && customer.username.trim() !== '' && customer.username !== 'Customer') {
+                customerName = customer.username;
+            } else if (customer.email) {
+                // Use email username as fallback
+                customerName = customer.email.split('@')[0];
+                customerName = customerName.charAt(0).toUpperCase() + customerName.slice(1);
             } else if (customerId && customerId !== 'unknown') {
-                customerName = 'Customer';
+                // Use customer ID as last resort
+                if (customerId.startsWith('CUST-')) {
+                    customerName = `Client ${customerId.substring(5, 11)}`;
+                } else {
+                    customerName = `Client ${customerId.substring(0, 6)}`;
+                }
             } else {
-                customerName = 'Customer';
+                // Absolute last resort - but try to avoid "Customer"
+                customerName = 'Client';
             }
         }
         
-        // Clean up name
+        // Clean up name - remove any generic "Customer" text if it appears
         customerName = customerName
+          .replace(/^Customer$/i, '')
           .replace(/Admin confirmed/gi, '')
           .replace(/\s+/g, ' ')
           .trim();
+        
+        // If after cleaning we have an empty name, set a proper fallback
+        if (!customerName || customerName === '' || customerName === 'Customer') {
+          if (isAdminBooking) {
+            customerName = 'Admin Booking';
+          } else if (customerId && customerId !== 'unknown') {
+            customerName = `Client ${customerId.substring(0, 6)}`;
+          } else {
+            customerName = 'Client';
+          }
+        }
+        
+        // Format the name properly
+        customerName = customerName
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ');
         
         // Get customer email & phone
         let customerEmail = '';
@@ -1495,10 +1532,10 @@ export default {
         return {
           _id: booking._id || booking.bookingId || booking.id || `booking-${Date.now()}-${Math.random()}`,
           customerId: customerId,
-          customerName: customerName,
+          customerName: customerName, // Now contains actual customer name, not just "Customer"
           customerEmail: customerEmail,
           customerPhone: customerPhone,
-          customerProfilePhoto: customerProfilePhoto, // Added profile photo
+          customerProfilePhoto: customerProfilePhoto,
           isAdminBooking: isAdminBooking,
           serviceId: serviceId,
           serviceName: serviceName,
@@ -1552,9 +1589,9 @@ export default {
       if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase();
         filtered = filtered.filter(booking => 
-          getCustomerDisplayName(booking).toLowerCase().includes(query) ||
+          (booking.customerName && booking.customerName.toLowerCase().includes(query)) ||
           booking.serviceName.toLowerCase().includes(query) ||
-          booking.customerEmail.toLowerCase().includes(query) ||
+          (booking.customerEmail && booking.customerEmail.toLowerCase().includes(query)) ||
           booking.serviceCategory.toLowerCase().includes(query)
         );
       }
@@ -1766,7 +1803,7 @@ export default {
       const csvContent = [
         ['Customer Name', 'Email', 'Service', 'Category', 'Subcategory', 'Date', 'Time', 'Status', 'Amount'].join(','),
         ...bookings.value.map(b => [
-          `"${getCustomerDisplayName(b)}"`,
+          `"${b.customerName}"`,
           `"${b.customerEmail || ''}"`,
           `"${b.serviceName}"`,
           `"${b.serviceCategory || ''}"`,
@@ -2053,16 +2090,20 @@ export default {
   animation: fadeIn 0.5s ease;
 }
 
-/* Remove old avatar styles */
-.avatar-circle,
-.customer-avatar {
-  display: none !important;
+/* FIXED: Customer name display styling */
+.customer-name-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
 }
 
-/* Remove customer ID badges */
-.customer-id-badge,
-.customer-id {
-  display: none !important;
+.customer-name {
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.3;
 }
 
 /* Customer avatar section */
@@ -2075,9 +2116,6 @@ export default {
 }
 
 .customer-type-indicator {
-  position: absolute;
-  top: -8px;
-  right: -8px;
   padding: 4px 10px;
   border-radius: 12px;
   font-size: 0.7rem;
@@ -2085,6 +2123,8 @@ export default {
   color: white;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: inline-block;
+  margin-left: 8px;
 }
 
 .customer-type-indicator.admin {

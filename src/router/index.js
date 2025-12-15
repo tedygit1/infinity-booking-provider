@@ -29,30 +29,41 @@ import ReviewsSection from "@/pages/Providers/ReviewsSection.vue";
 import SettingsSection from "@/pages/Providers/SettingsSection.vue";
 
 // Footer pages
+import Features from "@/pages/Footer/Features.vue";
+import Pricing from "@/pages/Footer/Pricing.vue";
 import HelpCenter from "@/pages/Footer/HelpCenter.vue";
+import Feedback from "@/pages/Footer/Feedback.vue";
+import Team from "@/pages/Footer/team.vue";
+import Security from "@/pages/Footer/Security.vue";
 import PrivacyPolicy from "@/pages/Footer/PrivacyPolicy.vue";
 import TermsOfService from "@/pages/Footer/TermsOfService.vue";
-import Feedback from "@/pages/Footer/Feedback.vue";
 
 const routes = [
   {
     path: "/",
     component: MainLayout,
     children: [
+      // General pages
       { path: "", name: "Home", component: Home },
       { path: "about", name: "About", component: About },
       { path: "contact", name: "Contact", component: Contact },
       { path: "how-it-works", name: "HowItWorks", component: HowItWorks },
+
+      // Auth pages
       { path: "login", name: "Login", component: Login },
       { path: "register", name: "Register", component: Register },
       { path: "forgot-password", name: "ForgotPassword", component: ForgotPassword },
       { path: "reset-password/:token", name: "ResetPassword", component: ResetPassword },
 
       // Footer pages
+      { path: "features", name: "Features", component: Features },
+      { path: "pricing", name: "Pricing", component: Pricing },
       { path: "help-center", name: "HelpCenter", component: HelpCenter },
+      { path: "feedback", name: "Feedback", component: Feedback },
+      { path: "team", name: "Team", component: Team },
+      { path: "security", name: "Security", component: Security },
       { path: "privacy-policy", name: "PrivacyPolicy", component: PrivacyPolicy },
       { path: "terms-of-service", name: "TermsOfService", component: TermsOfService },
-      { path: "feedback", name: "Feedback", component: Feedback },
     ],
   },
 

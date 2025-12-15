@@ -85,7 +85,7 @@
     <!-- Mobile Menu Overlay -->
     <div v-if="mobileMenuOpen" class="mobile-overlay" @click="closeMobileMenu"></div>
 
-    <!-- Mobile Menu - FIXED: Sidebar from right -->
+    <!-- Mobile Menu - Small sidebar from right -->
     <div class="mobile-sidebar" :class="{ open: mobileMenuOpen }">
       <div class="sidebar-content">
         <!-- Sidebar Header -->
@@ -571,12 +571,12 @@ onUnmounted(() => {
   to { opacity: 1; }
 }
 
-/* ===== MOBILE SIDEBAR (FIXED) ===== */
+/* ===== MOBILE SIDEBAR (SMALL SIZE) ===== */
 .mobile-sidebar {
   position: fixed;
   top: 0;
   right: 0;
-  width: 320px;
+  width: 280px; /* FIXED: Small width, not full page */
   height: 100vh;
   background: white;
   z-index: 999;
@@ -604,8 +604,8 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
-  padding-bottom: 24px;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
   border-bottom: 1px solid #e2e8f0;
 }
 
@@ -627,24 +627,24 @@ onUnmounted(() => {
   height: 24px;
 }
 
-/* Sidebar Navigation - NO UNDERLINES */
+/* Sidebar Navigation */
 .sidebar-nav {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 
 .sidebar-link {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 16px 20px;
+  padding: 14px 16px;
   color: #475569;
   text-decoration: none;
   font-weight: 500;
-  font-size: 1.1rem;
-  border-radius: 12px;
+  font-size: 1rem;
+  border-radius: 10px;
   transition: all 0.2s ease;
 }
 
@@ -660,7 +660,7 @@ onUnmounted(() => {
 }
 
 .link-icon {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   width: 24px;
   text-align: center;
 }
@@ -668,7 +668,7 @@ onUnmounted(() => {
 /* Sidebar Auth */
 .sidebar-auth {
   margin-top: auto;
-  padding-top: 32px;
+  padding-top: 24px;
   border-top: 1px solid #e2e8f0;
 }
 
@@ -678,13 +678,13 @@ onUnmounted(() => {
   justify-content: center;
   gap: 10px;
   width: 100%;
-  padding: 16px;
+  padding: 14px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   text-decoration: none;
-  border-radius: 12px;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.95rem;
   transition: transform 0.2s ease;
 }
 
@@ -693,8 +693,8 @@ onUnmounted(() => {
 }
 
 .sidebar-login-btn svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 /* Sidebar User Info */
@@ -706,16 +706,16 @@ onUnmounted(() => {
 }
 
 .user-avatar-mobile {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .user-details {
@@ -726,11 +726,12 @@ onUnmounted(() => {
   margin: 0 0 4px 0;
   font-weight: 600;
   color: #1e293b;
+  font-size: 0.95rem;
 }
 
 .user-email {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #64748b;
 }
 
@@ -744,10 +745,10 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 12px 16px;
   color: #475569;
   text-decoration: none;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 500;
   background: none;
   border: none;
@@ -762,8 +763,8 @@ onUnmounted(() => {
 }
 
 .sidebar-user-item svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   color: #94a3b8;
 }
 
@@ -806,15 +807,16 @@ onUnmounted(() => {
     font-size: 18px;
   }
   
-  /* Mobile sidebar width for small screens */
+  /* Mobile sidebar width for tablets */
   .mobile-sidebar {
-    width: 280px;
+    width: 260px;
   }
 }
 
 @media (max-width: 480px) {
+  /* Mobile sidebar width for phones */
   .mobile-sidebar {
-    width: 100%;
+    width: 260px;
   }
   
   .sidebar-content {
@@ -822,12 +824,19 @@ onUnmounted(() => {
   }
   
   .sidebar-link {
-    font-size: 1rem;
-    padding: 14px 16px;
+    font-size: 0.95rem;
+    padding: 12px 16px;
   }
   
   .link-icon {
-    font-size: 1.1rem;
+    font-size: 1rem;
+  }
+}
+
+/* For very small screens, make sidebar even narrower */
+@media (max-width: 360px) {
+  .mobile-sidebar {
+    width: 240px;
   }
 }
 </style>
