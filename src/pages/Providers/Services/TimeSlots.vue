@@ -135,7 +135,7 @@
                         <input
                           type="checkbox"
                           v-model="timeSlot.isAvailable"
-                          @change="updateDayTemplate(day.dayKey, day.date)"
+                          @change="saveSingleDayTemplate(day.dayKey, day.date)"
                         />
                         <span class="toggle-slider-small"></span>
                       </label>
@@ -208,6 +208,7 @@
       <!-- Debug Info -->
       <div v-if="debugMode" class="debug-info">
         <h5>Debug Info:</h5>
+        <p>Service ID: {{ serviceId }}</p>
         <p>Has Existing Slot: {{ hasExistingSlot }}</p>
         <p>Slot ID: {{ existingSlotId }}</p>
         <p>Total Days: {{ generatedDays.length }}</p>
@@ -245,7 +246,6 @@ export default {
       saving: false,
       errorMessage: '',
       successMessage: '',
-      debugMode: true,
       loadingBookings: false,
       slotConfig: {
         slotLabel: '7-Day Rolling Schedule',
@@ -256,14 +256,16 @@ export default {
       existingSlots: [],
       existingSlotId: null,
       bookedSlots: [],
-      // ⭐ Templates for each day of the week
-      dayTemplates: {}, // Stores custom timeslots by dayKey (monday, tuesday, etc.)
+      // Templates for each day of the week - NOW PER SERVICE
+      dayTemplates: {},
       defaultTimeSlots: [
         { startTime: '09:00', endTime: '11:00', isAvailable: true, isBooked: false },
         { startTime: '11:00', endTime: '13:00', isAvailable: true, isBooked: false },
         { startTime: '14:00', endTime: '16:00', isAvailable: true, isBooked: false },
         { startTime: '16:00', endTime: '18:00', isAvailable: true, isBooked: false }
-      ]
+      ],
+      providerId: null,
+      debugMode: false
     };
   },
   computed: {
@@ -291,153 +293,143 @@ export default {
         return false;
       });
       return hasRealSlots ? 'active' : 'draft';
+    },
+    // FIX: Now templates are stored PER SERVICE
+    templateStorageKey() {
+      if (!this.serviceId) return null;
+      return `service_${this.serviceId}_day_templates`;
     }
   },
   async created() {
-    // ⭐ CRITICAL FIX: Load templates FIRST
-    this.loadDayTemplates();
-    
-    // ⭐ CRITICAL FIX: Generate schedule
-    this.generate7DaySchedule();
-    
-    // ⭐ CRITICAL FIX: Initialize ALL days with templates if they exist
-    this.initializeDaysWithTemplates();
-    
-    // Load existing slots (for already scheduled dates)
-    await this.initializeTimeSlots();
-    
-    // ⭐ CRITICAL FIX: Apply defaults ONLY to days that truly have no data
-    this.applyDefaultsToEmptyDays();
-    
-    // Fetch bookings
-    await this.fetchBookedSlots();
-    
-    console.log('Day Templates Loaded:', this.dayTemplates);
-    console.log('Daily Schedules:', this.dailySchedules);
+    await this.getProviderId();
+    this.loadDayTemplates(); // Load templates FIRST
+    this.generate7DaySchedule(); // Then generate days
+    this.initializeDaysWithTemplates(); // Apply templates to new days
+    await this.initializeTimeSlots(); // Load existing slots (won't override templates)
+    await this.fetchBookedSlots(); // Mark booked slots
   },
   methods: {
-    // ⭐ NEW METHOD: Initialize ALL days with templates if they exist
-    initializeDaysWithTemplates() {
-      console.log('Initializing days with templates...');
-      
-      this.generatedDays.forEach(day => {
-        const dateKey = day.date;
-        const dayKey = day.dayKey;
+    async getProviderId() {
+      try {
+        const fromLocalStorage = localStorage.getItem('providerId') || 
+                                localStorage.getItem('loggedProvider');
         
-        // Check if template exists for this day of week
-        if (this.dayTemplates[dayKey] !== undefined) {
-          console.log(`Found template for ${dayKey}:`, this.dayTemplates[dayKey]);
-          
-          if (this.dayTemplates[dayKey].length > 0) {
-            // Apply custom template (working day with custom slots)
-            this.dailySchedules[dateKey] = JSON.parse(JSON.stringify(this.dayTemplates[dayKey]));
-            console.log(`Applied template for ${dateKey} (${dayKey})`);
-          } else {
-            // Empty array = Day Off
-            this.dailySchedules[dateKey] = [];
-            console.log(`Set ${dateKey} (${dayKey}) as Day Off from template`);
+        if (fromLocalStorage) {
+          try {
+            const parsed = JSON.parse(fromLocalStorage);
+            this.providerId = parsed.pid || parsed.providerId || parsed._id || parsed.id || fromLocalStorage;
+          } catch {
+            this.providerId = fromLocalStorage;
           }
-        } else {
-          // No template exists yet - leave empty for now
-          this.dailySchedules[dateKey] = [];
-          console.log(`No template for ${dayKey}, leaving empty`);
         }
-      });
+        
+        if (!this.providerId) {
+          const response = await http.get('/users/profile');
+          const userData = response.data;
+          this.providerId = userData.providerId || userData.pid || userData._id || userData.id;
+          
+          if (this.providerId) {
+            localStorage.setItem('providerId', this.providerId);
+          }
+        }
+      } catch (error) {
+        console.warn('Could not get provider ID:', error);
+        this.providerId = null;
+      }
     },
     
-    // ⭐ UPDATED: Apply defaults ONLY to days with no template AND no existing slots
-    applyDefaultsToEmptyDays() {
-      console.log('Applying defaults to empty days...');
-      
-      this.generatedDays.forEach(day => {
-        const dateKey = day.date;
-        const dayKey = day.dayKey;
-        
-        // Skip if we already have slots for this date
-        if (this.dailySchedules[dateKey] && this.dailySchedules[dateKey].length > 0) {
-          console.log(`Skipping ${dateKey} - already has slots`);
+    loadDayTemplates() {
+      try {
+        const storageKey = this.templateStorageKey;
+        if (!storageKey) {
+          this.dayTemplates = {};
           return;
         }
         
-        // Only apply defaults if:
-        // 1. No template exists for this day of week AND
-        // 2. No slots exist for this date
-        if (this.dayTemplates[dayKey] === undefined) {
-          console.log(`Applying defaults to ${dateKey} - no template exists`);
-          this.dailySchedules[dateKey] = JSON.parse(JSON.stringify(this.defaultTimeSlots));
-        } else if (this.dayTemplates[dayKey].length === 0) {
-          // Template exists but is empty (day off) - keep it empty
-          console.log(`Keeping ${dateKey} as day off - empty template`);
-          this.dailySchedules[dateKey] = [];
-        }
-        // If template exists and has slots, it was already applied in initializeDaysWithTemplates()
-      });
-    },
-    
-    // ⭐ MODIFIED: Load saved day templates from localStorage
-    loadDayTemplates() {
-      const savedTemplates = localStorage.getItem(`dayTemplates_${this.serviceId}`);
-      if (savedTemplates) {
-        try {
+        const savedTemplates = localStorage.getItem(storageKey);
+        
+        if (savedTemplates) {
           this.dayTemplates = JSON.parse(savedTemplates);
-          console.log('Loaded templates from localStorage:', this.dayTemplates);
-        } catch (error) {
-          console.warn('Could not load day templates:', error);
+        } else {
           this.dayTemplates = {};
         }
-      } else {
-        console.log('No saved templates found in localStorage');
+      } catch (error) {
+        console.warn('Could not load templates:', error);
         this.dayTemplates = {};
       }
     },
-
-    // ⭐ MODIFIED: Save day templates to localStorage
+    
     saveDayTemplates() {
       try {
-        localStorage.setItem(`dayTemplates_${this.serviceId}`, JSON.stringify(this.dayTemplates));
-        console.log('Saved templates to localStorage:', this.dayTemplates);
+        const storageKey = this.templateStorageKey;
+        if (!storageKey) return;
+        
+        localStorage.setItem(storageKey, JSON.stringify(this.dayTemplates));
       } catch (error) {
-        console.warn('Could not save day templates:', error);
+        console.warn('Could not save templates:', error);
       }
     },
-
-    // ⭐ CRITICAL FIX: NEW METHOD - Auto-save ALL days as templates
-    autoSaveTemplates() {
-      console.log('Auto-saving templates from current schedule...');
+    
+    // FIXED: Templates have highest priority - always applied first
+    applyTemplateToDay(day) {
+      const dateKey = day.date;
+      const dayKey = day.dayKey;
       
-      // Save templates for ALL 7 days
+      // PRIORITY 1: Check for saved template for this day of week
+      if (this.dayTemplates[dayKey] !== undefined) {
+        // Apply whatever is saved - could be custom slots OR empty array (Day Off)
+        this.dailySchedules[dateKey] = JSON.parse(JSON.stringify(this.dayTemplates[dayKey]));
+        return;
+      }
+      
+      // PRIORITY 2: Check if we already have slots from existing schedule
+      if (this.dailySchedules[dateKey] && this.dailySchedules[dateKey].length > 0) {
+        return;
+      }
+      
+      // PRIORITY 3: Final fallback - use defaults
+      this.dailySchedules[dateKey] = JSON.parse(JSON.stringify(this.defaultTimeSlots));
+    },
+    
+    initializeDaysWithTemplates() {
+      this.generatedDays.forEach(day => {
+        this.applyTemplateToDay(day);
+      });
+    },
+    
+    // ⭐ SIMPLIFIED: Automatically save templates without confirmation
+    autoSaveTemplates() {
+      // Save templates for ALL 7 days automatically
       this.generatedDays.forEach(day => {
         const slots = this.dailySchedules[day.date];
         
         if (slots && slots.length > 0) {
           // Working day with slots
           this.dayTemplates[day.dayKey] = slots.map(slot => ({
-            startTime: slot.startTime,
-            endTime: slot.endTime,
+            startTime: this.formatTime(slot.startTime),
+            endTime: this.formatTime(slot.endTime),
             isAvailable: slot.isAvailable
           }));
-          console.log(`Saved template for ${day.dayKey}:`, this.dayTemplates[day.dayKey]);
         } else {
           // Day off (empty array)
           this.dayTemplates[day.dayKey] = [];
-          console.log(`Saved ${day.dayKey} as Day Off (empty array)`);
         }
       });
       
+      // Save to localStorage automatically
       this.saveDayTemplates();
     },
     
-    // ⭐ MODIFIED: Update template for a specific day of week
-    updateDayTemplate(dayKey, date = null) {
-      // Update template if a specific date is provided
+    // ⭐ SIMPLIFIED: Save single day template automatically
+    saveSingleDayTemplate(dayKey, date = null) {
       if (date && this.dailySchedules[date]) {
         const slots = this.dailySchedules[date];
         
         if (slots.length > 0) {
           // Working day with slots
           this.dayTemplates[dayKey] = slots.map(slot => ({
-            startTime: slot.startTime,
-            endTime: slot.endTime,
+            startTime: this.formatTime(slot.startTime),
+            endTime: this.formatTime(slot.endTime),
             isAvailable: slot.isAvailable
           }));
         } else {
@@ -445,11 +437,11 @@ export default {
           this.dayTemplates[dayKey] = [];
         }
         
+        // Auto-save to localStorage
         this.saveDayTemplates();
       }
     },
     
-    // ✅ Initialize time slots
     async initializeTimeSlots() {
       this.loading = true;
       try {
@@ -465,7 +457,6 @@ export default {
       }
     },
     
-    // ✅ Load existing slots
     loadExistingSlotsIntoDays(slots) {
       slots.forEach(slot => {
         this.existingSlotId = slot.slotId;
@@ -473,9 +464,17 @@ export default {
           slot.weeklySchedule.forEach(daySchedule => {
             if (daySchedule && daySchedule.date && Array.isArray(daySchedule.timeSlots)) {
               const dateString = this.parseBackendDate(daySchedule.date);
-              if (this.isDateInNext7Days(dateString)) {
-                // Only override if this date exists in our generated days
-                if (this.generatedDays.some(day => day.date === dateString)) {
+              
+              if (this.generatedDays.some(day => day.date === dateString)) {
+                const day = this.generatedDays.find(d => d.date === dateString);
+                const dayKey = day.dayKey;
+                
+                // Check if we have a template for this day of week
+                // IMPORTANT: If template exists (even empty array), respect it!
+                const hasTemplate = this.dayTemplates[dayKey] !== undefined;
+                
+                if (!hasTemplate) {
+                  // No template exists, use existing slots from backend
                   this.dailySchedules[dateString] = daySchedule.timeSlots.map(timeSlot => ({
                     startTime: this.formatTime(timeSlot.startTime),
                     endTime: this.formatTime(timeSlot.endTime),
@@ -483,6 +482,8 @@ export default {
                     isBooked: false
                   }));
                 }
+                // If template exists, DO NOT overwrite with backend data
+                // Templates should always win (except for booked slots which we handle separately)
               }
             }
           });
@@ -490,7 +491,6 @@ export default {
       });
     },
     
-    // ✅ Generate 7-day schedule
     generate7DaySchedule() {
       this.generatedDays = [];
       const today = new Date();
@@ -510,69 +510,90 @@ export default {
       }
     },
     
-    // ⭐ UPDATED: Properly handle template when toggling day on/off
     toggleWorkingDay(date, isWorking) {
       const day = this.generatedDays.find(d => d.date === date);
       const dayKey = day ? day.dayKey : null;
       
       if (isWorking) {
         // Check if we have a template for this day
-        if (dayKey && this.dayTemplates[dayKey] && this.dayTemplates[dayKey].length > 0) {
-          // Use template if it exists
+        if (dayKey && this.dayTemplates[dayKey] !== undefined) {
+          // Use template if it exists (could be custom slots or empty array)
           this.dailySchedules[date] = JSON.parse(JSON.stringify(this.dayTemplates[dayKey]));
-          console.log(`Turned ON ${date} using template for ${dayKey}`);
         } else {
           // Use defaults if no template exists
           this.dailySchedules[date] = JSON.parse(JSON.stringify(this.defaultTimeSlots));
-          console.log(`Turned ON ${date} using defaults`);
         }
       } else {
         // When turning day OFF, save empty array as template
         this.dailySchedules[date] = [];
         if (dayKey) {
-          this.dayTemplates[dayKey] = []; // Empty array = day off
+          this.dayTemplates[dayKey] = [];
           this.saveDayTemplates();
-          console.log(`Turned OFF ${date} and saved ${dayKey} as Day Off template`);
         }
       }
       
-      // Update the template for this day (only if it's a working day)
-      if (dayKey && isWorking) {
-        this.updateDayTemplate(dayKey, date);
+      // Update the template for this day
+      if (dayKey) {
+        this.saveSingleDayTemplate(dayKey, date);
       }
     },
     
-    // ✅ FORMAT TIME TO HH:mm
     formatTime(timeStr) {
       if (!timeStr) return '09:00';
+      
+      // Handle "24:00" case by converting to "00:00"
+      if (timeStr === '24:00' || timeStr.startsWith('24:')) {
+        return `00:${timeStr.split(':')[1] || '00'}`;
+      }
+      
       const [h, m] = timeStr.split(':').map(Number);
-      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+      
+      // Ensure hour is within 0-23 range
+      let hour = h;
+      if (hour >= 24) {
+        hour = hour % 24;
+      } else if (hour < 0) {
+        hour = 0;
+      }
+      
+      // Ensure minute is within 0-59 range
+      let minute = m;
+      if (minute >= 60) {
+        minute = 59;
+      } else if (minute < 0) {
+        minute = 0;
+      } else if (isNaN(minute)) {
+        minute = 0;
+      }
+      
+      return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
     },
     
-    // ✅ FORMAT FOR DISPLAY IN BOOKED SLOTS (12-HOUR)
     formatTime12(time24) {
       if (!time24) return '';
-      const [h, m] = time24.split(':').map(Number);
+      
+      // Normalize time first
+      const normalizedTime = this.formatTime(time24);
+      const [h, m] = normalizedTime.split(':').map(Number);
       const period = h >= 12 ? 'PM' : 'AM';
       const displayH = h % 12 || 12;
       return `${displayH}:${m.toString().padStart(2, '0')} ${period}`;
     },
     
-    // ✅ MODIFIED: Update time slot with template update
     updateTimeSlot(slot, field, newValue) {
-      if (newValue && newValue.length === 5) { // HH:mm
-        slot[field] = newValue;
+      if (newValue && newValue.length === 5) {
+        // Normalize the time before saving
+        slot[field] = this.formatTime(newValue);
         // Find the day for this slot to update template
         for (const day of this.generatedDays) {
           if (this.dailySchedules[day.date] && this.dailySchedules[day.date].includes(slot)) {
-            this.updateDayTemplate(day.dayKey, day.date);
+            this.saveSingleDayTemplate(day.dayKey, day.date);
             break;
           }
         }
       }
     },
     
-    // ✅ FORMAT DATE FOR DISPLAY WITH YEAR (e.g., "Dec 4, 2025")
     formatDateForDisplay(date) {
       if (typeof date === 'string') date = new Date(date);
       const month = date.toLocaleDateString('en-US', { month: 'short' });
@@ -610,7 +631,7 @@ export default {
           });
         this.markBookedSlotsInDailySchedules();
       } catch (error) {
-        console.error('❌ Failed to fetch booked slots:', error);
+        console.error('Failed to fetch booked slots:', error);
         this.setError('Failed to load booked appointments');
       } finally {
         this.loadingBookings = false;
@@ -622,14 +643,19 @@ export default {
         const dateKey = day.date;
         const backendDate = this.formatDateForBackend(dateKey);
         const bookingsForDay = this.bookedSlots.filter(b => b.date === backendDate);
+        
         if (!this.dailySchedules[dateKey]) {
           this.dailySchedules[dateKey] = [];
         }
+        
         bookingsForDay.forEach(booking => {
+          // Check if this exact slot already exists
           const existingSlot = this.dailySchedules[dateKey].find(slot => 
             slot.startTime === booking.startTime && slot.endTime === booking.endTime
           );
+          
           if (!existingSlot) {
+            // Add booked slot if it doesn't exist
             const newSlot = {
               startTime: booking.startTime,
               endTime: booking.endTime,
@@ -640,6 +666,7 @@ export default {
             };
             this.dailySchedules[dateKey].push(newSlot);
           } else {
+            // Mark existing slot as booked
             existingSlot.isBooked = true;
             existingSlot.isAvailable = false;
           }
@@ -681,10 +708,33 @@ export default {
       
       if (lastSlot) {
         const [h, m] = lastSlot.endTime.split(':').map(Number);
-        const newH = h + 1;
-        newStartTime = `${newH.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-        newEndTime = `${(newH + 2).toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        
+        // Calculate new start time (1 hour after last end time)
+        let newStartH = h + 1;
+        let newStartM = m;
+        
+        // Handle hour overflow
+        if (newStartH >= 24) {
+          newStartH = newStartH % 24; // Wrap around to 0-23
+        }
+        
+        newStartTime = `${newStartH.toString().padStart(2, '0')}:${newStartM.toString().padStart(2, '0')}`;
+        
+        // Calculate new end time (2 hours after start time)
+        let newEndH = newStartH + 2;
+        let newEndM = newStartM;
+        
+        // Handle hour overflow for end time
+        if (newEndH >= 24) {
+          newEndH = newEndH % 24; // Wrap around to 0-23
+        }
+        
+        newEndTime = `${newEndH.toString().padStart(2, '0')}:${newEndM.toString().padStart(2, '0')}`;
       }
+      
+      // Ensure times are valid
+      newStartTime = this.formatTime(newStartTime);
+      newEndTime = this.formatTime(newEndTime);
       
       const newSlot = { 
         startTime: newStartTime, 
@@ -695,13 +745,11 @@ export default {
       
       this.dailySchedules[date] = [...slots, newSlot];
       
-      // Update template
+      // Update template automatically
       const day = this.generatedDays.find(d => d.date === date);
       if (day) {
-        this.updateDayTemplate(day.dayKey, date);
+        this.saveSingleDayTemplate(day.dayKey, date);
       }
-      
-      console.log(`Added slot to ${date}, updated template for ${day?.dayKey}`);
     },
     
     removeTimeSlot(date, slotIndex) {
@@ -709,17 +757,11 @@ export default {
       
       this.dailySchedules[date].splice(slotIndex, 1);
       
-      // Update template
+      // Update template automatically
       const day = this.generatedDays.find(d => d.date === date);
       if (day) {
-        this.updateDayTemplate(day.dayKey, date);
+        this.saveSingleDayTemplate(day.dayKey, date);
       }
-      
-      console.log(`Removed slot from ${date}, updated template for ${day?.dayKey}`);
-    },
-    
-    initializeEmptyDays() {
-      this.dailySchedules = {};
     },
     
     isDateInNext7Days(dateString) {
@@ -730,7 +772,7 @@ export default {
       return diffDays >= 0 && diffDays < 7;
     },
     
-    // ⭐ UPDATED: Save time slots with template auto-save
+    // ⭐ SIMPLIFIED: Save time slots (automatically saves templates too)
     async saveTimeSlots() {
       if (!this.validateAllTimeSlots()) {
         this.setError('Please fix time slot errors before saving');
@@ -741,10 +783,10 @@ export default {
       this.errorMessage = '';
       
       try {
-        // ⭐ FIRST: Save ALL current settings as templates
+        // ⭐ AUTOMATICALLY save all current settings as templates
         this.autoSaveTemplates();
         
-        // Then prepare data for backend
+        // Prepare data for backend
         const weeklySchedule = [];
         this.generatedDays.forEach(day => {
           const timeSlots = this.dailySchedules[day.date] || [];
@@ -755,8 +797,8 @@ export default {
             day: day.dayKey,
             isWorkingDay: isWorkingDay,
             timeSlots: isWorkingDay ? timeSlots.map(slot => ({
-              startTime: slot.startTime,
-              endTime: slot.endTime,
+              startTime: this.formatTime(slot.startTime),
+              endTime: this.formatTime(slot.endTime),
               isAvailable: slot.isAvailable
             })) : []
           });
@@ -778,11 +820,11 @@ export default {
           }
         }
         
-        this.setSuccess('Time slots updated successfully! Your schedule will repeat weekly.');
+        this.setSuccess('Time slots updated successfully');
         this.$emit('saved');
         
       } catch (error) {
-        console.error('❌ Error saving schedule:', error);
+        console.error('Error saving schedule:', error);
         this.handleApiError(error, 'save time slots');
       } finally {
         this.saving = false;
@@ -814,8 +856,30 @@ export default {
     validateTimeSlot(timeSlot) {
       timeSlot.hasError = false;
       timeSlot.errorMessage = '';
+      
       if (timeSlot.startTime && timeSlot.endTime) {
-        if (timeSlot.startTime >= timeSlot.endTime) {
+        // Normalize times first
+        const normalizedStartTime = this.formatTime(timeSlot.startTime);
+        const normalizedEndTime = this.formatTime(timeSlot.endTime);
+        
+        // Check for invalid hours (should be 0-23)
+        const startHour = parseInt(normalizedStartTime.split(':')[0]);
+        const endHour = parseInt(normalizedEndTime.split(':')[0]);
+        
+        if (startHour < 0 || startHour > 23) {
+          timeSlot.hasError = true;
+          timeSlot.errorMessage = 'Start time must be between 00:00 and 23:59';
+          return false;
+        }
+        
+        if (endHour < 0 || endHour > 23) {
+          timeSlot.hasError = true;
+          timeSlot.errorMessage = 'End time must be between 00:00 and 23:59';
+          return false;
+        }
+        
+        // Check if end time is after start time
+        if (normalizedStartTime >= normalizedEndTime) {
           timeSlot.hasError = true;
           timeSlot.errorMessage = 'End time must be after start time';
           return false;
@@ -838,7 +902,7 @@ export default {
     },
     
     handleApiError(error, operation) {
-      console.error(`❌ Error during ${operation}:`, error);
+      console.error(`Error during ${operation}:`, error);
       let errorMsg = `Failed to ${operation}`;
       if (error.response?.status === 400) {
         errorMsg = 'Invalid data format. Please check your time slots.';
@@ -1290,6 +1354,31 @@ export default {
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* ===== DEBUG INFO SECTION ===== */
+.debug-info {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #475569;
+}
+.debug-info h5 {
+  margin: 0 0 10px 0;
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+.debug-info p {
+  margin: 5px 0;
+}
+.debug-info div {
+  margin: 3px 0;
+  padding-left: 10px;
+  border-left: 2px solid #e2e8f0;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
