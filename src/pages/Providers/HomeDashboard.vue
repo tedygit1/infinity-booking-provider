@@ -26,7 +26,7 @@
               <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
             </button>
             
-            <!-- Notifications Dropdown - Fixed positioning for mobile -->
+            <!-- Notifications Dropdown -->
             <transition name="fade-slide">
               <div v-if="showNotifications" class="notifications-dropdown" 
                    :class="{ 'mobile-dropdown': isMobile }"
@@ -46,9 +46,9 @@
                 <!-- Notifications List -->
                 <div class="notifications-list" ref="notificationsList" v-if="notifications.length > 0">
                   <div v-for="notification in notifications" 
-                       :key="notification._id" 
+                       :key="notification._id || notification.id" 
                        class="notification-item"
-                       :class="{ 'unread': !notification.read, 'clickable': notification.action }"
+                       :class="{ 'unread': !notification.read, 'clickable': notification.action || getActionFromType(notification.type) }"
                        @click="handleNotificationClick(notification)">
                     <div class="notification-icon" :class="getNotificationIcon(notification.type)">
                       <i :class="getNotificationIconClass(notification.type)"></i>
@@ -58,7 +58,7 @@
                         {{ notification.title || getDefaultTitle(notification.type) }}
                       </div>
                       <div class="notification-message">
-                        {{ notification.message }}
+                        {{ notification.message || notification.content }}
                       </div>
                       <div class="notification-meta">
                         <span class="notification-time">{{ formatNotificationTime(notification.createdAt) }}</span>
@@ -67,12 +67,12 @@
                     </div>
                     <div class="notification-actions">
                       <button v-if="!notification.read" 
-                              @click.stop="markAsRead(notification._id)"
+                              @click.stop="markAsRead(notification._id || notification.id)"
                               class="btn-action mark-read"
                               aria-label="Mark as read">
                         <i class="fa-solid fa-circle"></i>
                       </button>
-                      <button @click.stop="deleteNotification(notification._id)"
+                      <button @click.stop="deleteNotification(notification._id || notification.id)"
                               class="btn-action delete"
                               aria-label="Delete notification">
                         <i class="fa-solid fa-times"></i>
@@ -340,7 +340,7 @@
             <div class="feature-icon">
               <i class="fa-solid fa-message"></i>
             </div>
-            <div class="feature-content">
+<div class="feature-content">
               <h4>Review System</h4>
               <p>Collect customer feedback</p>
               <span class="feature-status">Planned</span>
@@ -385,6 +385,10 @@ export default {
     const isMobile = ref(window.innerWidth <= 768);
     const notificationsList = ref(null);
     
+    // Real-time polling
+    let notificationPollingInterval = null;
+    let unreadCountPollingInterval = null;
+    
     // Data storage
     const bookings = ref([]);
     const services = ref([]);
@@ -406,213 +410,36 @@ export default {
     const lastServicesEndpoint = ref("");
     const lastBookingsEndpoint = ref("");
 
-    // ========== NOTIFICATION FUNCTIONS ==========
-
-    // Fetch notifications from API
-    const fetchNotifications = async () => {
-      if (!props.provider) return;
-      
-      loadingNotifications.value = true;
-      notificationError.value = "";
-      
-      try {
-        console.log("🔔 Fetching notifications...");
-        
-        // Get user ID from localStorage
-        const loggedProvider = localStorage.getItem("loggedProvider");
-        let userId = null;
-        
-        if (loggedProvider) {
-          try {
-            const providerData = JSON.parse(loggedProvider);
-            userId = providerData._id; // MongoDB ObjectId
-            console.log("📋 Found user ID:", userId);
-          } catch (e) {
-            console.warn("⚠️ Could not parse loggedProvider");
-          }
-        }
-        
-        // Use CORRECT endpoint only: /notifications with userId parameter
-        if (userId) {
-          try {
-            const response = await http.get(`/notifications?userId=${userId}`, { timeout: 5000 });
-            console.log("✅ Notifications response:", response.data);
-            
-            if (response.data && Array.isArray(response.data)) {
-              notifications.value = response.data.map(notification => ({
-                _id: notification._id,
-                title: notification.title,
-                message: notification.message,
-                type: notification.type || 'info',
-                read: notification.read || false,
-                createdAt: notification.createdAt,
-                action: notification.action,
-                data: notification.data
-              }));
-              console.log(`✅ Loaded ${notifications.value.length} real notifications`);
-            } else {
-              notifications.value = generateDemoNotifications();
-              console.log("📋 Using demo notifications (no data in response)");
-            }
-          } catch (error) {
-            console.log("⚠️ Notifications endpoint failed:", error.message);
-            notifications.value = generateDemoNotifications();
-            notificationError.value = "Using demo notifications";
-          }
-        } else {
-          console.warn("⚠️ No user ID found");
-          notifications.value = generateDemoNotifications();
-        }
-        
-      } catch (error) {
-        console.error("❌ Failed to fetch notifications:", error);
-        notificationError.value = "Using demo data";
-        notifications.value = generateDemoNotifications();
-      } finally {
-        loadingNotifications.value = false;
-      }
+    // ========== REAL NOTIFICATION FUNCTIONS ==========
+    
+    // Helper: Get action from notification type
+    const getActionFromType = (type) => {
+      const actionMap = {
+        booking: '/bookings',
+        review: '/reviews',
+        payment: '/revenue',
+        message: '/messages',
+        system: '/settings',
+        info: '/dashboard',
+        reminder: '/bookings',
+        cancellation: '/bookings'
+      };
+      return actionMap[type] || '/dashboard';
     };
 
-    // Generate demo notifications for testing
-    const generateDemoNotifications = () => {
-      return [
-        {
-          _id: 'demo-1',
-          title: 'New Booking Received',
-          message: 'John Doe booked your "Professional Cleaning" service for tomorrow.',
-          type: 'booking',
-          read: false,
-          createdAt: new Date(Date.now() - 30 * 60000).toISOString(),
-          action: '/bookings'
-        },
-        {
-          _id: 'demo-2',
-          title: 'Service Review',
-          message: 'Jane Smith left a 5-star review for your "Car Wash" service.',
-          type: 'review',
-          read: false,
-          createdAt: new Date(Date.now() - 2 * 3600000).toISOString(),
-          action: '/reviews'
-        },
-        {
-          _id: 'demo-3',
-          title: 'Booking Reminder',
-          message: 'You have a booking with Sarah Johnson in 1 hour.',
-          type: 'reminder',
-          read: true,
-          createdAt: new Date(Date.now() - 5 * 3600000).toISOString(),
-          action: '/bookings'
-        },
-        {
-          _id: 'demo-4',
-          title: 'System Update',
-          message: 'New features have been added to your dashboard.',
-          type: 'system',
-          read: true,
-          createdAt: new Date(Date.now() - 24 * 3600000).toISOString(),
-          action: null
-        }
-      ];
-    };
-
-    // Mark notification as read
-    const markAsRead = async (notificationId) => {
-      try {
-        const notification = notifications.value.find(n => n._id === notificationId);
-        if (!notification || notification.read) return;
-        
-        // Update locally first
-        notification.read = true;
-        
-        // Only send to server if it's NOT a demo notification
-        if (!notificationId.startsWith('demo-')) {
-          try {
-            await http.put(`/notifications/${notificationId}/read`, {}, { timeout: 3000 });
-            console.log(`✅ Marked real notification as read: ${notificationId}`);
-          } catch (error) {
-            console.log(`⚠️ Failed to mark as read on server:`, error.message);
-          }
-        } else {
-          console.log(`✅ Marked demo notification as read: ${notificationId}`);
-        }
-        
-      } catch (error) {
-        console.error("❌ Failed to mark notification as read:", error);
-      }
-    };
-
-    // Mark all notifications as read
-    const markAllAsRead = async () => {
-      try {
-        const unreadNotifications = notifications.value.filter(n => !n.read);
-        if (unreadNotifications.length === 0) return;
-        
-        // Update locally first
-        notifications.value.forEach(n => n.read = true);
-        
-        // Get real notification IDs (non-demo)
-        const realNotificationIds = unreadNotifications
-          .filter(n => !n._id.startsWith('demo-'))
-          .map(n => n._id);
-        
-        // Only send to server if we have real notifications
-        if (realNotificationIds.length > 0) {
-          try {
-            await http.put(`/notifications/all/read`, {}, { timeout: 3000 });
-            console.log(`✅ Marked ${realNotificationIds.length} real notifications as read`);
-          } catch (error) {
-            console.log(`⚠️ Failed to mark all read on server:`, error.message);
-          }
-        }
-        
-        console.log(`✅ Marked ${unreadNotifications.length} notifications as read`);
-        
-      } catch (error) {
-        console.error("❌ Failed to mark all notifications as read:", error);
-      }
-    };
-
-    // Delete notification
-    const deleteNotification = async (notificationId) => {
-      try {
-        // Check if it's a demo notification
-        const isDemoNotification = notificationId.startsWith('demo-');
-        
-        // Remove locally first
-        notifications.value = notifications.value.filter(n => n._id !== notificationId);
-        
-        // Only try to delete from server if it's NOT a demo notification
-        if (!isDemoNotification) {
-          try {
-            await http.delete(`/notifications/${notificationId}`, { timeout: 3000 });
-            console.log(`✅ Deleted real notification: ${notificationId}`);
-          } catch (error) {
-            console.log(`⚠️ Failed to delete from server:`, error.message);
-          }
-        } else {
-          console.log(`✅ Deleted demo notification: ${notificationId}`);
-        }
-        
-      } catch (error) {
-        console.error("❌ Failed to delete notification:", error);
-        // Don't re-fetch for demo notifications
-        if (!notificationId.startsWith('demo-')) {
-          fetchNotifications();
-        }
-      }
-    };
-
-    // Handle notification click
-    const handleNotificationClick = (notification) => {
-      if (notification.action) {
-        navigateTo(notification.action);
-        closeNotifications();
-        
-        // Mark as read if unread
-        if (!notification.read) {
-          markAsRead(notification._id);
-        }
-      }
+    // Helper: Get notification icon class
+    const getNotificationIconClass = (type) => {
+      const iconClassMap = {
+        booking: 'fa-solid fa-calendar-check',
+        review: 'fa-solid fa-star',
+        reminder: 'fa-solid fa-clock',
+        system: 'fa-solid fa-info-circle',
+        payment: 'fa-solid fa-credit-card',
+        cancellation: 'fa-solid fa-times-circle',
+        message: 'fa-solid fa-message',
+        info: 'fa-solid fa-bell'
+      };
+      return iconClassMap[type] || 'fa-solid fa-bell';
     };
 
     // Get notification icon
@@ -627,20 +454,6 @@ export default {
         message: 'icon-message'
       };
       return iconMap[type] || 'icon-info';
-    };
-
-    // Get notification icon class
-    const getNotificationIconClass = (type) => {
-      const iconClassMap = {
-        booking: 'fa-solid fa-calendar-check',
-        review: 'fa-solid fa-star',
-        reminder: 'fa-solid fa-clock',
-        system: 'fa-solid fa-info-circle',
-        payment: 'fa-solid fa-credit-card',
-        cancellation: 'fa-solid fa-times-circle',
-        message: 'fa-solid fa-message'
-      };
-      return iconClassMap[type] || 'fa-solid fa-bell';
     };
 
     // Get default title based on type
@@ -674,6 +487,246 @@ export default {
       if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
       
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    };
+
+    // Fetch REAL notifications from API
+    const fetchNotifications = async () => {
+      if (!props.provider) return;
+      
+      loadingNotifications.value = true;
+      notificationError.value = "";
+      
+      try {
+        console.log("🔔 Fetching REAL notifications from API...");
+        
+        // Try to get real notifications from your backend
+        try {
+          // CORRECT ENDPOINT from your screenshot: /infinity-booking/notifications/my-notifications
+          const response = await http.get('/notifications/my-notifications');
+          console.log("✅ REAL Notifications API Response:", response.data);
+          
+          if (response.data && Array.isArray(response.data)) {
+            notifications.value = response.data.map(notification => ({
+              id: notification.id || notification._id,
+              _id: notification._id || notification.id,
+              title: notification.title,
+              message: notification.message || notification.content,
+              type: notification.type || notification.category || 'info',
+              read: notification.read || notification.isRead || false,
+              createdAt: notification.createdAt || notification.timestamp,
+              action: notification.action || getActionFromType(notification.type),
+              data: notification.data || notification.metadata
+            }));
+            
+            console.log(`✅ Loaded ${notifications.value.length} REAL notifications`);
+            return; // Success - exit early
+          }
+        } catch (apiError) {
+          console.log("⚠️ REAL notifications API failed:", apiError.message);
+          
+          // Check if it's a 404 (endpoint not found) or other error
+          if (apiError.response?.status === 404) {
+            console.log("📋 Endpoint not found, using demo data temporarily");
+            notificationError.value = "Notification service coming soon";
+          }
+        }
+        
+        // Fallback to demo if real API fails
+        console.log("📋 Falling back to demo notifications");
+        notifications.value = generateDemoNotifications();
+        
+      } catch (error) {
+        console.error("❌ Failed to fetch notifications:", error);
+        notificationError.value = "Failed to load notifications";
+        notifications.value = [];
+      } finally {
+        loadingNotifications.value = false;
+      }
+    };
+
+    // Generate demo notifications for testing (only if real API fails)
+    const generateDemoNotifications = () => {
+      const now = new Date();
+      const oneHourAgo = new Date(now.getTime() - 60 * 60000);
+      const twoHoursAgo = new Date(now.getTime() - 120 * 60000);
+      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60000);
+      
+      return [
+        {
+          _id: 'demo-1',
+          id: 'demo-1',
+          title: 'New Booking Request',
+          message: 'John Doe booked your "Professional Cleaning" service for tomorrow.',
+          type: 'booking',
+          read: false,
+          createdAt: oneHourAgo.toISOString(),
+          action: '/bookings'
+        },
+        {
+          _id: 'demo-2',
+          id: 'demo-2',
+          title: 'Service Review',
+          message: 'Jane Smith left a 5-star review for your "Car Wash" service.',
+          type: 'review',
+          read: false,
+          createdAt: twoHoursAgo.toISOString(),
+          action: '/reviews'
+        },
+        {
+          _id: 'demo-3',
+          id: 'demo-3',
+          title: 'Booking Reminder',
+          message: 'You have a booking with Sarah Johnson in 1 hour.',
+          type: 'reminder',
+          read: true,
+          createdAt: oneHourAgo.toISOString(),
+          action: '/bookings'
+        },
+        {
+          _id: 'demo-4',
+          id: 'demo-4',
+          title: 'System Update',
+          message: 'New features have been added to your dashboard.',
+          type: 'system',
+          read: true,
+          createdAt: oneDayAgo.toISOString(),
+          action: null
+        }
+      ];
+    };
+
+    // Fetch unread count from API
+    const fetchUnreadCountFromAPI = async () => {
+      try {
+        // CORRECT ENDPOINT from your screenshot: /infinity-booking/notifications/unread-count
+        const response = await http.get('/notifications/unread-count');
+        
+        if (response.data && (response.data.count !== undefined || response.data.unreadCount !== undefined)) {
+          const count = response.data.count || response.data.unreadCount;
+          console.log(`✅ REAL unread count: ${count}`);
+          return count;
+        }
+      } catch (error) {
+        console.log("⚠️ Could not fetch unread count from API:", error.message);
+      }
+      
+      // Fallback to local count
+      return notifications.value.filter(n => !n.read).length;
+    };
+
+    // Mark notification as read
+    const markAsRead = async (notificationId) => {
+      try {
+        const notification = notifications.value.find(n => (n._id === notificationId || n.id === notificationId));
+        if (!notification || notification.read) return;
+        
+        // Update locally first
+        notification.read = true;
+        
+        // Only send to server if it's NOT a demo notification
+        if (!notificationId.startsWith('demo-')) {
+          try {
+            // CORRECT ENDPOINT from your screenshot: /infinity-booking/notifications/{id}/read
+            await http.put(`/notifications/${notificationId}/read`, {}, { timeout: 3000 });
+            console.log(`✅ Marked REAL notification as read: ${notificationId}`);
+          } catch (error) {
+            console.log(`⚠️ Failed to mark as read on server:`, error.message);
+            // Revert local change if server fails
+            notification.read = false;
+          }
+        } else {
+          console.log(`✅ Marked demo notification as read: ${notificationId}`);
+        }
+        
+      } catch (error) {
+        console.error("❌ Failed to mark notification as read:", error);
+      }
+    };
+
+    // Mark all notifications as read
+    const markAllAsRead = async () => {
+      try {
+        const unreadNotifications = notifications.value.filter(n => !n.read);
+        if (unreadNotifications.length === 0) return;
+        
+        // Update locally first
+        notifications.value.forEach(n => n.read = true);
+        
+        // Get real notification IDs (non-demo)
+        const realNotificationIds = unreadNotifications
+          .filter(n => !n._id.startsWith('demo-'))
+          .map(n => n._id);
+        
+        // Only send to server if we have real notifications
+        if (realNotificationIds.length > 0) {
+          try {
+            // CORRECT ENDPOINT from your screenshot: /infinity-booking/notifications/all/read
+            await http.put('/notifications/all/read', {}, { timeout: 3000 });
+            console.log(`✅ Marked ${realNotificationIds.length} REAL notifications as read on server`);
+          } catch (error) {
+            console.log(`⚠️ Failed to mark all read on server:`, error.message);
+            // Revert local changes
+            notifications.value.forEach(n => {
+              if (unreadNotifications.find(un => un._id === n._id)) {
+                n.read = false;
+              }
+            });
+          }
+        }
+        
+        console.log(`✅ Marked ${unreadNotifications.length} notifications as read`);
+        
+      } catch (error) {
+        console.error("❌ Failed to mark all notifications as read:", error);
+      }
+    };
+
+    // Delete notification
+    const deleteNotification = async (notificationId) => {
+      try {
+        // Check if it's a demo notification
+        const isDemoNotification = notificationId.startsWith('demo-');
+        
+        // Remove locally first
+        const index = notifications.value.findIndex(n => (n._id === notificationId || n.id === notificationId));
+        if (index === -1) return;
+        
+        const deletedNotification = notifications.value[index];
+        notifications.value.splice(index, 1);
+        
+        // Only try to delete from server if it's NOT a demo notification
+        if (!isDemoNotification) {
+          try {
+            // CORRECT ENDPOINT from your screenshot: /infinity-booking/notifications/{id}
+            await http.delete(`/notifications/${notificationId}`, { timeout: 3000 });
+            console.log(`✅ Deleted REAL notification: ${notificationId}`);
+          } catch (error) {
+            console.log(`⚠️ Failed to delete from server:`, error.message);
+            // Re-add if server delete fails
+            notifications.value.splice(index, 0, deletedNotification);
+          }
+        } else {
+          console.log(`✅ Deleted demo notification: ${notificationId}`);
+        }
+        
+      } catch (error) {
+        console.error("❌ Failed to delete notification:", error);
+      }
+    };
+
+    // Handle notification click
+    const handleNotificationClick = (notification) => {
+      const action = notification.action || getActionFromType(notification.type);
+      
+      if (action) {
+        navigateTo(action);
+        closeNotifications();
+        
+        // Mark as read if unread
+        if (!notification.read) {
+          markAsRead(notification._id || notification.id);
+        }
+      }
     };
 
     // Toggle notifications dropdown
@@ -713,13 +766,63 @@ export default {
       fetchNotifications();
     };
 
+    // Real-time polling for new notifications
+    const startNotificationPolling = () => {
+      // Poll for unread count every 30 seconds
+      unreadCountPollingInterval = setInterval(async () => {
+        try {
+          const oldCount = unreadCount.value;
+          const newCount = await fetchUnreadCountFromAPI();
+          
+          // If count changed and increased, fetch new notifications
+          if (newCount > oldCount) {
+            console.log(`📬 New notifications detected! Old: ${oldCount}, New: ${newCount}`);
+            
+            // Show a subtle alert
+            showNewNotificationAlert(newCount - oldCount);
+            
+            // Refresh notifications list if dropdown is open
+            if (showNotifications.value) {
+              await fetchNotifications();
+            }
+          }
+        } catch (error) {
+          console.log("Polling error:", error.message);
+        }
+      }, 30000); // Check every 30 seconds
+      
+      // Refresh notifications every 2 minutes
+      notificationPollingInterval = setInterval(() => {
+        if (showNotifications.value) {
+          fetchNotifications();
+        }
+      }, 120000); // Check every 2 minutes
+    };
+
+    // Show new notification alert
+    const showNewNotificationAlert = (count) => {
+      // You can implement a toast notification here
+      console.log(`📬 You have ${count} new notification${count > 1 ? 's' : ''}`);
+      
+      // Example: Show a browser notification
+      if (Notification.permission === 'granted') {
+        new Notification(`Infinity Booking`, {
+          body: `You have ${count} new notification${count > 1 ? 's' : ''}`,
+          icon: '/favicon.ico'
+        });
+      }
+    };
+
+    // Request browser notification permission
+    const requestNotificationPermission = () => {
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    };
+
     // Handle window resize
     const handleResize = () => {
       isMobile.value = window.innerWidth <= 768;
-      // Close notifications on resize to mobile if open
-      if (isMobile.value && showNotifications.value) {
-        // Don't close, just ensure mobile styles are applied
-      }
     };
 
     // Handle click outside notifications
@@ -1182,6 +1285,12 @@ export default {
       document.addEventListener('click', handleClickOutside);
       document.addEventListener('keydown', handleEscapeKey);
       
+      // Request notification permission
+      requestNotificationPermission();
+      
+      // Start real-time polling for notifications
+      startNotificationPolling();
+      
       setTimeout(() => {
         if (shouldLoadData()) {
           loadDashboardData();
@@ -1198,6 +1307,14 @@ export default {
       window.removeEventListener('resize', handleResize);
       document.removeEventListener('click', handleClickOutside);
       document.removeEventListener('keydown', handleEscapeKey);
+      
+      // Clear polling intervals
+      if (notificationPollingInterval) {
+        clearInterval(notificationPollingInterval);
+      }
+      if (unreadCountPollingInterval) {
+        clearInterval(unreadCountPollingInterval);
+      }
     });
 
     // Watch for provider prop changes
@@ -1277,11 +1394,17 @@ export default {
       getNotificationIcon,
       getNotificationIconClass,
       getDefaultTitle,
-      formatNotificationTime
+      formatNotificationTime,
+      getActionFromType
     };
   }
 };
 </script>
+
+<style scoped>
+/* ALL YOUR EXISTING STYLES REMAIN EXACTLY THE SAME */
+/* I'm not modifying any styles to preserve your design */
+</style> 
 
 <style scoped>
 /* ===== MAIN DASHBOARD STYLES ===== */
