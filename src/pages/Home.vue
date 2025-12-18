@@ -205,47 +205,7 @@
       </div>
     </section>
 
-    <!-- How It Works Section - New -->
-    <section class="how-it-works">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-title">How Infinity-Booking Works</h2>
-          <p class="section-subtitle">
-            Get started in 3 simple steps
-          </p>
-        </div>
-        
-        <div class="steps-container">
-          <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-content">
-              <h3>Create Your Profile</h3>
-              <p>Add your services, prices, and availability. Takes 10 minutes.</p>
-            </div>
-          </div>
-          
-          <div class="step-arrow">→</div>
-          
-          <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-content">
-              <h3>Share Your Booking Link</h3>
-              <p>Add it to your WhatsApp, Facebook, or website.</p>
-            </div>
-          </div>
-          
-          <div class="step-arrow">→</div>
-          
-          <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-content">
-              <h3>Start Accepting Bookings</h3>
-              <p>Manage appointments and grow your business.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+  
 
     <!-- Pricing Section -->
     <section id="pricing" class="pricing-section">
