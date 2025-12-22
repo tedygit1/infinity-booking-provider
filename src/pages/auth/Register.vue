@@ -50,8 +50,12 @@
                 class="form-input"
                 :class="{ 'error': fieldErrors.fullname }"
                 @blur="validateField('fullname')"
+                @input="validateField('fullname')"
               />
               <div v-if="fieldErrors.fullname" class="field-error">{{ fieldErrors.fullname }}</div>
+              <div v-if="!fieldErrors.fullname && signup.fullname" class="field-hint">
+                Example: , John Michael,Smith marth holl
+              </div>
             </div>
 
             <div class="form-group">
@@ -322,13 +326,46 @@ const fieldErrors = ref({
   accept: '',
 });
 
+// NEW: Full name validation helper function
+const validateFullName = (name) => {
+  const trimmedName = name.trim();
+  
+  // Check if name is empty
+  if (!trimmedName) {
+    return 'Full name is required';
+  }
+  
+  // Split by spaces and filter out empty strings
+  const nameParts = trimmedName.split(/\s+/).filter(part => part.length > 0);
+  
+  // Check if we have at least two name parts
+  if (nameParts.length < 2) {
+    return 'Please enter your full nmae';
+  }
+  
+  // Check if each name part has at least 2 characters
+  for (let part of nameParts) {
+    if (part.length < 2) {
+      return 'Each name should be at least 2 characters long';
+    }
+  }
+  
+  // Check total length
+  if (trimmedName.length < 4) {
+    return 'Full name must be at least 4 characters';
+  }
+  
+  return ''; // No error
+};
+
 // Validation functions
 const validateField = (field) => {
   const value = signup.value[field];
   
   switch (field) {
     case 'fullname':
-      fieldErrors.value.fullname = value.trim().length < 2 ? 'Full name must be at least 2 characters' : '';
+      // Use the new full name validation
+      fieldErrors.value.fullname = validateFullName(value);
       break;
     case 'email':
       const emailRegex = /^\S+@\S+\.\S+$/;
@@ -503,8 +540,6 @@ const loadCategoriesIfNeeded = () => {
       });
   }
 };
-
-// 🔥🔥🔥 REMOVED the onMounted() category fetch - this was causing the issue!
 </script>
 
 <style scoped>
@@ -884,6 +919,14 @@ const loadCategoriesIfNeeded = () => {
   font-size: 0.8rem;
   color: #ef4444;
   margin-top: 4px;
+}
+
+/* NEW: Field hint style */
+.field-hint {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 2px;
+  font-style: italic;
 }
 
 /* ===== AUTH SWITCH ===== */

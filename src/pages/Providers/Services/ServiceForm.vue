@@ -1,4 +1,3 @@
-<!-- src/pages/Providers/ServiceForm.vue -->
 <template>
   <!-- Scrollable container added here -->
   <div class="service-form-scroll-wrapper">
@@ -16,7 +15,6 @@
             v-model="local.categoryId" 
             @change="onCategoryChange"
             :class="{ 'error': !local.categoryId && showError }"
-            @click="loadCategoriesIfNeeded"
           >
             <option disabled value="">Choose a category</option>
             <option v-for="cat in categories" :key="cat._id" :value="cat._id">
@@ -129,8 +127,12 @@
               <p class="upload-hint">Recommended: 800×400 px</p>
             </div>
           </div>
-          <div v-if="!local.bannerFile && showError" class="error-message">
+          <div v-if="showError && !hasValidBanner" class="error-message">
             Banner image is required
+          </div>
+          <div v-if="isEdit && !local.bannerFile" class="banner-info">
+            <i class="fa-solid fa-info-circle"></i>
+            <span>Current banner will be kept unless you upload a new one</span>
           </div>
         </div>
 
@@ -219,7 +221,7 @@
 
         <!-- ACTIONS -->
         <div class="form-actions">
-          <button class="btn cancel-btn" @click="$emit('close')">
+          <button class="btn cancel-btn" @click="$emit('close')" :disabled="isSaving">
             <i class="fa-solid fa-xmark"></i> Cancel
           </button>
           <button 
@@ -245,8 +247,14 @@ import http from "@/api/index.js";
 
 export default {
   props: { 
-    service: { type: Object, default: null },
-    // Optional: pass categories from parent to avoid API call
+    service: { 
+      type: Object, 
+      default: null 
+    },
+    isEditing: {
+      type: Boolean,
+      default: false
+    },
     initialCategories: { 
       type: Array, 
       default: () => [] 
@@ -270,6 +278,7 @@ export default {
         slots: []
       },
       previewImage: null,
+      originalBanner: null, // Store original banner URL
       categories: [],
       subcategories: [],
       paymentMethods: ["Telebirr", "CBE Birr", "Cash"],
@@ -277,14 +286,14 @@ export default {
       isSaving: false,
       showSubcategoryDropdown: false,
       subcategorySearch: "",
-      categoriesLoaded: false,  // New flag to track if categories are loaded
-      shouldLoadCategories: false  // New flag to control when to load
+      categoriesLoaded: false,
+      selectedCategory: null
     };
   },
 
   computed: {
     isEdit() {
-      return !!(this.service && this.service._id);
+      return this.isEditing || !!(this.service && this.service._id);
     },
     
     selectedSubcategories() {
@@ -305,66 +314,129 @@ export default {
       return this.local.subcategoryIds.every(id =>
         this.subcategories.some(sub => sub._id === id)
       );
+    },
+    
+    hasValidBanner() {
+      // For new service: banner file is required
+      if (!this.isEdit) {
+        return !!this.local.bannerFile;
+      }
+      
+      // For editing: either existing banner OR new file
+      return !!(this.originalBanner || this.local.bannerFile);
     }
   },
 
   watch: {
     service: {
       immediate: true,
-      handler(val) {
+      async handler(val) {
+        console.log('🔍 ServiceForm: service prop changed:', val);
+        
         if (val) {
+          // Store service ID
+          this.local._id = val._id || val.serviceId || val.id;
+          
+          // Extract category ID
+          let categoryId = val.categoryId;
+          if (!categoryId && val.category) {
+            categoryId = typeof val.category === 'object' ? val.category._id : val.category;
+          }
+          
+          // Extract subcategory IDs
+          let subcategoryIds = val.subcategoryIds;
+          if ((!subcategoryIds || subcategoryIds.length === 0) && val.subcategories) {
+            subcategoryIds = val.subcategories.map(s => {
+              return typeof s === 'object' ? (s._id || s.id || s) : s;
+            });
+          }
+          
           this.local = {
-            _id: val._id,
-            categoryId: val.categoryId || "",
-            subcategoryIds: Array.isArray(val.subcategoryIds) ? [...val.subcategoryIds] : [],
+            _id: this.local._id,
+            categoryId: categoryId || "",
+            subcategoryIds: Array.isArray(subcategoryIds) ? [...subcategoryIds] : [],
             title: val.title || "",
             description: val.description || "",
             totalPrice: val.totalPrice || 0,
             bookingPrice: val.bookingPrice || 0,
-            priceUnit: "ETB",
+            priceUnit: val.priceUnit || "ETB",
             status: val.status || "draft",
-            paymentMethod: val.paymentMethod || "",
+            paymentMethod: val.paymentMethod || "Telebirr",
             slots: Array.isArray(val.slots) ? [...val.slots] : [],
             bannerFile: null
           };
+          
+          // Store original banner and set preview
           if (val.banner) {
+            console.log('📸 Original banner found:', val.banner);
+            this.originalBanner = val.banner;
             this.previewImage = val.banner;
           } else {
+            this.originalBanner = null;
             this.previewImage = null;
           }
-          if (val.categoryId) {
-            this.fetchSubcategories(val.categoryId);
+          
+          // Update selected category when categories are loaded
+          this.updateSelectedCategory();
+          
+          // Load subcategories if we have a category
+          if (this.local.categoryId) {
+            await this.fetchSubcategories(this.local.categoryId);
           }
           this.updateBookingPrice();
+          
+          console.log('✅ ServiceForm initialized for editing:', this.local);
+        } else {
+          // Reset for new service
+          this.local = {
+            _id: null,
+            categoryId: "",
+            subcategoryIds: [],
+            title: "",
+            bannerFile: null,
+            description: "",
+            totalPrice: 0,
+            bookingPrice: 0,
+            priceUnit: "ETB",
+            status: "draft",
+            paymentMethod: "Telebirr",
+            slots: []
+          };
+          this.previewImage = null;
+          this.originalBanner = null;
+          this.selectedCategory = null;
+          console.log('✅ ServiceForm initialized for new service');
         }
       }
     },
     
-    // Use initialCategories from parent if provided
     initialCategories: {
       immediate: true,
       handler(cats) {
-        if (cats && cats.length > 0 && !this.categoriesLoaded) {
+        if (cats && cats.length > 0) {
           this.categories = [...cats];
           this.categoriesLoaded = true;
+          console.log('✅ Categories loaded from parent:', this.categories.length);
+          
+          this.updateSelectedCategory();
+        }
+      }
+    },
+    
+    'local.categoryId': {
+      handler(categoryId) {
+        if (categoryId && this.categories.length > 0) {
+          this.updateSelectedCategory();
         }
       }
     }
   },
 
   mounted() {
-    console.log('🔍 ServiceForm mounted - checking if we need categories...');
-    
-    // Only load categories if we're in a provider context
-    const isProviderRoute = window.location.pathname.includes('/provider');
-    const hasToken = localStorage.getItem("provider_token") || localStorage.getItem("token");
-    
-    if (isProviderRoute && hasToken) {
-      this.shouldLoadCategories = true;
-      console.log('✅ ServiceForm: Provider route detected, will load categories when needed');
-    } else {
-      console.log('⚠️ ServiceForm: Not in provider route or no token, skipping category load');
-    }
+    console.log('🔍 ServiceForm mounted');
+    console.log('🔍 isEditing prop:', this.isEditing);
+    console.log('🔍 service prop:', this.service);
+    console.log('🔍 initialCategories prop:', this.initialCategories);
     
     this.$nextTick(() => {
       if (this.$refs.titleInput) {
@@ -383,42 +455,15 @@ export default {
     updateBookingPrice() {
       this.local.bookingPrice = Math.round(this.local.totalPrice * 0.1);
     },
-
-    async loadCategoriesIfNeeded() {
-      // Don't load if already loaded or not needed
-      if (this.categoriesLoaded || this.categories.length > 0) {
-        return;
-      }
-      
-      // Only load if we're supposed to (provider context)
-      if (!this.shouldLoadCategories) {
-        console.log('⚠️ Skipping category load - not in provider context');
-        return;
-      }
-      
-      // Check if user is authenticated
-      const token = localStorage.getItem("provider_token") || localStorage.getItem("token");
-      if (!token) {
-        console.log('⚠️ Skipping category load - no auth token');
-        return;
-      }
-      
-      await this.fetchData();
-    },
-
-    async fetchData() {
-      try {
-        console.log('📤 Loading categories for ServiceForm...');
-        const res = await http.get("/categories");
-        this.categories = res.data;
-        this.categoriesLoaded = true;
-        console.log('✅ Categories loaded:', this.categories.length);
-      } catch (err) {
-        console.error("Failed to load categories:", err);
-        // Don't show alert on home page
-        if (window.location.pathname.includes('/provider')) {
-          alert("❌ Failed to load categories. Please try again.");
-        }
+    
+    updateSelectedCategory() {
+      if (this.local.categoryId && this.categories.length > 0) {
+        this.selectedCategory = this.categories.find(cat => 
+          cat._id === this.local.categoryId || cat.id === this.local.categoryId
+        );
+        console.log('🔍 Updated selected category:', this.selectedCategory);
+      } else {
+        this.selectedCategory = null;
       }
     },
 
@@ -427,26 +472,19 @@ export default {
       this.local.subcategoryIds = [];
       if (!categoryId) return;
       
-      // Don't fetch subcategories if not in provider context
-      const isProviderRoute = window.location.pathname.includes('/provider');
-      const hasToken = localStorage.getItem("provider_token") || localStorage.getItem("token");
-      
-      if (!isProviderRoute || !hasToken) {
-        console.log('⚠️ Skipping subcategory fetch - not in provider context');
-        return;
-      }
-      
       try {
         const res = await http.get(`/categories/${categoryId}/subcategories`);
         this.subcategories = Array.isArray(res.data) ? res.data : [];
+        console.log('✅ Subcategories loaded:', this.subcategories.length);
       } catch (err) {
         console.warn("Subcategories not available for:", categoryId);
       }
     },
 
-    onCategoryChange(e) {
+    async onCategoryChange(e) {
       this.local.categoryId = e.target.value;
-      this.fetchSubcategories(this.local.categoryId);
+      this.updateSelectedCategory();
+      await this.fetchSubcategories(this.local.categoryId);
       this.closeDropdowns();
     },
 
@@ -478,33 +516,86 @@ export default {
           alert("❌ Please select an image file (JPG/PNG).");
           return;
         }
+        
+        // Check file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert("❌ File size should be less than 5MB.");
+          return;
+        }
+        
         this.local.bannerFile = file;
         const reader = new FileReader();
         reader.onload = (ev) => {
           this.previewImage = ev.target.result;
         };
         reader.readAsDataURL(file);
+        
+        console.log('📸 New banner file selected:', file.name);
       }
     },
 
     removeImage() {
+      console.log('🗑️ Removing image...');
       this.previewImage = null;
       this.local.bannerFile = null;
-      this.$refs.fileInput.value = '';
+      this.originalBanner = null; // Also clear original banner
+      
+      if (this.$refs.fileInput) {
+        this.$refs.fileInput.value = '';
+      }
     },
 
     validateForm() {
       this.showError = true;
-      if (!this.local.title?.trim()) return false;
-      if (!this.local.categoryId) return false;
-      if (!this.local.description?.trim()) return false;
-      if (this.local.totalPrice <= 0) return false;
-      if (!this.hasValidSubcategories) return false;
-      if (!this.local.bannerFile) return false;
+      
+      if (!this.local.title?.trim()) {
+        console.log('❌ Validation failed: No title');
+        return false;
+      }
+      
+      if (!this.local.categoryId) {
+        console.log('❌ Validation failed: No category selected');
+        return false;
+      }
+      
+      if (!this.local.description?.trim()) {
+        console.log('❌ Validation failed: No description');
+        return false;
+      }
+      
+      if (this.local.totalPrice <= 0) {
+        console.log('❌ Validation failed: Invalid price');
+        return false;
+      }
+      
+      if (!this.hasValidSubcategories) {
+        console.log('❌ Validation failed: Invalid subcategories');
+        return false;
+      }
+      
+      if (!this.hasValidBanner) {
+        console.log('❌ Validation failed: No banner');
+        console.log('  isEdit:', this.isEdit);
+        console.log('  originalBanner:', this.originalBanner);
+        console.log('  bannerFile:', this.local.bannerFile);
+        return false;
+      }
+      
       return true;
     },
 
     async saveService() {
+      console.log('💾 Saving service...');
+      console.log('🔍 Mode:', this.isEdit ? 'EDIT' : 'CREATE');
+      console.log('🔍 Service ID:', this.local._id);
+      console.log('🔍 Form data:', {
+        title: this.local.title,
+        price: this.local.totalPrice,
+        categoryId: this.local.categoryId,
+        hasBannerFile: !!this.local.bannerFile,
+        hasOriginalBanner: !!this.originalBanner
+      });
+      
       if (!this.validateForm()) {
         alert("❌ Please fill in all required fields correctly.");
         return;
@@ -513,6 +604,7 @@ export default {
       this.isSaving = true;
 
       try {
+        // Get provider ID
         let providerId = null;
         try {
           const loggedProvider = JSON.parse(localStorage.getItem("loggedProvider") || "{}");
@@ -527,118 +619,158 @@ export default {
           throw new Error("Provider not authenticated.");
         }
 
-        const selectedCategory = this.categories.find(cat => cat._id === this.local.categoryId);
+        // Find selected category
+        let selectedCategory = this.selectedCategory;
+        if (!selectedCategory && this.local.categoryId) {
+          selectedCategory = this.categories.find(cat => 
+            cat._id === this.local.categoryId || cat.id === this.local.categoryId
+          );
+        }
+        
         if (!selectedCategory) {
-          throw new Error("Please select a valid category");
+          throw new Error("Please select a valid category.");
         }
 
         const selectedSubcategoryNames = this.selectedSubcategories.map(sub => sub.name);
 
+        // Prepare form data
         const formData = new FormData();
         formData.append('title', this.local.title.trim());
         formData.append('description', this.local.description.trim());
         formData.append('totalPrice', String(this.local.totalPrice));
-        formData.append('bookingPrice', String(this.local.bookingPrice));
+        formData.append('bookingPrice', String(Math.round(this.local.totalPrice * 0.1)));
         formData.append('category', selectedCategory.name);
         formData.append('categoryId', this.local.categoryId);
-        formData.append('status', "draft");
         formData.append('providerId', providerId);
         formData.append('paymentMethod', this.local.paymentMethod || "Telebirr");
         formData.append('priceUnit', "ETB");
         formData.append('serviceType', "fixed");
+        formData.append('status', this.local.status || "draft");
 
+        // Add subcategories
         selectedSubcategoryNames.forEach(name => {
           formData.append('subcategories[]', name);
         });
 
+        // Handle banner - CRITICAL FIX
         if (this.local.bannerFile) {
+          // New file uploaded
+          console.log('📸 Adding new banner file to form data');
           formData.append('banner', this.local.bannerFile);
+        } else if (this.isEdit && this.originalBanner) {
+          // For editing, if no new file but we have original banner
+          console.log('📸 Keeping original banner URL:', this.originalBanner);
+          formData.append('banner', this.originalBanner);
+        }
+        // If no banner at all (new service without file), validation should have failed
+
+        // Determine URL and method
+        let url, method;
+        if (this.isEdit && this.local._id) {
+          url = `/services/${this.local._id}`;
+          method = 'put';
+        } else {
+          url = "/services";
+          method = 'post';
         }
 
-        let response;
-        const url = this.isEdit ? `/services/${this.local._id}` : "/services";
-        
         const config = {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
         };
 
-        if (this.isEdit) {
-          response = await http.put(url, formData, config);
-        } else {
-          response = await http.post(url, formData, config);
+        // Log what's being sent
+        console.log('📋 FormData being sent:');
+        for (let pair of formData.entries()) {
+          const value = pair[1];
+          const display = value instanceof File ? 
+            `[File: ${value.name}, ${value.size} bytes]` : 
+            value;
+          console.log(`${pair[0]}: ${display}`);
         }
+        
+        console.log(`🔧 Making ${method.toUpperCase()} request to:`, url);
 
+        // Make API call
+        const response = await http[method](url, formData, config);
+
+        console.log('✅ API Response:', response.status);
+        console.log('📦 Response data:', response.data);
+        
         const savedService = response.data;
         
-        console.log('✅ Service saved successfully!');
-        console.log('🔍 Full backend response:', savedService);
-        
-        // 🔥 CRITICAL FIX: Handle the banner correctly
-        if (savedService.banner) {
-          console.log('📸 Backend returned banner:', savedService.banner);
-          console.log('📸 Banner type:', typeof savedService.banner);
+        // IMPORTANT: Return the FULL service object including the ID
+        // The parent component needs to know if this is an update or new creation
+        const updatedService = {
+          // Include the ID from the response OR from local
+          _id: savedService._id || this.local._id,
+          serviceId: savedService.serviceId || savedService._id || this.local._id,
+          id: savedService.id || savedService._id || this.local._id,
           
-          // Fix 1: If banner is an object, extract the URL
-          if (typeof savedService.banner === 'object') {
-            console.log('🔍 Banner is object, extracting URL...');
-            console.log('🔍 Banner object keys:', Object.keys(savedService.banner));
-            
-            // Try all possible URL properties from Cloudinary
-            const possibleUrl = savedService.banner.secure_url || 
-                               savedService.banner.url || 
-                               savedService.banner.public_id ||
-                               savedService.banner.path;
-            
-            if (possibleUrl) {
-              savedService.banner = possibleUrl;
-              console.log('✅ Extracted banner URL:', savedService.banner);
-            } else {
-              console.warn('⚠️ Could not extract URL from banner object');
-              savedService.banner = null;
-            }
-          }
+          // Form data
+          title: this.local.title,
+          description: this.local.description,
+          totalPrice: this.local.totalPrice,
+          bookingPrice: Math.round(this.local.totalPrice * 0.1),
+          categoryId: this.local.categoryId,
+          category: selectedCategory.name,
+          status: this.local.status || "draft",
+          paymentMethod: this.local.paymentMethod || "Telebirr",
+          priceUnit: "ETB",
           
-          // Fix 2: If banner is the string "[object Object]", clear it
-          if (savedService.banner === '[object Object]' || savedService.banner === '[object Object]') {
-            console.warn('⚠️ Banner is "[object Object]" string');
-            savedService.banner = null;
-          }
+          // Banner from response or original
+          banner: savedService.banner || this.originalBanner || this.previewImage,
           
-          // Fix 3: Ensure banner is a valid URL string
-          if (savedService.banner && typeof savedService.banner === 'string') {
-            if (!savedService.banner.startsWith('http') && !savedService.banner.startsWith('data:')) {
-              console.warn('⚠️ Banner string is not a valid URL:', savedService.banner);
-              savedService.banner = null;
-            }
-          }
-        } else {
-          console.warn('⚠️ No banner in backend response');
-        }
-        
-        // Final fallback: Use preview image if no valid banner
-        if (!savedService.banner || savedService.banner === '[object Object]') {
-          console.log('✅ Using preview image as banner');
-          savedService.banner = this.previewImage;
-        }
-        
-        console.log('🎯 Final banner after processing:', savedService.banner);
+          // Subcategories
+          subcategoryIds: [...this.local.subcategoryIds],
+          subcategories: selectedSubcategoryNames.map(name => ({ name })),
+          
+          // Other important fields
+          providerId: providerId,
+          createdAt: savedService.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          
+          // Preserve slots if they exist
+          slots: savedService.slots || this.local.slots || []
+        };
 
-        this.$emit("save", savedService);
+        console.log('🎯 Emitting saved service:', updatedService);
+        console.log('🎯 Service ID:', updatedService._id);
+        console.log('🎯 Is Edit mode:', this.isEdit);
+        
+        this.$emit("save", updatedService);
 
       } catch (err) {
         console.error("❌ Save error:", err);
+        
+        let errorMessage = "Failed to save service";
+        
         if (err.response) {
-          console.error("❌ Response error:", err.response.data);
-          const errorMsg = err.response.data?.message || 
-                          err.response.data?.error || 
-                          err.message || 
-                          "Failed to save service";
-          alert(`❌ ${errorMsg}`);
+          const status = err.response.status;
+          const data = err.response.data;
+          
+          console.error('❌ Server response:', data);
+          
+          if (status === 413) {
+            errorMessage = "File too large. Please use a smaller image (max 5MB).";
+          } else if (status === 400) {
+            errorMessage = data.message || "Invalid data provided.";
+          } else if (status === 401) {
+            errorMessage = "Authentication failed. Please log in again.";
+          } else if (status === 503) {
+            errorMessage = "Server is currently unavailable. Please try again later.";
+          } else {
+            errorMessage = `Server error (${status}). Please try again.`;
+          }
+        } else if (err.request) {
+          errorMessage = "No response from server. Check your network connection.";
         } else {
-          alert(`❌ ${err.message || "Failed to save service"}`);
+          errorMessage = err.message || "Failed to save service";
         }
+        
+        alert(`❌ ${errorMessage}`);
+        
       } finally {
         this.isSaving = false;
       }
@@ -813,6 +945,19 @@ input:focus, select:focus, textarea:focus {
   transform: scale(1.1);
 }
 
+.banner-info {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.banner-info i {
+  color: #3b82f6;
+}
+
 .price-section {
   display: flex;
   flex-direction: column;
@@ -929,9 +1074,14 @@ input:focus, select:focus, textarea:focus {
   color: #475569;
 }
 
-.cancel-btn:hover {
+.cancel-btn:hover:not(:disabled) {
   background: #e2e8f0;
   transform: translateY(-2px);
+}
+
+.cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .save-btn {

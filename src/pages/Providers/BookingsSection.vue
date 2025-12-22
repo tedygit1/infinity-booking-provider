@@ -1,3 +1,4 @@
+<!-- src/pages/Providers/BookingsSection.vue -->
 <template>
   <div class="bookings-section">
     <!-- Header Section -->
@@ -299,18 +300,10 @@
               </button>
               <button 
                 class="action-btn-enhanced details"
-                @click="viewBookingDetailsModal(booking)"
+                @click="viewCustomerDetailsModal(booking)"
               >
-                <i class="fa-solid fa-eye"></i>
+                <i class="fa-solid fa-user-circle"></i>
                 User Details
-              </button>
-              <button 
-                class="action-btn-enhanced contact"
-                v-if="!booking.isAdminBooking && booking.customerEmail"
-                @click="contactCustomer(booking)"
-              >
-                <i class="fa-solid fa-message"></i>
-                Contact
               </button>
             </div>
           </div>
@@ -402,10 +395,10 @@
                   </button>
                   <button 
                     class="btn-action view"
-                    @click="viewBookingDetailsModal(booking)"
-                    title="View Details"
+                    @click="viewCustomerDetailsModal(booking)"
+                    title="View Customer Details"
                   >
-                    <i class="fa-solid fa-eye"></i>
+                    <i class="fa-solid fa-user-circle"></i>
                   </button>
                 </div>
               </div>
@@ -454,12 +447,87 @@
       </div>
     </div>
 
-    <!-- Booking Details Modal -->
-    <div v-if="selectedBooking" class="modal-overlay" @click.self="closeModal">
+    <!-- Simplified Customer Details Modal -->
+    <div v-if="selectedCustomer" class="modal-overlay" @click.self="closeModal">
+      <div class="modal-content customer-details-modal-simple">
+        <div class="modal-header">
+          <h3><i class="fa-solid fa-user-circle"></i> Customer Details</h3>
+          <button class="modal-close" @click="closeModal">
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="simple-customer-details">
+            <!-- Customer Profile -->
+            <div class="customer-profile-simple">
+              <div class="customer-avatar-simple">
+                <div v-if="selectedCustomer.customerProfilePhoto && selectedCustomer.customerProfilePhoto.trim() !== ''" 
+                     class="customer-profile-photo-simple">
+                  <img 
+                    :src="selectedCustomer.customerProfilePhoto" 
+                    :alt="selectedCustomer.customerName"
+                    @error="handleCustomerImageError($event)"
+                  />
+                </div>
+                <div v-else class="customer-initials-simple" :style="{ backgroundColor: getAvatarColor(selectedCustomer.customerName) }">
+                  {{ getCleanInitials(selectedCustomer.customerName) }}
+                </div>
+              </div>
+              <div class="customer-name-simple">
+                <h3>{{ selectedCustomer.customerName }}</h3>
+              </div>
+            </div>
+
+            <!-- Simple Information List -->
+            <div class="customer-info-simple">
+              <div class="info-item-simple">
+                <div class="info-label-simple">
+                  <i class="fa-solid fa-envelope"></i>
+                  Email
+                </div>
+                <div class="info-value-simple">
+                  {{ selectedCustomer.customerEmail || 'Not provided' }}
+                </div>
+              </div>
+              
+              <div class="info-item-simple">
+                <div class="info-label-simple">
+                  <i class="fa-solid fa-phone"></i>
+                  Phone
+                </div>
+                <div class="info-value-simple">
+                  {{ selectedCustomer.customerPhone || 'Not provided' }}
+                </div>
+              </div>
+              
+              <div class="info-item-simple">
+                <div class="info-label-simple">
+                  <i class="fa-solid fa-location-dot"></i>
+                  Location
+                </div>
+                <div class="info-value-simple">
+                  {{ selectedCustomer.customerAddress || selectedCustomer.address || 'Not provided' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Close Button Only -->
+            <div class="modal-actions-simple">
+              <button class="btn btn-outline" @click="closeModal">
+                <i class="fa-solid fa-times"></i> Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking Details Modal (Original - kept for reference) -->
+    <div v-if="selectedBooking" class="modal-overlay" @click.self="closeBookingModal">
       <div class="modal-content">
         <div class="modal-header">
           <h3>Booking Details</h3>
-          <button class="modal-close" @click="closeModal">
+          <button class="modal-close" @click="closeBookingModal">
             <i class="fa-solid fa-times"></i>
           </button>
         </div>
@@ -481,10 +549,6 @@
                 </div>
                 <div class="customer-name-info">
                   <h3>{{ selectedBooking.customerName }}</h3>
-                  <div v-if="selectedBooking.customerId" class="customer-id-small">
-                    <i class="fa-solid fa-id-card"></i>
-                    <span>ID: {{ selectedBooking.customerId }}</span>
-                  </div>
                 </div>
               </div>
               
@@ -562,7 +626,7 @@
             </div>
 
             <div class="modal-actions">
-              <button class="btn btn-primary" @click="closeModal">
+              <button class="btn btn-primary" @click="closeBookingModal">
                 <i class="fa-solid fa-check"></i> Close
               </button>
             </div>
@@ -592,6 +656,7 @@ export default {
     const currentPage = ref(1);
     const itemsPerPage = ref(12);
     const selectedBooking = ref(null);
+    const selectedCustomer = ref(null); // New: for customer details modal
     const lastUpdatedTime = ref("");
 
     // Service details cache
@@ -618,68 +683,23 @@ export default {
       revenue: 0
     });
 
-    // ==================== CRITICAL FIX: PRE-LOAD CUSTOMER DETAILS ====================
-    // This function runs immediately for each booking to load customer data
-    const preloadCustomerDetails = async (booking) => {
-      if (!booking.customerId || booking.customerId === 'unknown') return;
-      
-      // Check cache first
-      if (customerCache.value[booking.customerId]) {
-        return customerCache.value[booking.customerId];
-      }
-
-      try {
-        // Try to fetch customer details from API
-        const response = await http.get(`/users/customers/by-cid/${booking.customerId}`);
-        if (response.data) {
-          const user = response.data;
-          const customerProfile = user.customerProfile || user;
-          const customerData = {
-            fullname: customerProfile.fullname || user.fullname || user.name || booking.customerName || 'Customer',
-            profilePicture: customerProfile.profilePhoto || user.profilePicture || user.avatar || '',
-            email: user.email || booking.customerEmail || '',
-            phone: customerProfile.phonenumber || user.phone || booking.customerPhone || ''
-          };
-          
-          // Store in cache
-          customerCache.value[booking.customerId] = customerData;
-          
-          // Update booking with fresh data
-          if (customerData.fullname && customerData.fullname !== 'Customer') {
-            booking.customerName = customerData.fullname;
-          }
-          if (customerData.profilePicture) {
-            booking.customerProfilePhoto = customerData.profilePicture;
-          }
-          if (customerData.email) {
-            booking.customerEmail = customerData.email;
-          }
-          if (customerData.phone) {
-            booking.customerPhone = customerData.phone;
-          }
-          
-          return customerData;
-        }
-      } catch (err) {
-        console.log(`⚠️ Could not preload customer ${booking.customerId}:`, err.message);
-      }
-    };
-
     // ==================== ENHANCED PROCESS SINGLE BOOKING ====================
     const processSingleBooking = async (booking) => {
       try {
         const isAdminBooking = booking.createdBy === 'admin' || booking.adminId || booking.isAdminBooking;
         
-        // Extract customer data
-        const customer = booking.customer || booking.originalData?.customer || {};
-        let customerId = customer.cid || booking.customerId || booking.cid || 'unknown';
+        // Extract customer data - LOOK FOR CUSTOMER DETAILS IN ALL POSSIBLE LOCATIONS
+        const customer = booking.customer || booking.originalData?.customer || booking.user || {};
+        const customerProfile = customer.customerProfile || customer;
+        
+        let customerId = customer.cid || booking.customerId || booking.cid || customer._id || 'unknown';
         
         // Extract profile photo from multiple possible locations
         let customerProfilePhoto = '';
         if (customer.profilePhoto) {
           customerProfilePhoto = customer.profilePhoto;
-        } else if (customer.customerProfile?.profilePhoto) {
-          customerProfilePhoto = customer.customerProfile.profilePhoto;
+        } else if (customerProfile.profilePhoto) {
+          customerProfilePhoto = customerProfile.profilePhoto;
         } else if (customer.profilePicture) {
           customerProfilePhoto = customer.profilePicture;
         } else if (customer.avatar) {
@@ -693,7 +713,8 @@ export default {
         if (isAdminBooking) {
           customerName = 'Admin';
         } else {
-          customerName = customer.fullname || 
+          customerName = customerProfile.fullname || 
+                        customer.fullname || 
                         customer.name || 
                         booking.customerName || 
                         (customerId && customerId !== 'unknown' ? 'Customer' : 'Customer');
@@ -709,9 +730,12 @@ export default {
           customerName = isAdminBooking ? 'Admin' : 'Customer';
         }
         
-        // Extract email & phone
-        let customerEmail = customer.email || booking.customerEmail || '';
-        let customerPhone = customer.phone || booking.customerPhone || '';
+        // Extract email & phone - CHECK ALL POSSIBLE LOCATIONS
+        let customerEmail = customer.email || customerProfile.email || booking.customerEmail || '';
+        let customerPhone = customer.phonenumber || customerProfile.phonenumber || customer.phone || booking.customerPhone || '';
+        
+        // Extract address if available
+        let customerAddress = customer.address || customerProfile.address || '';
         
         // Get service details
         const serviceId = booking.serviceId || booking.service?._id || 'unknown';
@@ -737,6 +761,7 @@ export default {
           customerName: customerName,
           customerEmail: customerEmail,
           customerPhone: customerPhone,
+          customerAddress: customerAddress,
           customerProfilePhoto: customerProfilePhoto,
           isAdminBooking: isAdminBooking,
           serviceId: serviceId,
@@ -765,6 +790,115 @@ export default {
         console.error("❌ Error processing booking:", err);
         return null;
       }
+    };
+
+    // ==================== CUSTOMER DETAILS FUNCTIONS ====================
+    const preloadCustomerDetails = async (booking) => {
+      if (!booking.customerId || booking.customerId === 'unknown') return;
+      
+      // Check cache first
+      if (customerCache.value[booking.customerId]) {
+        return customerCache.value[booking.customerId];
+      }
+
+      try {
+        // Try different endpoints to get customer details
+        const endpoints = [
+          `/users/customers/by-cid/${booking.customerId}`,
+          `/users/${booking.customerId}`,
+          `/customers/${booking.customerId}`,
+          `/api/users/customer/${booking.customerId}`
+        ];
+        
+        for (const endpoint of endpoints) {
+          try {
+            console.log(`🔍 Fetching customer details from: ${endpoint}`);
+            const response = await http.get(endpoint);
+            if (response.data) {
+              const user = response.data;
+              const customerProfile = user.customerProfile || user;
+              
+              // Extract all possible customer details
+              const customerData = {
+                fullname: customerProfile.fullname || user.fullname || user.name || booking.customerName || 'Customer',
+                email: user.email || customerProfile.email || booking.customerEmail || '',
+                phone: customerProfile.phonenumber || user.phone || booking.customerPhone || '',
+                address: customerProfile.address || user.address || booking.customerAddress || '',
+                profilePhoto: customerProfile.profilePhoto || user.profilePicture || user.avatar || booking.customerProfilePhoto || '',
+                cid: user.cid || booking.customerId || 'unknown',
+                status: customerProfile.status || user.status || 'active'
+              };
+              
+              // Store in cache
+              customerCache.value[booking.customerId] = customerData;
+              
+              // Update booking with fresh data
+              if (customerData.fullname && customerData.fullname !== 'Customer') {
+                booking.customerName = customerData.fullname;
+              }
+              if (customerData.profilePhoto) {
+                booking.customerProfilePhoto = customerData.profilePhoto;
+              }
+              if (customerData.email) {
+                booking.customerEmail = customerData.email;
+              }
+              if (customerData.phone) {
+                booking.customerPhone = customerData.phone;
+              }
+              if (customerData.address) {
+                booking.customerAddress = customerData.address;
+              }
+              
+              return customerData;
+            }
+          } catch (err) {
+            console.log(`⚠️ Endpoint ${endpoint} failed:`, err.message);
+          }
+        }
+        
+        console.log(`ℹ️ Could not fetch customer details for ${booking.customerId}`);
+      } catch (err) {
+        console.log(`⚠️ Error preloading customer ${booking.customerId}:`, err.message);
+      }
+    };
+
+    const viewCustomerDetailsModal = async (booking) => {
+      try {
+        // Try to load fresh customer details
+        let customerDetails = null;
+        if (booking.customerId && booking.customerId !== 'unknown') {
+          customerDetails = await preloadCustomerDetails(booking);
+        }
+        
+        // Prepare customer data for modal
+        selectedCustomer.value = {
+          ...booking,
+          // Override with fresh details if available
+          ...(customerDetails || {})
+        };
+        
+        console.log("📱 Showing customer details:", selectedCustomer.value);
+      } catch (err) {
+        console.error("❌ Error loading customer details:", err);
+        // Still show modal with available data
+        selectedCustomer.value = booking;
+      }
+    };
+
+    const closeModal = () => {
+      selectedCustomer.value = null;
+      selectedBooking.value = null;
+    };
+
+    const closeBookingModal = () => {
+      selectedBooking.value = null;
+    };
+
+    const handleCustomerImageError = (event) => {
+      event.target.style.display = 'none';
+      const parent = event.target.parentElement;
+      const customerName = selectedCustomer.value?.customerName || 'Customer';
+      parent.innerHTML = `<div class="fallback-initials-simple" style="background-color: ${getAvatarColor(customerName)}">${getCleanInitials(customerName)}</div>`;
     };
 
     // ==================== HELPER FUNCTIONS ====================
@@ -1048,21 +1182,6 @@ export default {
       }
     };
 
-    const processBookings = async (bookingsArray) => {
-      const processedBookings = [];
-      for (const booking of bookingsArray) {
-        try {
-          const processed = await processSingleBooking(booking);
-          if (processed) {
-            processedBookings.push(processed);
-          }
-        } catch (err) {
-          console.error("Error processing booking:", err, booking);
-        }
-      }
-      return processedBookings;
-    };
-
     const calculateStats = () => {
       if (bookings.value.length === 0) {
         stats.value = { totalBookings: 0, today: 0, upcoming: 0, completed: 0, revenue: 0 };
@@ -1164,18 +1283,6 @@ export default {
       selectedBooking.value = booking;
     };
 
-    const closeModal = () => {
-      selectedBooking.value = null;
-    };
-
-    const contactCustomer = (booking) => {
-      if (booking.customerEmail) {
-        window.location.href = `mailto:${booking.customerEmail}`;
-      } else {
-        alert("No email address available for this customer.");
-      }
-    };
-
     const promoteServices = () => {
       alert("🎯 Share your booking link to get more bookings!");
     };
@@ -1239,6 +1346,7 @@ export default {
       currentPage,
       itemsPerPage,
       selectedBooking,
+      selectedCustomer,
       lastUpdatedTime,
       stats,
       
@@ -1252,9 +1360,10 @@ export default {
       loadBookings,
       clearFilters,
       completeBooking,
+      viewCustomerDetailsModal,
       viewBookingDetailsModal,
       closeModal,
-      contactCustomer,
+      closeBookingModal,
       selectTimelinePeriod,
       clearTimelinePeriod,
       promoteServices,
@@ -1273,14 +1382,167 @@ export default {
       isTodayBooking,
       isPastBooking,
       getServiceIcon,
-      handleImageError
+      handleImageError,
+      handleCustomerImageError
     };
   }
 };
 </script>
 
 <style scoped>
-/* ==================== COMPACT STATS ==================== */
+/* ==================== SIMPLIFIED CUSTOMER DETAILS MODAL STYLES ==================== */
+.customer-details-modal-simple {
+  max-width: 500px;
+  width: 95%;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.simple-customer-details {
+  padding: 15px;
+}
+
+/* Customer Profile Simple */
+.customer-profile-simple {
+  text-align: center;
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.customer-avatar-simple {
+  margin-bottom: 15px;
+}
+
+.customer-profile-photo-simple {
+  width: 100px;
+  height: 100px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 3px solid white;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.customer-profile-photo-simple img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.customer-initials-simple {
+  width: 100px;
+  height: 100px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 900;
+  font-size: 2.5rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border: 3px solid white;
+  margin: 0 auto;
+}
+
+.customer-name-simple h3 {
+  color: #1f2937;
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 10px 0 0 0;
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Simple Information List */
+.customer-info-simple {
+  margin-bottom: 25px;
+}
+
+.info-item-simple {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #f3f4f6;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
+
+.info-item-simple:hover {
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+  transform: translateY(-2px);
+}
+
+.info-label-simple {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #6b7280;
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-width: 100px;
+}
+
+.info-label-simple i {
+  color: #3b82f6;
+  font-size: 1rem;
+  width: 20px;
+  text-align: center;
+}
+
+.info-value-simple {
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: right;
+  max-width: 200px;
+  word-break: break-word;
+  padding-left: 10px;
+}
+
+/* Simple Modal Actions */
+.modal-actions-simple {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #f3f4f6;
+}
+
+/* Fallback initials for error */
+.fallback-initials-simple {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 900;
+  font-size: 2.5rem;
+}
+
+/* ==================== EXISTING STYLES (Preserved with Contact button removed) ==================== */
 .stats-overview-compact {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -1338,7 +1600,7 @@ export default {
   letter-spacing: 0.5px;
 }
 
-/* ==================== ENHANCED BOOKING CARDS ==================== */
+/* Professional Cards Grid - UPDATED: Contact button removed */
 .professional-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
@@ -1583,7 +1845,7 @@ export default {
   color: #9ca3af;
 }
 
-/* Action Buttons Enhanced */
+/* Action Buttons Enhanced - UPDATED: Contact button removed */
 .action-buttons-enhanced {
   display: flex;
   gap: 10px;
@@ -1622,104 +1884,6 @@ export default {
 .action-btn-enhanced.details:hover {
   background: #e5e7eb;
   transform: translateY(-2px);
-}
-
-.action-btn-enhanced.contact {
-  background: linear-gradient(135deg, #3b82f6, #1e40af);
-  color: white;
-}
-
-.action-btn-enhanced.contact:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-/* ==================== LIST VIEW ENHANCEMENTS ==================== */
-.customer-avatar-list {
-  margin-right: 12px;
-}
-
-.customer-profile-photo-list {
-  width: 45px;
-  height: 45px;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 2px solid white;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-  background: #f3f4f6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.customer-profile-photo-list img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.customer-initials-list {
-  width: 45px;
-  height: 45px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 700;
-  font-size: 1rem;
-  margin-right: 12px;
-}
-
-.status-badge-list {
-  padding: 5px 12px;
-  border-radius: 15px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.status-badge-list.confirmed {
-  background: linear-gradient(135deg, #dbeafe, #93c5fd);
-  color: #1e40af;
-}
-
-.status-badge-list.completed {
-  background: linear-gradient(135deg, #f3f4f6, #d1d5db);
-  color: #374151;
-}
-
-/* ==================== MODAL ENHANCEMENTS ==================== */
-.customer-profile-photo-modal {
-  width: 90px;
-  height: 90px;
-  border-radius: 22px;
-  overflow: hidden;
-  border: 4px solid white;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  background: #f3f4f6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.customer-profile-photo-modal img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.customer-initials-modal {
-  width: 90px;
-  height: 90px;
-  border-radius: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 800;
-  font-size: 2.2rem;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 /* ==================== BASE STYLES (Unchanged) ==================== */
@@ -2207,6 +2371,7 @@ export default {
   padding: 20px;
 }
 
+/* Original Modal Styles (preserved) */
 .customer-profile-header {
   display: flex;
   align-items: center;
@@ -2221,18 +2386,6 @@ export default {
   color: #1e293b;
   font-size: 1.4rem;
   font-weight: 800;
-}
-
-.customer-id-small {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #6b7280;
-  font-size: 0.8rem;
-  background: #f8fafc;
-  padding: 5px 10px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
 }
 
 .customer-contact-info {
@@ -2359,12 +2512,6 @@ export default {
 .status-value.pending {
   background: linear-gradient(135deg, #fef3c7, #fcd34d);
   color: #92400e;
-}
-
-.modal-actions {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
 }
 
 /* Loading State */
@@ -2525,16 +2672,26 @@ export default {
     border-bottom: none;
   }
   
-  .customer-profile-header {
-    flex-direction: column;
-    text-align: center;
-    gap: 14px;
-  }
-  
-  .service-detail-item {
+  .info-item-simple {
     flex-direction: column;
     align-items: flex-start;
-    gap: 3px;
+    gap: 5px;
+  }
+  
+  .info-value-simple {
+    text-align: left;
+    max-width: 100%;
+  }
+  
+  .customer-profile-photo-simple,
+  .customer-initials-simple {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+  }
+  
+  .customer-name-simple h3 {
+    font-size: 1.5rem;
   }
 }
 
@@ -2576,6 +2733,17 @@ export default {
   .pagination {
     flex-direction: column;
     gap: 8px;
+  }
+  
+  .customer-profile-photo-simple,
+  .customer-initials-simple {
+    width: 70px;
+    height: 70px;
+    font-size: 1.8rem;
+  }
+  
+  .customer-name-simple h3 {
+    font-size: 1.3rem;
   }
 }
 </style>

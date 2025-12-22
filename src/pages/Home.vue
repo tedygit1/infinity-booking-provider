@@ -1,385 +1,412 @@
 <!-- src/pages/Home.vue -->
 <template>
-  <div class="home font-poppins">
-    <!-- Enhanced Hero Section -->
-    <section id="hero" class="hero">
-      <div class="hero-overlay"></div>
-      <div class="container">
+  <div class="home">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-container">
         <div class="hero-content">
-          <div class="hero-text">
-            <div class="hero-badge">
-              <span class="live-dot"></span>
-              Live with Infinity-Booking • Grow Your Service Business
-            </div>
-            <h1 class="hero-title">
-              Manage Your Service Business <span class="highlight">Smarter & Faster</span>
-            </h1>
-            <p class="hero-subtitle">
-              All-in-one platform designed for Ethiopian service professionals to manage appointments, 
-              accept payments, and connect with clients. Simple, powerful, and made for you.
-            </p>
+          <div class="hero-badge">
+            <span class="flag">🇪🇹</span> Built for Ethiopian Service Professionals
+          </div>
+          <h1 class="hero-title">
+            Grow Your <span class="highlight">Service Business</span>, Ethiopian-Style
+          </h1>
+          <p class="hero-subtitle">
+            Accept bookings 24/7, get paid instantly via Telebirr & CBE Birr, and manage your business — all in one simple dashboard.
+          </p>
 
-            <div class="hero-buttons">
-              <button @click="goToRegister" class="btn-primary">
-                <span class="btn-icon">🚀</span>
-                Start Free Trial
-              </button>
-              <a href="#features" class="btn-secondary">
-                <span class="btn-icon">📹</span>
-                Watch Demo (3 min)
-              </a>
+          <div class="hero-stats">
+            <div class="stat">
+              <div class="stat-number">150+</div>
+              <div class="stat-label">Active Businesses</div>
             </div>
-
-            <!-- Social Proof - Made more user-friendly -->
-            <div class="social-proof">
-              <div class="proof-stats">
-                <div class="stat-item">
-                  <strong>150+</strong>
-                  <span>Service Providers</span>
-                </div>
-                <div class="stat-item">
-                  <strong>1,200+</strong>
-                  <span>Monthly Bookings</span>
-                </div>
-                <div class="stat-item">
-                  <strong>98%</strong>
-                  <span>Satisfaction Rate</span>
-                </div>
-              </div>
-              <div class="provider-types">
-                <span class="provider-tag">🏠 Home Services</span>
-                <span class="provider-tag">💇 Beauty & Salon</span>
-                <span class="provider-tag">🎓 Education</span>
-                <span class="provider-tag">🏢 Business Services</span>
-              </div>
+            <div class="stat">
+              <div class="stat-number">4.9★</div>
+              <div class="stat-label">User Rating</div>
+            </div>
+            <div class="stat">
+              <div class="stat-number">5,200+</div>
+              <div class="stat-label">Monthly Bookings</div>
             </div>
           </div>
-          
-          <!-- Enhanced Feature Showcase - More informative -->
-          <div class="feature-showcase">
-            <div class="showcase-card">
-              <div class="card-header">
-                <h3>Your Business Dashboard</h3>
-                <div class="card-badge">Live Preview</div>
-              </div>
-              <div class="card-content">
-                <div class="dashboard-preview">
-                  <div class="preview-header">
-                    <div class="business-info">
-                      <div class="business-name">Sample Beauty Salon</div>
-                      <div class="business-status">📍 Addis Ababa • 🟢 Active</div>
-                    </div>
-                  </div>
-                  
-                  <!-- Enhanced metrics with clear explanations -->
-                  <div class="growth-metrics">
-                    <div class="metric-card">
-                      <div class="metric-icon">💰</div>
-                      <div class="metric-details">
-                        <div class="metric-title">Monthly Earnings</div>
-                        <div class="metric-value">ETB 45,250</div>
-                        <div class="metric-desc">From 120+ appointments</div>
-                      </div>
-                    </div>
-                    
-                    <div class="metric-card">
-                      <div class="metric-icon">👥</div>
-                      <div class="metric-details">
-                        <div class="metric-title">New Clients This Month</div>
-                        <div class="metric-value">24</div>
-                        <div class="metric-desc">+12% from last month</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <!-- Key features shown as benefits -->
-                  <div class="business-benefits">
-                    <h4>Key Benefits You Get:</h4>
-                    <div class="benefit-item">
-                      <span class="benefit-icon">🔔</span>
-                      <div class="benefit-text">
-                        <strong>Real-time Notifications</strong>
-                        <small>Never miss a booking</small>
-                      </div>
-                    </div>
-                    <div class="benefit-item">
-                      <span class="benefit-icon">📊</span>
-                      <div class="benefit-text">
-                        <strong>Smart Reports</strong>
-                        <small>See what's working</small>
-                      </div>
-                    </div>
-                    <div class="benefit-item">
-                      <span class="benefit-icon">💳</span>
-                      <div class="benefit-text">
-                        <strong>Easy Payments</strong>
-                        <small>Accept all payment types</small>
-                      </div>
-                    </div>
-                  </div>
+
+          <div class="hero-buttons">
+            <button @click="goToRegister" class="hero-button primary">
+              Start Free Trial (30 Days)
+            </button>
+            <button @click="goToLogin" class="hero-button secondary">
+              Login to Dashboard
+            </button>
+          </div>
+
+          <div class="trust-badges">
+            <span>🔒 Secure • 📱 Mobile-Optimized • 🇪🇹 Ethiopian Support</span>
+          </div>
+        </div>
+
+        <div class="hero-dashboard">
+          <div class="dashboard-preview">
+            <div class="dashboard-header">
+              <div class="business-info">
+                <div class="avatar">A</div>
+                <div>
+                  <div class="business-name">Addis Beauty Lounge</div>
+                  <div class="business-status">📍 Bole, Addis Ababa • <span class="live">● Live</span></div>
                 </div>
               </div>
+              <div class="dashboard-actions">
+                <button class="btn-sm">Settings</button>
+              </div>
+            </div>
+
+            <div class="dashboard-metrics">
+              <div class="metric-card">
+                <div class="metric-value">12</div>
+                <div class="metric-label">Appointments Today</div>
+                <div class="metric-trend up">+3 vs yesterday</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-value">ETB 8,450</div>
+                <div class="metric-label">Revenue Today</div>
+                <div class="metric-trend up">+ETB 1,200</div>
+              </div>
+            </div>
+
+            <div class="dashboard-section-title">Upcoming Appointments</div>
+            <div class="upcoming-list">
+              <div class="appointment-item">
+                <div class="time-badge morning">10:00</div>
+                <div class="appointment-details">
+                  <div class="client-name">Meseret G.</div>
+                  <div class="service">Hair Styling • 60 min</div>
+                </div>
+                <div class="payment-status paid">
+                  <span>✅ Paid</span>
+                </div>
+              </div>
+              <div class="appointment-item">
+                <div class="time-badge afternoon">14:00</div>
+                <div class="appointment-details">
+                  <div class="client-name">Hana M.</div>
+                  <div class="service">Manicure • 45 min</div>
+                </div>
+                <div class="payment-status pending">
+                  <span>⏱️ Pending</span>
+                </div>
+              </div>
+              <div class="appointment-item">
+                <div class="time-badge evening">16:30</div>
+                <div class="appointment-details">
+                  <div class="client-name">Samuel K.</div>
+                  <div class="service">Beard Trim • 30 min</div>
+                </div>
+                <div class="payment-status paid">
+                  <span>✅ Paid</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="dashboard-footer">
+              <span>📱 Mobile dashboard accessible anywhere</span>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Features Grid - More benefit-oriented -->
-    <section id="features" class="features-section">
+    <!-- Trusted By Section -->
+    <section class="trusted-by-section">
+      <div class="container">
+        <p class="trusted-by-label">Trusted by leading Ethiopian service businesses</p>
+        <div class="logos-grid">
+          <div class="logo">Salon</div>
+          <div class="logo">Spa</div>
+          <div class="logo">Cleaning</div>
+          <div class="logo">Tutor</div>
+          <div class="logo">Repair</div>
+          <div class="logo">Events</div>
+        </div>
+        <p class="trusted-by-note">Including salons in Addis, cleaning services in Adama, and tutors in Hawassa</p>
+      </div>
+    </section>
+
+    <!-- Core Platform -->
+    <section class="platform-section">
       <div class="container">
         <div class="section-header">
-          <h2 class="section-title">Everything You Need to Grow</h2>
+          <h2 class="section-title">All-in-One Platform for Ethiopian Service Providers</h2>
           <p class="section-subtitle">
-            Powerful tools made simple for service businesses
+            Everything you need — built with local payment systems, Amharic support (coming soon), and Ethiopian business workflows in mind.
           </p>
         </div>
-        
-        <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">📅</div>
-            <h3>Smart Booking System</h3>
-            <p>Let clients book 24/7 from your website, social media, or directly in the app.</p>
-            <ul class="feature-benefits">
-              <li>Online booking anytime</li>
-              <li>Automatic reminders</li>
-              <li>Calendar sync</li>
-            </ul>
-          </div>
 
-          <div class="feature-card">
-            <div class="feature-icon">💰</div>
-            <h3>Easy Payments</h3>
-            <p>Accept mobile money, bank transfers, and cash with automatic tracking.</p>
-            <ul class="feature-benefits">
-              <li>CBE Birr, Telebirr</li>
-              <li>Payment tracking</li>
-              <li>Automatic receipts</li>
-            </ul>
+        <div class="platform-grid">
+          <div class="platform-card">
+            <div class="platform-icon bg-blue">📅</div>
+            <h3>Smart Booking</h3>
+            <p>Share your booking link. Clients book 24/7 — no calls, no missed opportunities.</p>
           </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">📱</div>
-            <h3>Client Management</h3>
-            <p>Keep all client info, history, and preferences in one organized place.</p>
-            <ul class="feature-benefits">
-              <li>Client profiles</li>
-              <li>Service history</li>
-              <li>Special notes</li>
-            </ul>
+          <div class="platform-card">
+            <div class="platform-icon bg-green">💳</div>
+            <h3>Local Payments</h3>
+            <p>Telebirr, CBE Birr, bank transfer & cash. Payments appear instantly in your dashboard.</p>
           </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">📊</div>
+          <div class="platform-card">
+            <div class="platform-icon bg-purple">📱</div>
+            <h3>Mobile Dashboard</h3>
+            <p>Manage bookings, clients, and revenue — fully responsive on any phone or tablet.</p>
+          </div>
+          <div class="platform-card">
+            <div class="platform-icon bg-amber">📊</div>
             <h3>Business Insights</h3>
-            <p>See which services are most popular and when you're busiest.</p>
-            <ul class="feature-benefits">
-              <li>Best-selling services</li>
-              <li>Busy hours report</li>
-              <li>Revenue trends</li>
-            </ul>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">🎯</div>
-            <h3>Marketing Tools</h3>
-            <p>Simple ways to attract more clients and keep them coming back.</p>
-            <ul class="feature-benefits">
-              <li>Special offers</li>
-              <li>Client referrals</li>
-              <li>Reminder messages</li>
-            </ul>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">🛡️</div>
-            <h3>Business Protection</h3>
-            <p>Professional features to protect your time and income.</p>
-            <ul class="feature-benefits">
-              <li>No-show protection</li>
-              <li>Cancelation policies</li>
-              <li>Service agreements</li>
-            </ul>
+            <p>Track peak hours, top services, revenue trends — make smarter decisions.</p>
           </div>
         </div>
       </div>
     </section>
 
-  
+    <!-- What Users Say -->
+    <section class="testimonials-section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Real Impact, Real Stories</h2>
+          <p class="section-subtitle">
+            Hear from Ethiopian entrepreneurs who’ve transformed their businesses.
+          </p>
+        </div>
 
-    <!-- Pricing Section -->
-    <section id="pricing" class="pricing-section">
+        <div class="testimonials-grid">
+          <!-- Provider Column -->
+          <div class="testimonial-column">
+            <div class="column-header">
+              <h3 class="column-title">Service Providers</h3>
+              <div class="column-badge">💼 Running businesses across 8 cities</div>
+            </div>
+            <div class="testimonial-cards">
+              <div class="testimonial-card provider">
+                <div class="testimonial-header">
+                  <div class="user-avatar bg-blue">SG</div>
+                  <div class="user-info">
+                    <div class="user-name">Selam G.</div>
+                    <div class="user-meta">
+                      <span>Beauty Salon Owner</span> • <span>📍 Addis Ababa</span>
+                    </div>
+                  </div>
+                  <div class="rating">★★★★★</div>
+                </div>
+                <p class="testimonial-text">
+                  "Since joining, I’ve doubled my client base. The Telebirr integration means no more chasing payments — clients pay in seconds. My time is now spent on creativity, not admin."
+                </p>
+                <div class="testimonial-results">
+                  <span class="result">↑ 2x Revenue</span>
+                  <span class="result">↓ 12 hrs/week admin</span>
+                </div>
+              </div>
+
+              <div class="testimonial-card provider">
+                <div class="testimonial-header">
+                  <div class="user-avatar bg-green">DT</div>
+                  <div class="user-info">
+                    <div class="user-name">Daniel T.</div>
+                    <div class="user-meta">
+                      <span>Cleaning Service Founder</span> • <span>📍 Adama</span>
+                    </div>
+                  </div>
+                  <div class="rating">★★★★★</div>
+                </div>
+                <p class="testimonial-text">
+                  "Clients love the professional booking experience — it made us look bigger than we are! Payment reminders reduced late payments to zero. Worth every birr."
+                </p>
+                <div class="testimonial-results">
+                  <span class="result">100% on-time payments</span>
+                  <span class="result">+40 new clients in 2 months</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Client Column -->
+          <div class="testimonial-column">
+            <div class="column-header">
+              <h3 class="column-title">Clients & Customers</h3>
+              <div class="column-badge">👥 5,000+ monthly bookings</div>
+            </div>
+            <div class="testimonial-cards">
+              <div class="testimonial-card client">
+                <div class="testimonial-header">
+                  <div class="user-avatar bg-amber">MG</div>
+                  <div class="user-info">
+                    <div class="user-name">Meseret G.</div>
+                    <div class="user-meta">
+                      <span>Regular Client</span> • <span>📍 Bole, Addis</span>
+                    </div>
+                  </div>
+                  <div class="rating">★★★★★</div>
+                </div>
+                <p class="testimonial-text">
+                  "Booking my stylist used to mean 3 phone calls and hoping she’s free. Now I book in 20 seconds, pay with Telebirr, and get reminders. Feels so modern!"
+                </p>
+                <div class="testimonial-benefits">
+                  <span class="benefit">✅ Instant booking</span>
+                  <span class="benefit">✅ Telebirr safe & fast</span>
+                  <span class="benefit">✅ No-show protection</span>
+                </div>
+              </div>
+
+              <div class="testimonial-card client">
+                <div class="testimonial-header">
+                  <div class="user-avatar bg-purple">HM</div>
+                  <div class="user-info">
+                    <div class="user-name">Hana M.</div>
+                    <div class="user-meta">
+                      <span>Working Professional</span> • <span>📍 Kirkos, Addis</span>
+                    </div>
+                  </div>
+                  <div class="rating">★★★★★</div>
+                </div>
+                <p class="testimonial-text">
+                  "I use the same platform for my hair, nails, and even home cleaning. It’s reliable, the providers are vetted, and I can see my full booking history. So convenient!"
+                </p>
+                <div class="testimonial-benefits">
+                  <span class="benefit">✅ Trusted providers</span>
+                  <span class="benefit">✅ Single dashboard</span>
+                  <span class="benefit">✅ Booking history</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Impact Section -->
+    <section class="impact-section">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Transform Your Business in 3 Steps</h2>
+          <p class="section-subtitle">See how thousands of Ethiopian service professionals are growing</p>
+        </div>
+
+        <div class="steps-container">
+          <div class="step">
+            <div class="step-number">1</div>
+            <h3>Register in 2 Minutes</h3>
+            <p>Set up your business profile, services, and availability. No tech skills needed.</p>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <h3>Share Your Booking Link</h3>
+            <p>Post it on Telegram, WhatsApp, Facebook — clients book & pay instantly.</p>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <h3>Grow & Scale</h3>
+            <p>Use insights to add services, adjust pricing, and expand your team.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing-section">
       <div class="container">
         <div class="section-header">
           <h2 class="section-title">Simple, Transparent Pricing</h2>
-          <p class="section-subtitle">
-            No hidden fees. Cancel anytime.
-          </p>
+          <p class="section-subtitle">No hidden fees. Cancel anytime. Ethiopian birr only.</p>
         </div>
-        
+
         <div class="pricing-cards">
           <div class="pricing-card">
             <div class="plan-header">
-              <h3>Starter</h3>
-              <div class="price">Free</div>
-              <p class="plan-desc">Perfect for trying it out</p>
+              <h3 class="plan-name">Free Trial</h3>
+              <div class="plan-badge">ETB 0</div>
             </div>
+            <div class="plan-desc">30 days — no card required</div>
             <ul class="plan-features">
-              <li>✅ Up to 20 bookings/month</li>
-              <li>✅ Basic scheduling</li>
-              <li>✅ Client management</li>
-              <li>❌ Advanced reports</li>
-              <li>❌ Payment processing</li>
+              <li>✔️ Up to 50 bookings/month</li>
+              <li>✔️ Online booking link</li>
+              <li>✔️ SMS & email reminders</li>
+              <li>✔️ Basic business dashboard</li>
+              <li class="dim">❌ Payment processing (manual only)</li>
             </ul>
             <button @click="goToRegister" class="plan-button">
-              Start Free
+              Start Free Trial
             </button>
+            <div class="plan-note">Perfect for testing & small setups</div>
           </div>
-          
+
           <div class="pricing-card featured">
-            <div class="plan-badge">Most Popular</div>
+            <div class="featured-tag">Most Popular</div>
             <div class="plan-header">
-              <h3>Professional</h3>
-              <div class="price">ETB 299<span>/month</span></div>
-              <p class="plan-desc">For growing businesses</p>
+              <h3 class="plan-name">Professional</h3>
+              <div class="plan-badge">ETB 299<span>/month</span></div>
             </div>
-            <ul class="plan-features">
-              <li>✅ Unlimited bookings</li>
-              <li>✅ All scheduling features</li>
-              <li>✅ Full client management</li>
-              <li>✅ Business insights</li>
-              <li>✅ Payment processing</li>
+            <div class="plan-desc">After 30-day free trial</div>
+            <ul class="plan-features highlight">
+              <li>✔️ <strong>Unlimited bookings</strong></li>
+              <li>✔️ <strong>Telebirr & CBE Birr payments</strong></li>
+              <li>✔️ <strong>Revenue & client analytics</strong></li>
+              <li>✔️ <strong>Staff & team management</strong></li>
+              <li>✔️ <strong>Priority Ethiopian support</strong></li>
             </ul>
             <button @click="goToRegister" class="plan-button primary">
-              Start 14-Day Trial
+              Get Started — Free 30 Days
             </button>
+            <div class="plan-note">Best value for growing businesses</div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- Success Stories Section - Enhanced -->
-    <section id="success-stories" class="success-stories">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-title">Trusted by Ethiopian Business Owners</h2>
-          <p class="section-subtitle">
-            Real stories from real people
+        <div class="pricing-faq">
+          <p>❓ <strong>Frequently asked:</strong> 
+            <span>Can I downgrade? → Yes, anytime.</span>
+            <span>No setup fees. No long contracts.</span>
           </p>
         </div>
-
-        <div class="stories-grid">
-          <div class="story-card">
-            <div class="story-content">
-              <div class="quote-icon">"</div>
-              <p>"Before Infinity-Booking, I spent hours on the phone scheduling appointments. Now clients book online, and I get instant notifications. It changed how I run my business."</p>
-            </div>
-            <div class="story-author">
-              <div class="author-avatar">EB</div>
-              <div class="author-info">
-                <div class="author-name">Elena Berhanu</div>
-                <div class="author-business">GreenClean Services</div>
-                <div class="author-results">
-                  <span>⏱️ Saves 15 hours/week</span>
-                  <span>📈 40% more clients</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="story-card">
-            <div class="story-content">
-              <div class="quote-icon">"</div>
-              <p>"My clients love how easy it is to book and pay. I love how organized everything is. The automatic reminders alone have saved me so much time."</p>
-            </div>
-            <div class="story-author">
-              <div class="author-avatar">DM</div>
-              <div class="author-info">
-                <div class="author-name">Daniel Mekonnen</div>
-                <div class="author-business">Excel Education Center</div>
-                <div class="author-results">
-                  <span>💰 Payments on time</span>
-                  <span>⭐ 4.9/5 client rating</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="story-card">
-            <div class="story-content">
-              <div class="quote-icon">"</div>
-              <p>"The reports helped me understand which services are most popular. I adjusted my schedule and increased my income by 60% in three months."</p>
-            </div>
-            <div class="story-author">
-              <div class="author-avatar">ST</div>
-              <div class="author-info">
-                <div class="author-name">Sara Tesfaye</div>
-                <div class="author-business">Glamour Beauty Salon</div>
-                <div class="author-results">
-                  <span>📊 Better scheduling</span>
-                  <span>💸 Higher income</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
 
-    <!-- Enhanced Final CTA -->
-    <section class="final-cta">
+    <!-- Final CTA -->
+    <section class="cta-section">
       <div class="container">
         <div class="cta-content">
-          <h2 class="cta-title">Ready to Grow Your Business?</h2>
-          <p class="cta-text">Join hundreds of service professionals who are already saving time and earning more</p>
-          
-          <div class="cta-benefits">
-            <div class="benefit-card">
-              <span class="benefit-icon">🎯</span>
+          <h2 class="cta-title">
+            Ready to Join Ethiopia’s <span class="highlight">Smart Service Economy</span>?
+          </h2>
+          <p class="cta-subtitle">
+            150+ businesses are already thriving. Your journey starts in 5 minutes — free.
+          </p>
+
+          <div class="cta-stats">
+            <div class="cta-stat">
+              <div class="stat-icon">🇪🇹</div>
               <div>
-                <strong>Made for Ethiopia</strong>
-                <small>Local payment methods, Amharic support</small>
+                <div class="stat-value">100% Ethiopian</div>
+                <div class="stat-desc">Built in Addis, for Ethiopia</div>
               </div>
             </div>
-            <div class="benefit-card">
-              <span class="benefit-icon">🆓</span>
+            <div class="cta-stat">
+              <div class="stat-icon">⏱️</div>
               <div>
-                <strong>Free Setup Help</strong>
-                <small>We'll help you get started</small>
+                <div class="stat-value">5-Minute Setup</div>
+                <div class="stat-desc">No tech expertise needed</div>
               </div>
             </div>
-            <div class="benefit-card">
-              <span class="benefit-icon">📱</span>
+            <div class="cta-stat">
+              <div class="stat-icon">🔒</div>
               <div>
-                <strong>Works Everywhere</strong>
-                <small>Phone, tablet, computer</small>
+                <div class="stat-value">Secure & Private</div>
+                <div class="stat-desc">Your data, always protected</div>
               </div>
             </div>
           </div>
 
-          <div class="cta-actions">
-            <button @click="goToRegister" class="cta-btn primary">
-              Start Free Trial - No Credit Card Needed
-            </button>
-            <a href="/demo" class="cta-btn secondary">
-              📞 Book a Demo Call
-            </a>
-          </div>
+          <button @click="goToRegister" class="cta-button">
+            ✨ Start My Free Trial — No Card Needed
+          </button>
 
-          <div class="cta-guarantee">
-            <div class="guarantee-item">
-              <span>✅</span>
-              <span>30-day free trial</span>
-            </div>
-            <div class="guarantee-item">
-              <span>✅</span>
-              <span>Amharic & English support</span>
-            </div>
-            <div class="guarantee-item">
-              <span>✅</span>
-              <span>Setup in 10 minutes</span>
-            </div>
-          </div>
+          <p class="cta-footer">
+            <span>Questions? We’re here: <strong>support@yourplatform.et</strong> | +251 XXX XXX XXX</span>
+          </p>
         </div>
       </div>
     </section>
@@ -390,1105 +417,914 @@
 export default {
   name: 'HomePage',
   methods: {
-    goToLogin() {
-      this.$router.push('/login');
-    },
     goToRegister() {
       this.$router.push('/register');
+    },
+    goToLogin() {
+      this.$router.push('/login');
     }
   }
-}
+};
 </script>
 
 <style scoped>
-/* ===== BASE STYLES ===== */
+/* =============== Base =============== */
 .home {
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
-  overflow-x: hidden;
-  background-color: #ffffff;
-  color: #323543;
-  line-height: 1.5;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+  line-height: 1.6;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 16px;
-}
+/* =============== Utilities =============== */
+.bg-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
+.bg-green { background: linear-gradient(135deg, #10b981, #047857); color: white; }
+.bg-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
+.bg-amber { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
 
-/* ===== HERO SECTION ===== */
-.hero {
-  background: linear-gradient(135deg, #555572 0%, #58525e 100%);
-  color: white;
-  padding: 140px 0 80px;
-  margin-top: 60px; /* Account for fixed navbar height */
-  position: relative;
-}
+.up { color: #16a34a; }
+.down { color: #dc2626; }
 
-.hero-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.05)"/></svg>');
-  background-size: cover;
-}
-
-.hero-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
-  align-items: center;
-}
-
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.15);
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  margin-bottom: 24px;
-}
-
-.live-dot {
-  width: 6px;
-  height: 6px;
-  background: #10b981;
-  border-radius: 50%;
-}
-
+/* =============== Typography =============== */
 .hero-title {
-  font-size: 2.8rem;
-  font-weight: 700;
-  line-height: 1.2;
-  margin-bottom: 16px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  font-size: 3.2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  margin-bottom: 1.25rem;
 }
-
-.highlight {
-  background: linear-gradient(135deg, #f093fb, #f5576c);
+.hero-title .highlight {
+  background: linear-gradient(135deg, #1e40af, #0c4a6e);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-.hero-subtitle {
-  font-size: 1.1rem;
-  opacity: 0.95;
-  margin-bottom: 28px;
+.section-title {
+  font-size: 2.25rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #0f172a;
+}
+.section-subtitle {
+  font-size: 1.125rem;
+  color: #475569;
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto 3rem;
   line-height: 1.6;
-  max-width: 500px;
+}
+
+/* =============== Layout =============== */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 3.5rem;
+}
+
+/* =============== Hero =============== */
+.hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: white;
+  padding: 6rem 0 4rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+  z-index: 0;
+}
+
+.hero-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  position: relative;
+  z-index: 2;
+  align-items: center;
+}
+
+.hero-content {
+  max-width: 520px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1.25rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  opacity: 0.95;
+  margin-bottom: 2.5rem;
+  line-height: 1.5;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 2.5rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #60a5fa;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  display: block;
 }
 
 .hero-buttons {
   display: flex;
-  gap: 16px;
-  margin: 28px 0;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
 }
 
-.btn-primary,
-.btn-secondary {
-  padding: 14px 28px;
-  border-radius: 8px;
-  text-decoration: none;
+.hero-button {
+  padding: 0.875rem 2rem;
+  border-radius: 12px;
   font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1rem;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  font-size: 1.05rem;
   cursor: pointer;
-  border: none;
-  font-family: inherit;
-}
-
-.btn-primary {
-  background: white;
-  color: #667eea;
-  font-weight: 700;
-}
-
-.btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-}
-
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: 1px solid rgba(255,255,255,0.3);
-}
-
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-  border-color: rgba(255,255,255,0.5);
-}
-
-/* Social Proof */
-.social-proof {
-  margin-top: 40px;
-}
-
-.proof-stats {
-  display: flex;
-  gap: 32px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.stat-item strong {
-  font-size: 1.6rem;
-  display: block;
-  line-height: 1;
-}
-
-.stat-item span {
-  font-size: 0.85rem;
-  opacity: 0.9;
-  margin-top: 4px;
-}
-
-.provider-types {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.provider-tag {
-  background: rgba(255, 255, 255, 0.15);
-  padding: 8px 16px;
-  border-radius: 50px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.provider-tag:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-1px);
-}
-
-/* Feature Showcase */
-.feature-showcase {
-  display: flex;
-  justify-content: center;
-}
-
-.showcase-card {
-  background: rgb(144, 142, 157);
-  border-radius: 16px;
-  padding: 28px;
-  box-shadow: 0 10px 30px rgba(101, 103, 157, 0.12);
-  color: #1a1a1a;
-  width: 100%;
-  max-width: 380px;
   transition: all 0.3s ease;
-}
-
-.showcase-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 40px rgba(58, 56, 69, 0.18);
-}
-
-.card-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #10254d;
+  gap: 0.5rem;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.card-header h3 {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin: 0;
-  color: #1f1b21;
+.hero-button.primary {
+  background: white;
+  color: #1e40af;
+}
+.hero-button.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
-.card-badge {
-  background: #03bb81;
+.hero-button.secondary {
+  background: transparent;
   color: white;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+.hero-button.secondary:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+.trust-badges {
+  font-size: 0.875rem;
+  opacity: 0.8;
+  margin-top: 1rem;
+}
+
+/* Dashboard Preview */
+.hero-dashboard {
+  display: flex;
+  justify-content: center;
 }
 
 .dashboard-preview {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  background: white;
+  border-radius: 20px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid #e2e8f0;
 }
 
-.preview-header {
+.dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.business-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .business-name {
-  font-weight: 700;
+  font-weight: 600;
   font-size: 1.1rem;
-  color: #1a1a1a;
+  color: #0f172a;
 }
 
 .business-status {
-  font-size: 0.85rem;
-  color: #6b7280;
+  font-size: 0.875rem;
+  color: #64748b;
 }
 
-.growth-metrics {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.metric-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: #f8fafc;
-  border-radius: 12px;
-  transition: all 0.2s;
-}
-
-.metric-card:hover {
-  background: #f0f9ff;
-  transform: translateX(4px);
-}
-
-.metric-icon {
-  font-size: 1.8rem;
-  min-width: 48px;
-  text-align: center;
-}
-
-.metric-details {
-  flex: 1;
-}
-
-.metric-title {
-  font-size: 0.85rem;
-  color: #6b7280;
-  margin-bottom: 4px;
+.business-status .live {
+  color: #10b981;
   font-weight: 500;
 }
 
-.metric-value {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 2px;
-}
-
-.metric-desc {
+.dashboard-actions .btn-sm {
+  background: #f1f5f9;
+  border: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
   font-size: 0.8rem;
-  color: #6b7280;
+  color: #475569;
 }
 
-.business-benefits {
-  background: #f0f9ff;
-  padding: 20px;
+.dashboard-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.25rem 0;
+}
+
+.metric-card {
+  background: #f8fafc;
   border-radius: 12px;
-  margin-top: 16px;
+  padding: 1rem;
+  text-align: center;
 }
 
-.business-benefits h4 {
-  font-size: 1rem;
-  margin-bottom: 16px;
-  color: #1a1a1a;
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+
+.metric-label {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.metric-trend {
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
-.benefit-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 10px 0;
+.dashboard-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #475569;
+  margin: 1.5rem 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.benefit-icon {
-  font-size: 1.4rem;
-  min-width: 24px;
-  margin-top: 2px;
-}
-
-.benefit-text {
+.upcoming-list {
   display: flex;
   flex-direction: column;
+  gap: 0.75rem;
 }
 
-.benefit-text strong {
-  font-size: 0.95rem;
-  color: #1a1a1a;
-  margin-bottom: 2px;
-}
-
-.benefit-text small {
-  font-size: 0.8rem;
-  color: #6b7280;
-}
-
-/* ===== SECTIONS ===== */
-.section-header {
-  text-align: center;
-  margin-bottom: 56px;
-}
-
-.section-title {
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: #1a1a1a;
-  position: relative;
-}
-
-.section-title:after {
-  content: '';
-  position: absolute;
-  bottom: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 4px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border-radius: 2px;
-}
-
-.section-subtitle {
-  font-size: 1.1rem;
-  color: #6b7280;
-  max-width: 550px;
-  margin: 0 auto;
-  line-height: 1.6;
-}
-
-/* Features Grid */
-.features-section {
-  padding: 96px 0;
+.appointment-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
   background: #f8fafc;
+  border-radius: 12px;
+  font-size: 0.9rem;
 }
 
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 32px;
+.time-badge {
+  min-width: 2.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-align: center;
 }
+.morning { background: #dbeafe; color: #1d4ed8; }
+.afternoon { background: #fef3c7; color: #d97706; }
+.evening { background: #dcfce7; color: #16a34a; }
 
-.feature-card {
-  background: white;
-  padding: 32px;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid #e5e7eb;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.feature-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-  border-color: #c7d2fe;
-}
-
-.feature-icon {
-  font-size: 2.2rem;
-  margin-bottom: 20px;
-  color: #667eea;
-}
-
-.feature-card h3 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: #1a1a1a;
-  line-height: 1.3;
-}
-
-.feature-card p {
-  color: #6b7280;
-  margin-bottom: 20px;
-  line-height: 1.6;
+.appointment-details {
   flex: 1;
 }
 
-.feature-benefits {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.client-name {
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 0.125rem;
 }
 
-.feature-benefits li {
-  padding: 6px 0;
-  color: #4b5563;
-  font-size: 0.95rem;
-  position: relative;
-  padding-left: 24px;
-  display: flex;
-  align-items: center;
+.service {
+  color: #64748b;
+  font-size: 0.85rem;
 }
 
-.feature-benefits li:before {
-  content: '';
-  position: absolute;
-  left: 0;
-  width: 12px;
-  height: 12px;
-  background: #667eea;
-  border-radius: 50%;
-  opacity: 0.8;
+.payment-status {
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+.paid { background: #dcfce7; color: #16a34a; }
+.pending { background: #fef3c7; color: #d97706; }
+
+.dashboard-footer {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+  font-size: 0.875rem;
+  color: #64748b;
+  text-align: center;
 }
 
-/* How It Works */
-.how-it-works {
-  padding: 96px 0;
+/* =============== Trusted By =============== */
+.trusted-by-section {
+  padding: 3rem 0;
   background: white;
+  text-align: center;
 }
 
-.steps-container {
+.trusted-by-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 1.5rem;
+}
+
+.logos-grid {
   display: flex;
   justify-content: center;
-  align-items: center;
-  gap: 40px;
   flex-wrap: wrap;
+  gap: 2rem;
+  margin: 1.5rem 0;
+}
+
+.logo {
+  background: #f1f5f9;
+  color: #475569;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  min-width: 100px;
+}
+
+.trusted-by-note {
+  color: #64748b;
+  font-size: 0.95rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* =============== Platform =============== */
+.platform-section {
+  padding: 5rem 0;
+  background: #f1f5f9;
+}
+
+.platform-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.75rem;
   max-width: 1000px;
   margin: 0 auto;
 }
 
-.step {
+.platform-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0;
+}
+.platform-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e1;
+}
+
+.platform-icon {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  font-size: 1.75rem;
+}
+
+.platform-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: #0f172a;
+}
+
+.platform-card p {
+  color: #475569;
+  margin: 0;
+}
+
+/* =============== Testimonials =============== */
+.testimonials-section {
+  padding: 5rem 0;
+  background: white;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+}
+
+.column-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.column-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+
+.column-badge {
+  background: #f1f5f9;
+  color: #475569;
+  padding: 0.25rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  display: inline-block;
+}
+
+.testimonial-cards {
   display: flex;
   flex-direction: column;
+  gap: 1.5rem;
+}
+
+.testimonial-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.75rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+.testimonial-card:hover {
+  border-color: #c7d2fe;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.testimonial-card.provider {
+  border-top: 4px solid #3b82f6;
+}
+.testimonial-card.client {
+  border-top: 4px solid #10b981;
+}
+
+.testimonial-header {
+  display: flex;
   align-items: center;
-  text-align: center;
-  max-width: 180px;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.user-avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.user-info {
   flex: 1;
-  min-width: 160px;
+}
+
+.user-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+
+.user-meta {
+  font-size: 0.875rem;
+  color: #64748b;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.rating {
+  color: #fbbf24;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.testimonial-text {
+  font-style: italic;
+  color: #334155;
+  margin-bottom: 1.25rem;
+  line-height: 1.6;
+}
+
+.testimonial-results,
+.testimonial-benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.result,
+.benefit {
+  background: #f1f5f9;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.result { color: #1e40af; }
+.benefit { color: #059669; }
+
+/* =============== Impact =============== */
+.impact-section {
+  padding: 5rem 0;
+  background: #f8fafc;
+}
+
+.steps-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.step {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
 }
 
 .step-number {
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  width: 3rem;
+  height: 3rem;
+  background: #3b82f6;
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 1.4rem;
-  margin-bottom: 20px;
-  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.3);
+  font-size: 1.25rem;
+  margin: 0 auto 1.25rem;
 }
 
-.step-content h3 {
-  font-size: 1.2rem;
-  margin-bottom: 12px;
-  color: #1a1a1a;
-  font-weight: 600;
+.step h3 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: #0f172a;
 }
 
-.step-content p {
-  color: #6b7280;
-  font-size: 0.95rem;
-  line-height: 1.6;
+.step p {
+  color: #475569;
+  margin: 0;
 }
 
-.step-arrow {
-  font-size: 1.8rem;
-  color: #667eea;
-  opacity: 0.7;
-  font-weight: 600;
-  min-width: 40px;
-  text-align: center;
-}
-
-/* Pricing */
+/* =============== Pricing =============== */
 .pricing-section {
-  padding: 96px 0;
-  background: #f8fafc;
+  padding: 5rem 0;
+  background: white;
 }
 
 .pricing-cards {
-  display: flex;
-  gap: 32px;
-  justify-content: center;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 800px;
+  margin: 0 auto 3rem;
 }
 
 .pricing-card {
   background: white;
   border-radius: 16px;
-  padding: 40px 32px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-  max-width: 320px;
+  padding: 2.5rem 2rem;
+  text-align: center;
   position: relative;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
 }
-
 .pricing-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-.pricing-card.featured {
-  border: 2px solid #667eea;
-  transform: scale(1.05);
+.featured {
+  border-color: #3b82f6;
+  box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1);
 }
 
-.pricing-card.featured:hover {
-  transform: scale(1.05) translateY(-8px);
-}
-
-.plan-badge {
+.featured-tag {
   position: absolute;
-  top: -14px;
+  top: -12px;
   left: 50%;
   transform: translateX(-50%);
-  background: #667eea;
+  background: #3b82f6;
   color: white;
-  padding: 6px 16px;
-  border-radius: 50px;
-  font-size: 0.85rem;
+  padding: 0.375rem 1.25rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
   font-weight: 600;
-  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+  z-index: 2;
 }
 
 .plan-header {
-  text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: 1rem;
 }
 
-.plan-header h3 {
-  font-size: 1.6rem;
-  margin-bottom: 12px;
-  color: #1a1a1a;
+.plan-name {
+  font-size: 1.5rem;
   font-weight: 700;
+  color: #0f172a;
+  margin: 0;
 }
 
-.price {
-  font-size: 2.2rem;
+.plan-badge {
+  font-size: 2.25rem;
   font-weight: 800;
-  color: #1a1a1a;
-  margin-bottom: 8px;
-  line-height: 1;
+  margin: 0.5rem 0;
+  color: #0f172a;
 }
-
-.price span {
-  font-size: 1.1rem;
-  color: #6b7280;
+.plan-badge span {
+  font-size: 1rem;
   font-weight: 500;
+  color: #64748b;
 }
 
 .plan-desc {
-  color: #6b7280;
+  color: #64748b;
+  margin-bottom: 1.5rem;
   font-size: 0.95rem;
 }
 
 .plan-features {
   list-style: none;
   padding: 0;
-  margin: 0 0 32px 0;
+  margin: 0 0 1.75rem;
+  text-align: left;
 }
-
 .plan-features li {
-  padding: 12px 0;
-  color: #6b7280;
-  font-size: 0.95rem;
-  border-bottom: 1px solid #f3f4f6;
+  padding: 0.5rem 0;
+  color: #334155;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
-
-.plan-features li:last-child {
-  border-bottom: none;
+.plan-features li.dim {
+  color: #94a3b8;
+}
+.plan-features.highlight li {
+  font-weight: 500;
 }
 
 .plan-button {
-  display: block;
-  text-align: center;
-  padding: 14px 24px;
+  width: 100%;
+  padding: 0.875rem;
   border-radius: 10px;
   font-weight: 600;
   font-size: 1rem;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid #e5e7eb;
-  background: white;
-  color: #4b5563;
   cursor: pointer;
-  width: 100%;
-  font-family: inherit;
+  transition: all 0.3s;
+  border: none;
 }
-
 .plan-button.primary {
-  background: #667eea;
+  background: #3b82f6;
   color: white;
-  border-color: #667eea;
+}
+.plan-button:not(.primary) {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
 }
 
 .plan-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Success Stories */
-.success-stories {
-  padding: 96px 0;
-  background: white;
-}
-
-.stories-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 32px;
-  margin-top: 48px;
-}
-
-.story-card {
-  background: white;
-  padding: 36px;
-  border-radius: 20px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e5e7eb;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.story-card:before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #667eea, #764ba2);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.story-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
-}
-
-.story-card:hover:before {
-  opacity: 1;
-}
-
-.story-content {
-  position: relative;
-  margin-bottom: 28px;
-}
-
-.quote-icon {
-  font-size: 3.5rem;
-  color: #667eea;
-  opacity: 0.15;
-  position: absolute;
-  top: -12px;
-  left: -12px;
-  line-height: 1;
-}
-
-.story-content p {
-  font-style: italic;
-  color: #4b5563;
-  line-height: 1.7;
-  position: relative;
-  z-index: 1;
-  font-size: 1rem;
-  font-weight: 500;
-}
-
-.story-author {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.author-avatar {
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.1rem;
-  flex-shrink: 0;
-}
-
-.author-info {
-  flex: 1;
-}
-
-.author-name {
-  font-weight: 700;
-  color: #1a1a1a;
-  font-size: 1.1rem;
-  margin-bottom: 4px;
-}
-
-.author-business {
-  color: #6b7280;
-  font-size: 0.9rem;
-  margin-bottom: 12px;
-}
-
-.author-results {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.author-results span {
+.plan-note {
   font-size: 0.85rem;
-  color: #059669;
-  background: #d1fae5;
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-weight: 500;
+  color: #64748b;
+  margin-top: 1rem;
 }
 
-/* Enhanced Final CTA */
-.final-cta {
-  background: linear-gradient(135deg, #7b7d82, #8bb4f5);
-  color: white;
-  padding: 100px 0;
+.pricing-faq {
   text-align: center;
-  position: relative;
-  overflow: hidden;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+.pricing-faq span {
+  margin-left: 1rem;
 }
 
-.final-cta:before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,100 L0,100 Z" fill="rgba(102,126,234,0.05)"/></svg>');
-  background-size: cover;
+/* =============== CTA =============== */
+.cta-section {
+  padding: 5rem 0;
+  background: linear-gradient(135deg, #1e3a8a 0%, #0c4a6e 100%);
+  color: white;
+  text-align: center;
 }
 
 .cta-content {
-  position: relative;
-  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .cta-title {
-  font-size: 2.8rem;
-  font-weight: 700;
-  margin-bottom: 20px;
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1.25rem;
   line-height: 1.2;
 }
+.cta-title .highlight {
+  color: #93c5fd;
+}
 
-.cta-text {
+.cta-subtitle {
   font-size: 1.25rem;
-  opacity: 0.95;
-  margin-bottom: 40px;
-  max-width: 650px;
-  margin-left: auto;
-  margin-right: auto;
-  line-height: 1.6;
+  opacity: 0.9;
+  margin-bottom: 3rem;
 }
 
-.cta-benefits {
-  display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin: 40px 0;
-  flex-wrap: wrap;
+.cta-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
 }
 
-.benefit-card {
+.cta-stat {
   display: flex;
   align-items: center;
-  gap: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 20px 24px;
-  border-radius: 16px;
-  min-width: 220px;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.15);
+  gap: 1rem;
 }
 
-.benefit-card:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-4px);
+.stat-icon {
+  font-size: 1.75rem;
 }
 
-.benefit-icon {
-  font-size: 1.8rem;
-  min-width: 32px;
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
-.benefit-card strong {
-  display: block;
-  font-size: 1rem;
-  margin-bottom: 4px;
-  font-weight: 600;
+.stat-desc {
+  font-size: 0.9rem;
+  opacity: 0.8;
 }
 
-.benefit-card small {
-  display: block;
-  font-size: 0.85rem;
-  opacity: 0.9;
-}
-
-.cta-actions {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  margin: 40px 0;
-  flex-wrap: wrap;
-}
-
-.cta-btn {
-  padding: 16px 36px;
+.cta-button {
+  background: white;
+  color: #0c4a6e;
+  border: none;
+  padding: 1rem 2.5rem;
   border-radius: 12px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 1.1rem;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  min-height: 56px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  cursor: pointer;
-  border: none;
-  font-family: inherit;
+  gap: 0.75rem;
 }
-
-.cta-btn.primary {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  border: none;
-}
-
-.cta-btn.primary:hover {
+.cta-button:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
-.cta-btn.secondary {
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  border: 1px solid rgba(255,255,255,0.3);
-}
-
-.cta-btn.secondary:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-3px);
-  border-color: rgba(255,255,255,0.5);
-}
-
-.cta-guarantee {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
-  font-size: 0.95rem;
+.cta-footer {
+  margin-top: 2rem;
+  font-size: 0.9rem;
   opacity: 0.9;
-  margin-top: 28px;
-  flex-wrap: wrap;
+}
+.cta-footer strong {
+  color: #93c5fd;
 }
 
-.guarantee-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.guarantee-item span {
-  display: flex;
-  align-items: center;
-}
-
-/* ===== MOBILE-FIRST RESPONSIVE DESIGN ===== */
+/* =============== Responsive =============== */
 @media (max-width: 1024px) {
-  .hero-content {
+  .hero-container {
     grid-template-columns: 1fr;
-    gap: 40px;
     text-align: center;
   }
-  
-  .steps-container {
-    flex-direction: column;
-    gap: 50px;
+  .hero-content {
+    max-width: 100%;
   }
-  
-  .step-arrow {
-    transform: rotate(90deg);
-    margin: -20px 0;
+  .hero-stats {
+    justify-content: center;
   }
-  
-  .section-title {
-    font-size: 2rem;
+  .dashboard-preview {
+    max-width: 450px;
+    margin: 0 auto;
   }
-  
-  .hero {
-    margin-top: 70px; /* Adjust for mobile navbar height */
+  .testimonials-grid {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 768px) {
   .hero {
-    padding: 120px 0 70px;
-    margin-top: 60px;
+    padding: 4rem 0 3rem;
   }
-  
   .hero-title {
-    font-size: 2.2rem;
+    font-size: 2.5rem;
   }
-  
   .section-title {
-    font-size: 1.8rem;
+    font-size: 2rem;
   }
-  
-  .section-header {
-    margin-bottom: 48px;
-  }
-  
   .hero-buttons {
     flex-direction: column;
-    align-items: center;
   }
-  
-  .btn-primary, .btn-secondary {
-    width: 100%;
-    max-width: 300px;
-    justify-content: center;
-  }
-  
-  .proof-stats, .provider-types {
-    justify-content: center;
-  }
-  
-  .features-grid,
+  .platform-grid,
+  .steps-container,
   .pricing-cards,
-  .stories-grid {
+  .cta-stats {
     grid-template-columns: 1fr;
-  }
-  
-  .pricing-card.featured {
-    transform: none;
-  }
-  
-  .pricing-card.featured:hover {
-    transform: translateY(-8px);
-  }
-  
-  .cta-benefits {
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-  }
-  
-  .benefit-card {
-    width: 100%;
-    max-width: 320px;
-  }
-  
-  .cta-actions {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .cta-btn {
-    width: 100%;
-    max-width: 320px;
-    text-align: center;
-  }
-  
-  .cta-guarantee {
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  .showcase-card {
-    max-width: 100%;
   }
 }
 
 @media (max-width: 480px) {
-  .container {
-    padding: 0 12px;
-  }
-  
   .hero-title {
-    font-size: 1.9rem;
-  }
-  
-  .section-title {
-    font-size: 1.5rem;
-  }
-  
-  .hero-subtitle {
-    font-size: 1rem;
-  }
-  
-  .story-author {
-    flex-direction: column;
-    text-align: center;
-    gap: 20px;
-  }
-  
-  .author-info {
-    text-align: center;
-  }
-  
-  .author-results {
-    justify-content: center;
-  }
-  
-  .cta-title {
     font-size: 2rem;
   }
-  
-  .cta-text {
-    font-size: 1.1rem;
+  .section-title {
+    font-size: 1.75rem;
   }
-  
-  .feature-card {
-    padding: 24px;
+  .dashboard-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
   }
-  
+  .dashboard-actions {
+    width: 100%;
+  }
+  .testimonials-grid,
+  .pricing-cards {
+    gap: 1.5rem;
+  }
   .pricing-card {
-    padding: 32px 24px;
-  }
-  
-  .pricing-card.featured {
-    margin-top: 20px;
-  }
-  
-  .steps-container {
-    gap: 40px;
-  }
-  
-  .step {
-    max-width: 100%;
+    padding: 2rem 1.5rem;
   }
 }
 </style>
