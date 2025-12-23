@@ -3,410 +3,445 @@
   <div class="home">
     <!-- Hero Section -->
     <section class="hero">
-      <div class="hero-container">
+      <div class="container">
         <div class="hero-content">
-          <div class="hero-badge">
-            <span class="flag">🇪🇹</span> Built for Ethiopian Service Professionals
-          </div>
-          <h1 class="hero-title">
-            Grow Your <span class="highlight">Service Business</span>, Ethiopian-Style
-          </h1>
+          <h1 class="hero-title">Infinity Booking: The Complete Platform for Ethiopian Service Businesses</h1>
           <p class="hero-subtitle">
-            Accept bookings 24/7, get paid instantly via Telebirr & CBE Birr, and manage your business — all in one simple dashboard.
+            Connect with clients, manage appointments, accept local payments, and grow your business — all from one professional platform designed specifically for Ethiopia.
           </p>
-
-          <div class="hero-stats">
-            <div class="stat">
-              <div class="stat-number">150+</div>
-              <div class="stat-label">Active Businesses</div>
-            </div>
-            <div class="stat">
-              <div class="stat-number">4.9★</div>
-              <div class="stat-label">User Rating</div>
-            </div>
-            <div class="stat">
-              <div class="stat-number">5,200+</div>
-              <div class="stat-label">Monthly Bookings</div>
-            </div>
-          </div>
-
-          <div class="hero-buttons">
-            <button @click="goToRegister" class="hero-button primary">
-              Start Free Trial (30 Days)
+          
+          <div class="hero-cta">
+            <button @click="goToRegister" class="btn-primary">
+              Start Your Free 30-Day Trial
             </button>
-            <button @click="goToLogin" class="hero-button secondary">
-              Login to Dashboard
+            <button @click="goToDemo" class="btn-secondary">
+              See Platform Demo
             </button>
           </div>
-
-          <div class="trust-badges">
-            <span>🔒 Secure • 📱 Mobile-Optimized • 🇪🇹 Ethiopian Support</span>
-          </div>
-        </div>
-
-        <div class="hero-dashboard">
-          <div class="dashboard-preview">
-            <div class="dashboard-header">
-              <div class="business-info">
-                <div class="avatar">A</div>
-                <div>
-                  <div class="business-name">Addis Beauty Lounge</div>
-                  <div class="business-status">📍 Bole, Addis Ababa • <span class="live">● Live</span></div>
-                </div>
-              </div>
-              <div class="dashboard-actions">
-                <button class="btn-sm">Settings</button>
-              </div>
-            </div>
-
-            <div class="dashboard-metrics">
-              <div class="metric-card">
-                <div class="metric-value">12</div>
-                <div class="metric-label">Appointments Today</div>
-                <div class="metric-trend up">+3 vs yesterday</div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-value">ETB 8,450</div>
-                <div class="metric-label">Revenue Today</div>
-                <div class="metric-trend up">+ETB 1,200</div>
-              </div>
-            </div>
-
-            <div class="dashboard-section-title">Upcoming Appointments</div>
-            <div class="upcoming-list">
-              <div class="appointment-item">
-                <div class="time-badge morning">10:00</div>
-                <div class="appointment-details">
-                  <div class="client-name">Meseret G.</div>
-                  <div class="service">Hair Styling • 60 min</div>
-                </div>
-                <div class="payment-status paid">
-                  <span>✅ Paid</span>
-                </div>
-              </div>
-              <div class="appointment-item">
-                <div class="time-badge afternoon">14:00</div>
-                <div class="appointment-details">
-                  <div class="client-name">Hana M.</div>
-                  <div class="service">Manicure • 45 min</div>
-                </div>
-                <div class="payment-status pending">
-                  <span>⏱️ Pending</span>
-                </div>
-              </div>
-              <div class="appointment-item">
-                <div class="time-badge evening">16:30</div>
-                <div class="appointment-details">
-                  <div class="client-name">Samuel K.</div>
-                  <div class="service">Beard Trim • 30 min</div>
-                </div>
-                <div class="payment-status paid">
-                  <span>✅ Paid</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="dashboard-footer">
-              <span>📱 Mobile dashboard accessible anywhere</span>
-            </div>
+          
+          <div class="hero-note">
+            <p>No credit card required • Cancel anytime • Ethiopian support team</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Trusted By Section -->
-    <section class="trusted-by-section">
-      <div class="container">
-        <p class="trusted-by-label">Trusted by leading Ethiopian service businesses</p>
-        <div class="logos-grid">
-          <div class="logo">Salon</div>
-          <div class="logo">Spa</div>
-          <div class="logo">Cleaning</div>
-          <div class="logo">Tutor</div>
-          <div class="logo">Repair</div>
-          <div class="logo">Events</div>
-        </div>
-        <p class="trusted-by-note">Including salons in Addis, cleaning services in Adama, and tutors in Hawassa</p>
-      </div>
-    </section>
-
-    <!-- Core Platform -->
-    <section class="platform-section">
+    <!-- Platform Overview -->
+    <section class="overview">
       <div class="container">
         <div class="section-header">
-          <h2 class="section-title">All-in-One Platform for Ethiopian Service Providers</h2>
-          <p class="section-subtitle">
-            Everything you need — built with local payment systems, Amharic support (coming soon), and Ethiopian business workflows in mind.
-          </p>
+          <h2>What Infinity Booking Offers</h2>
+          <p>A comprehensive platform built to address the specific needs of Ethiopian service providers</p>
         </div>
-
-        <div class="platform-grid">
-          <div class="platform-card">
-            <div class="platform-icon bg-blue">📅</div>
-            <h3>Smart Booking</h3>
-            <p>Share your booking link. Clients book 24/7 — no calls, no missed opportunities.</p>
+        
+        <div class="overview-content">
+          <div class="overview-item">
+            <div class="overview-title">Digital Client Connection</div>
+            <p>Create your professional business profile and share your unique booking link. Clients can book appointments 24/7 through WhatsApp, Telegram, or your website. No more missed calls or scheduling conflicts.</p>
           </div>
-          <div class="platform-card">
-            <div class="platform-icon bg-green">💳</div>
-            <h3>Local Payments</h3>
-            <p>Telebirr, CBE Birr, bank transfer & cash. Payments appear instantly in your dashboard.</p>
+          
+          <div class="overview-item">
+            <div class="overview-title">Local Payment Integration</div>
+            <p>Accept payments through Telebirr, CBE Birr, bank transfers, and cash — all tracked in one dashboard. Receive instant notifications when clients pay, and automatically reconcile payments with appointments.</p>
           </div>
-          <div class="platform-card">
-            <div class="platform-icon bg-purple">📱</div>
-            <h3>Mobile Dashboard</h3>
-            <p>Manage bookings, clients, and revenue — fully responsive on any phone or tablet.</p>
+          
+          <div class="overview-item">
+            <div class="overview-title">Business Management Dashboard</div>
+            <p>Manage your entire operation from one central dashboard. View daily appointments, track revenue, manage client information, and access business insights that help you make informed decisions.</p>
           </div>
-          <div class="platform-card">
-            <div class="platform-icon bg-amber">📊</div>
-            <h3>Business Insights</h3>
-            <p>Track peak hours, top services, revenue trends — make smarter decisions.</p>
+          
+          <div class="overview-item">
+            <div class="overview-title">Growth & Analytics Tools</div>
+            <p>Understand your business performance with detailed analytics. Identify peak hours, track service popularity, monitor client retention, and discover opportunities to increase your revenue.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- What Users Say -->
-    <section class="testimonials-section">
+    <!-- How It Works -->
+    <section class="workflow">
       <div class="container">
         <div class="section-header">
-          <h2 class="section-title">Real Impact, Real Stories</h2>
-          <p class="section-subtitle">
-            Hear from Ethiopian entrepreneurs who’ve transformed their businesses.
-          </p>
+          <h2>How Your Business Operates with Infinity Booking</h2>
+          <p>A streamlined process designed for efficiency and growth</p>
         </div>
-
-        <div class="testimonials-grid">
-          <!-- Provider Column -->
-          <div class="testimonial-column">
-            <div class="column-header">
-              <h3 class="column-title">Service Providers</h3>
-              <div class="column-badge">💼 Running businesses across 8 cities</div>
-            </div>
-            <div class="testimonial-cards">
-              <div class="testimonial-card provider">
-                <div class="testimonial-header">
-                  <div class="user-avatar bg-blue">SG</div>
-                  <div class="user-info">
-                    <div class="user-name">Selam G.</div>
-                    <div class="user-meta">
-                      <span>Beauty Salon Owner</span> • <span>📍 Addis Ababa</span>
-                    </div>
-                  </div>
-                  <div class="rating">★★★★★</div>
-                </div>
-                <p class="testimonial-text">
-                  "Since joining, I’ve doubled my client base. The Telebirr integration means no more chasing payments — clients pay in seconds. My time is now spent on creativity, not admin."
-                </p>
-                <div class="testimonial-results">
-                  <span class="result">↑ 2x Revenue</span>
-                  <span class="result">↓ 12 hrs/week admin</span>
-                </div>
-              </div>
-
-              <div class="testimonial-card provider">
-                <div class="testimonial-header">
-                  <div class="user-avatar bg-green">DT</div>
-                  <div class="user-info">
-                    <div class="user-name">Daniel T.</div>
-                    <div class="user-meta">
-                      <span>Cleaning Service Founder</span> • <span>📍 Adama</span>
-                    </div>
-                  </div>
-                  <div class="rating">★★★★★</div>
-                </div>
-                <p class="testimonial-text">
-                  "Clients love the professional booking experience — it made us look bigger than we are! Payment reminders reduced late payments to zero. Worth every birr."
-                </p>
-                <div class="testimonial-results">
-                  <span class="result">100% on-time payments</span>
-                  <span class="result">+40 new clients in 2 months</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Client Column -->
-          <div class="testimonial-column">
-            <div class="column-header">
-              <h3 class="column-title">Clients & Customers</h3>
-              <div class="column-badge">👥 5,000+ monthly bookings</div>
-            </div>
-            <div class="testimonial-cards">
-              <div class="testimonial-card client">
-                <div class="testimonial-header">
-                  <div class="user-avatar bg-amber">MG</div>
-                  <div class="user-info">
-                    <div class="user-name">Meseret G.</div>
-                    <div class="user-meta">
-                      <span>Regular Client</span> • <span>📍 Bole, Addis</span>
-                    </div>
-                  </div>
-                  <div class="rating">★★★★★</div>
-                </div>
-                <p class="testimonial-text">
-                  "Booking my stylist used to mean 3 phone calls and hoping she’s free. Now I book in 20 seconds, pay with Telebirr, and get reminders. Feels so modern!"
-                </p>
-                <div class="testimonial-benefits">
-                  <span class="benefit">✅ Instant booking</span>
-                  <span class="benefit">✅ Telebirr safe & fast</span>
-                  <span class="benefit">✅ No-show protection</span>
-                </div>
-              </div>
-
-              <div class="testimonial-card client">
-                <div class="testimonial-header">
-                  <div class="user-avatar bg-purple">HM</div>
-                  <div class="user-info">
-                    <div class="user-name">Hana M.</div>
-                    <div class="user-meta">
-                      <span>Working Professional</span> • <span>📍 Kirkos, Addis</span>
-                    </div>
-                  </div>
-                  <div class="rating">★★★★★</div>
-                </div>
-                <p class="testimonial-text">
-                  "I use the same platform for my hair, nails, and even home cleaning. It’s reliable, the providers are vetted, and I can see my full booking history. So convenient!"
-                </p>
-                <div class="testimonial-benefits">
-                  <span class="benefit">✅ Trusted providers</span>
-                  <span class="benefit">✅ Single dashboard</span>
-                  <span class="benefit">✅ Booking history</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Impact Section -->
-    <section class="impact-section">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-title">Transform Your Business in 3 Steps</h2>
-          <p class="section-subtitle">See how thousands of Ethiopian service professionals are growing</p>
-        </div>
-
-        <div class="steps-container">
+        
+        <div class="workflow-steps">
           <div class="step">
             <div class="step-number">1</div>
-            <h3>Register in 2 Minutes</h3>
-            <p>Set up your business profile, services, and availability. No tech skills needed.</p>
+            <div class="step-content">
+              <h3>Setup Your Business Profile</h3>
+              <p>Register your business in minutes. Add your services, set pricing, define working hours, and configure your preferred payment methods. Your profile becomes your digital storefront.</p>
+            </div>
           </div>
+          
           <div class="step">
             <div class="step-number">2</div>
-            <h3>Share Your Booking Link</h3>
-            <p>Post it on Telegram, WhatsApp, Facebook — clients book & pay instantly.</p>
+            <div class="step-content">
+              <h3>Share Your Booking Link</h3>
+              <p>Share your personalized booking link with clients through social media, messaging apps, or your website. Clients can view your availability and book appointments at their convenience.</p>
+            </div>
           </div>
+          
           <div class="step">
             <div class="step-number">3</div>
-            <h3>Grow & Scale</h3>
-            <p>Use insights to add services, adjust pricing, and expand your team.</p>
+            <div class="step-content">
+              <h3>Manage Appointments & Payments</h3>
+              <p>Receive instant notifications for new bookings. Clients can pay via their preferred method. Your dashboard automatically updates with confirmed appointments and payment status.</p>
+            </div>
+          </div>
+          
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <h3>Analyze & Optimize</h3>
+              <p>Use our analytics tools to understand your business performance. Identify trends, optimize your schedule, adjust pricing, and implement strategies to grow your client base.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard Example -->
+    <section class="dashboard-preview">
+      <div class="container">
+        <div class="section-header">
+          <h2>Your Business Command Center</h2>
+          <p>Everything you need to manage your service business, organized in one intuitive interface</p>
+        </div>
+        
+        <div class="dashboard-example">
+          <div class="dashboard-tabs">
+            <button :class="['tab', { active: activeTab === 'appointments' }]" @click="activeTab = 'appointments'">
+              Appointments
+            </button>
+            <button :class="['tab', { active: activeTab === 'revenue' }]" @click="activeTab = 'revenue'">
+              Revenue
+            </button>
+            <button :class="['tab', { active: activeTab === 'clients' }]" @click="activeTab = 'clients'">
+              Clients
+            </button>
+          </div>
+          
+          <div class="dashboard-content">
+            <!-- Appointments View -->
+            <div v-if="activeTab === 'appointments'" class="view appointments-view">
+              <div class="view-header">
+                <h3>Today's Schedule</h3>
+                <div class="view-stats">
+                  <div class="stat">Total: 12 appointments</div>
+                  <div class="stat">Confirmed: 10</div>
+                  <div class="stat">Pending: 2</div>
+                </div>
+              </div>
+              
+              <div class="appointments-list">
+                <div class="appointment">
+                  <div class="appointment-time">09:00 AM</div>
+                  <div class="appointment-details">
+                    <div class="client-name">Meseret Girma</div>
+                    <div class="service">Hair Styling - 60 minutes</div>
+                    <div class="client-contact">+251 91 234 5678</div>
+                  </div>
+                  <div class="appointment-status confirmed">Confirmed</div>
+                </div>
+                
+                <div class="appointment">
+                  <div class="appointment-time">11:30 AM</div>
+                  <div class="appointment-details">
+                    <div class="client-name">Hana Mekonnen</div>
+                    <div class="service">Manicure & Pedicure - 90 minutes</div>
+                    <div class="client-contact">+251 92 345 6789</div>
+                  </div>
+                  <div class="appointment-status confirmed">Confirmed</div>
+                </div>
+                
+                <div class="appointment">
+                  <div class="appointment-time">02:00 PM</div>
+                  <div class="appointment-details">
+                    <div class="client-name">Samuel Kebede</div>
+                    <div class="service">Beard Trim - 30 minutes</div>
+                    <div class="client-contact">+251 93 456 7890</div>
+                  </div>
+                  <div class="appointment-status pending">Pending Payment</div>
+                </div>
+              </div>
+              
+              <div class="view-actions">
+                <button class="btn-action">View Full Schedule</button>
+                <button class="btn-action primary">Add New Appointment</button>
+              </div>
+            </div>
+            
+            <!-- Revenue View -->
+            <div v-if="activeTab === 'revenue'" class="view revenue-view">
+              <div class="view-header">
+                <h3>Revenue Overview</h3>
+                <div class="view-stats">
+                  <div class="stat">Today: ETB 8,450</div>
+                  <div class="stat">This Week: ETB 42,800</div>
+                  <div class="stat">This Month: ETB 156,300</div>
+                </div>
+              </div>
+              
+              <div class="revenue-breakdown">
+                <div class="breakdown-item">
+                  <div class="breakdown-title">Telebirr Payments</div>
+                  <div class="breakdown-amount">ETB 5,200</div>
+                  <div class="breakdown-percentage">62%</div>
+                </div>
+                
+                <div class="breakdown-item">
+                  <div class="breakdown-title">CBE Birr Payments</div>
+                  <div class="breakdown-amount">ETB 2,100</div>
+                  <div class="breakdown-percentage">25%</div>
+                </div>
+                
+                <div class="breakdown-item">
+                  <div class="breakdown-title">Cash Payments</div>
+                  <div class="breakdown-amount">ETB 1,150</div>
+                  <div class="breakdown-percentage">13%</div>
+                </div>
+              </div>
+              
+              <div class="payment-notes">
+                <p>All payments are automatically recorded and reconciled with appointments. You can generate detailed reports for any time period.</p>
+              </div>
+            </div>
+            
+            <!-- Clients View -->
+            <div v-if="activeTab === 'clients'" class="view clients-view">
+              <div class="view-header">
+                <h3>Client Management</h3>
+                <div class="view-stats">
+                  <div class="stat">Total Clients: 245</div>
+                  <div class="stat">Active This Month: 68</div>
+                  <div class="stat">New This Week: 12</div>
+                </div>
+              </div>
+              
+              <div class="clients-list">
+                <div class="client">
+                  <div class="client-info">
+                    <div class="client-name">Meseret Girma</div>
+                    <div class="client-details">4 appointments • ETB 5,200 total • Last visit: Nov 15</div>
+                    <div class="client-contact">meseretg@email.com • +251 91 234 5678</div>
+                  </div>
+                  <div class="client-actions">
+                    <button class="btn-small">View History</button>
+                    <button class="btn-small">Send Reminder</button>
+                  </div>
+                </div>
+                
+                <div class="client">
+                  <div class="client-info">
+                    <div class="client-name">Hana Mekonnen</div>
+                    <div class="client-details">2 appointments • ETB 3,800 total • Last visit: Nov 12</div>
+                    <div class="client-contact">hana.m@email.com • +251 92 345 6789</div>
+                  </div>
+                  <div class="client-actions">
+                    <button class="btn-small">View History</button>
+                    <button class="btn-small">Send Reminder</button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="client-insights">
+                <p>Client retention rate: 78% • Average appointment value: ETB 1,200 • Most popular service: Hair Styling</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="dashboard-features">
+          <div class="feature">
+            <h4>Real-time Updates</h4>
+            <p>Your dashboard updates instantly when clients book appointments or make payments.</p>
+          </div>
+          
+          <div class="feature">
+            <h4>Mobile Access</h4>
+            <p>Access your dashboard from any device — desktop, tablet, or smartphone.</p>
+          </div>
+          
+          <div class="feature">
+            <h4>Secure & Private</h4>
+            <p>Your business data is protected with enterprise-level security measures.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Business Benefits -->
+    <section class="benefits">
+      <div class="container">
+        <div class="section-header">
+          <h2>Why Ethiopian Service Providers Choose Infinity Booking</h2>
+          <p>Practical benefits that make a real difference to your business operations</p>
+        </div>
+        
+        <div class="benefits-grid">
+          <div class="benefit-card">
+            <h3>Reduce Administrative Work</h3>
+            <p>Automate scheduling, reminders, and payment tracking. Save hours each week that you can dedicate to serving clients and growing your business.</p>
+          </div>
+          
+          <div class="benefit-card">
+            <h3>Increase Revenue</h3>
+            <p>Accept bookings 24/7, reduce no-shows with automated reminders, and upsell services through your professional booking interface.</p>
+          </div>
+          
+          <div class="benefit-card">
+            <h3>Build Professional Credibility</h3>
+            <p>Present a modern, professional image to clients with your branded booking page and organized appointment management.</p>
+          </div>
+          
+          <div class="benefit-card">
+            <h3>Make Data-Driven Decisions</h3>
+            <p>Access clear business insights about your most profitable services, busiest times, and client preferences.</p>
+          </div>
+          
+          <div class="benefit-card">
+            <h3>Simplify Payment Collection</h3>
+            <p>Streamline payment tracking across multiple methods. Know exactly what's been paid and what's outstanding at any moment.</p>
+          </div>
+          
+          <div class="benefit-card">
+            <h3>Scale Your Operations</h3>
+            <p>As your business grows, our platform scales with you. Add staff members, new services, and additional locations seamlessly.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Success Stories -->
+    <section class="success">
+      <div class="container">
+        <div class="section-header">
+          <h2>Real Business Transformations</h2>
+          <p>Ethiopian service providers who have grown their businesses with Infinity Booking</p>
+        </div>
+        
+        <div class="success-stories">
+          <div class="story">
+            <div class="story-content">
+              <h3>Selam's Beauty Salon - Addis Ababa</h3>
+              <p>"Before Infinity Booking, I was managing appointments through phone calls and a paper notebook. I regularly double-booked or missed appointments. Now, my clients book online, pay through Telebirr, and my schedule is always up to date. I've increased my client base by 60% while reducing administrative time by 15 hours per week."</p>
+              <div class="story-metrics">
+                <div class="metric">+60% more clients</div>
+                <div class="metric">-15 hours admin/week</div>
+                <div class="metric">98% payment success rate</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="story">
+            <div class="story-content">
+              <h3>Daniel's Cleaning Service - Adama</h3>
+              <p>"Managing a team of 8 cleaners with varying schedules was challenging. Infinity Booking allows clients to book specific services, and my team receives automatic notifications. Payment tracking was previously a major issue — now everything is recorded and reconciled automatically. We've expanded to 12 employees in 6 months."</p>
+              <div class="story-metrics">
+                <div class="metric">12 employees managed</div>
+                <div class="metric">350+ monthly bookings</div>
+                <div class="metric">100% payment tracking</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
     <!-- Pricing -->
-    <section class="pricing-section">
+    <section class="pricing">
       <div class="container">
         <div class="section-header">
-          <h2 class="section-title">Simple, Transparent Pricing</h2>
-          <p class="section-subtitle">No hidden fees. Cancel anytime. Ethiopian birr only.</p>
+          <h2>Simple, Transparent Pricing</h2>
+          <p>Choose the plan that fits your business needs. No hidden fees, no long-term contracts.</p>
         </div>
-
-        <div class="pricing-cards">
-          <div class="pricing-card">
+        
+        <div class="pricing-plans">
+          <div class="plan">
             <div class="plan-header">
-              <h3 class="plan-name">Free Trial</h3>
-              <div class="plan-badge">ETB 0</div>
+              <h3>Free Trial</h3>
+              <div class="plan-price">ETB 0</div>
+              <div class="plan-period">30 days</div>
             </div>
-            <div class="plan-desc">30 days — no card required</div>
-            <ul class="plan-features">
-              <li>✔️ Up to 50 bookings/month</li>
-              <li>✔️ Online booking link</li>
-              <li>✔️ SMS & email reminders</li>
-              <li>✔️ Basic business dashboard</li>
-              <li class="dim">❌ Payment processing (manual only)</li>
-            </ul>
-            <button @click="goToRegister" class="plan-button">
+            
+            <div class="plan-features">
+              <p>Perfect for exploring the platform and setting up your business</p>
+              <ul>
+                <li>Up to 50 appointments per month</li>
+                <li>Basic booking page</li>
+                <li>Email and SMS reminders</li>
+                <li>Manual payment tracking</li>
+                <li>Standard support</li>
+              </ul>
+            </div>
+            
+            <button @click="goToRegister" class="btn-plan">
               Start Free Trial
             </button>
-            <div class="plan-note">Perfect for testing & small setups</div>
           </div>
-
-          <div class="pricing-card featured">
-            <div class="featured-tag">Most Popular</div>
+          
+          <div class="plan featured">
+            <div class="plan-badge">Most Popular</div>
             <div class="plan-header">
-              <h3 class="plan-name">Professional</h3>
-              <div class="plan-badge">ETB 299<span>/month</span></div>
+              <h3>Professional</h3>
+              <div class="plan-price">ETB 299<span>/month</span></div>
+              <div class="plan-period">After free trial</div>
             </div>
-            <div class="plan-desc">After 30-day free trial</div>
-            <ul class="plan-features highlight">
-              <li>✔️ <strong>Unlimited bookings</strong></li>
-              <li>✔️ <strong>Telebirr & CBE Birr payments</strong></li>
-              <li>✔️ <strong>Revenue & client analytics</strong></li>
-              <li>✔️ <strong>Staff & team management</strong></li>
-              <li>✔️ <strong>Priority Ethiopian support</strong></li>
-            </ul>
-            <button @click="goToRegister" class="plan-button primary">
-              Get Started — Free 30 Days
+            
+            <div class="plan-features">
+              <p>Complete platform access for growing service businesses</p>
+              <ul>
+                <li>Unlimited appointments</li>
+                <li>Telebirr & CBE Birr integration</li>
+                <li>Advanced business analytics</li>
+                <li>Staff management tools</li>
+                <li>Priority Ethiopian support</li>
+                <li>Custom booking page</li>
+                <li>Automated reports</li>
+              </ul>
+            </div>
+            
+            <button @click="goToRegister" class="btn-plan primary">
+              Get Started
             </button>
-            <div class="plan-note">Best value for growing businesses</div>
           </div>
         </div>
-
-        <div class="pricing-faq">
-          <p>❓ <strong>Frequently asked:</strong> 
-            <span>Can I downgrade? → Yes, anytime.</span>
-            <span>No setup fees. No long contracts.</span>
-          </p>
+        
+        <div class="pricing-note">
+          <p>All plans include: Secure data storage • Mobile access • Ethiopian business support • No setup fees</p>
+          <p>Need a custom plan for multiple locations or large teams? <a href="/contact">Contact our sales team</a></p>
         </div>
       </div>
     </section>
 
     <!-- Final CTA -->
-    <section class="cta-section">
+    <section class="final-cta">
       <div class="container">
         <div class="cta-content">
-          <h2 class="cta-title">
-            Ready to Join Ethiopia’s <span class="highlight">Smart Service Economy</span>?
-          </h2>
-          <p class="cta-subtitle">
-            150+ businesses are already thriving. Your journey starts in 5 minutes — free.
-          </p>
-
-          <div class="cta-stats">
-            <div class="cta-stat">
-              <div class="stat-icon">🇪🇹</div>
-              <div>
-                <div class="stat-value">100% Ethiopian</div>
-                <div class="stat-desc">Built in Addis, for Ethiopia</div>
-              </div>
-            </div>
-            <div class="cta-stat">
-              <div class="stat-icon">⏱️</div>
-              <div>
-                <div class="stat-value">5-Minute Setup</div>
-                <div class="stat-desc">No tech expertise needed</div>
-              </div>
-            </div>
-            <div class="cta-stat">
-              <div class="stat-icon">🔒</div>
-              <div>
-                <div class="stat-value">Secure & Private</div>
-                <div class="stat-desc">Your data, always protected</div>
-              </div>
-            </div>
+          <h2>Start Growing Your Service Business Today</h2>
+          <p>Join hundreds of Ethiopian service providers who are already using Infinity Booking to streamline their operations and increase their revenue.</p>
+          
+          <div class="cta-benefits">
+            <div class="benefit">30-day free trial with full platform access</div>
+            <div class="benefit">Personal onboarding assistance</div>
+            <div class="benefit">Ethiopian support team available in Amharic and English</div>
+            <div class="benefit">No commitment - cancel anytime</div>
           </div>
-
-          <button @click="goToRegister" class="cta-button">
-            ✨ Start My Free Trial — No Card Needed
-          </button>
-
-          <p class="cta-footer">
-            <span>Questions? We’re here: <strong>support@yourplatform.et</strong> | +251 XXX XXX XXX</span>
-          </p>
+          
+          <div class="cta-actions">
+            <button @click="goToRegister" class="btn-cta">
+              Create Your Free Account
+            </button>
+            <button @click="goToContact" class="btn-cta secondary">
+              Schedule a Demo
+            </button>
+          </div>
+          
+          <div class="cta-contact">
+            <p>Questions? Contact our Ethiopian support team: <strong>support@infinitybooking.et</strong> or <strong>+251 11 123 4567</strong></p>
+          </div>
         </div>
       </div>
     </section>
@@ -416,771 +451,720 @@
 <script>
 export default {
   name: 'HomePage',
+  data() {
+    return {
+      activeTab: 'appointments'
+    }
+  },
   methods: {
     goToRegister() {
       this.$router.push('/register');
     },
-    goToLogin() {
-      this.$router.push('/login');
+    goToDemo() {
+      window.open('/demo', '_blank');
+    },
+    goToContact() {
+      this.$router.push('/contact');
     }
   }
-};
+}
 </script>
 
 <style scoped>
-/* =============== Base =============== */
+/* =============== Base Styles =============== */
 .home {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #f8fafc;
-  color: #0f172a;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.6;
+  color: #1a202c;
 }
 
-/* =============== Utilities =============== */
-.bg-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
-.bg-green { background: linear-gradient(135deg, #10b981, #047857); color: white; }
-.bg-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; }
-.bg-amber { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
-
-.up { color: #16a34a; }
-.down { color: #dc2626; }
-
-/* =============== Typography =============== */
-.hero-title {
-  font-size: 3.2rem;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.025em;
-  margin-bottom: 1.25rem;
-}
-.hero-title .highlight {
-  background: linear-gradient(135deg, #1e40af, #0c4a6e);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.section-title {
-  font-size: 2.25rem;
-  font-weight: 800;
-  text-align: center;
-  margin-bottom: 1rem;
-  color: #0f172a;
-}
-.section-subtitle {
-  font-size: 1.125rem;
-  color: #475569;
-  text-align: center;
-  max-width: 700px;
-  margin: 0 auto 3rem;
-  line-height: 1.6;
-}
-
-/* =============== Layout =============== */
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 20px;
 }
 
 .section-header {
   text-align: center;
-  margin-bottom: 3.5rem;
+  margin-bottom: 60px;
 }
 
-/* =============== Hero =============== */
-.hero {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+.section-header h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #2d3748;
+}
+
+.section-header p {
+  font-size: 1.125rem;
+  color: #718096;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+/* =============== Buttons =============== */
+.btn-primary {
+  background: #2d3748;
   color: white;
-  padding: 6rem 0 4rem;
-  position: relative;
-  overflow: hidden;
+  border: none;
+  padding: 14px 32px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
 }
 
-.hero::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
-  z-index: 0;
+.btn-primary:hover {
+  background: #4a5568;
 }
 
-.hero-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  position: relative;
-  z-index: 2;
-  align-items: center;
+.btn-secondary {
+  background: transparent;
+  color: #2d3748;
+  border: 2px solid #2d3748;
+  padding: 12px 30px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+  background: #f7fafc;
+}
+
+.btn-action {
+  background: #f7fafc;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+  padding: 10px 20px;
+  font-size: 0.875rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-action.primary {
+  background: #2d3748;
+  color: white;
+  border-color: #2d3748;
+}
+
+.btn-small {
+  background: #f7fafc;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-plan {
+  width: 100%;
+  padding: 14px;
+  background: #f7fafc;
+  color: #4a5568;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.btn-plan.primary {
+  background: #2d3748;
+  color: white;
+  border-color: #2d3748;
+}
+
+.btn-cta {
+  background: #2d3748;
+  color: white;
+  border: none;
+  padding: 16px 40px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-cta.secondary {
+  background: transparent;
+  color: #2d3748;
+  border: 2px solid #2d3748;
+}
+
+/* =============== Hero Section =============== */
+.hero {
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  padding: 100px 0;
+  text-align: center;
 }
 
 .hero-content {
-  max-width: 520px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.5rem 1.25rem;
-  border-radius: 50px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-bottom: 1.5rem;
+.hero-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #2d3748;
+  line-height: 1.2;
 }
 
 .hero-subtitle {
   font-size: 1.25rem;
-  opacity: 0.95;
-  margin-bottom: 2.5rem;
-  line-height: 1.5;
-}
-
-.hero-stats {
-  display: flex;
-  gap: 2.5rem;
-  margin-bottom: 2.5rem;
-  flex-wrap: wrap;
-}
-
-.stat-number {
-  font-size: 2rem;
-  font-weight: 800;
-  color: #60a5fa;
-}
-
-.stat-label {
-  font-size: 0.9rem;
-  opacity: 0.8;
-  display: block;
-}
-
-.hero-buttons {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.5rem;
-}
-
-.hero-button {
-  padding: 0.875rem 2rem;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 1.05rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.hero-button.primary {
-  background: white;
-  color: #1e40af;
-}
-.hero-button.primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-}
-
-.hero-button.secondary {
-  background: transparent;
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-}
-.hero-button.secondary:hover {
-  background: rgba(255, 255, 255, 0.05);
-  transform: translateY(-2px);
-}
-
-.trust-badges {
-  font-size: 0.875rem;
-  opacity: 0.8;
-  margin-top: 1rem;
-}
-
-/* Dashboard Preview */
-.hero-dashboard {
-  display: flex;
-  justify-content: center;
-}
-
-.dashboard-preview {
-  background: white;
-  border-radius: 20px;
-  padding: 1.5rem;
-  width: 100%;
-  max-width: 500px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  border: 1px solid #e2e8f0;
-}
-
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.avatar {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1rem;
-  background: #e2e8f0;
-  color: #475569;
-}
-
-.business-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.business-name {
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: #0f172a;
-}
-
-.business-status {
-  font-size: 0.875rem;
-  color: #64748b;
-}
-
-.business-status .live {
-  color: #10b981;
-  font-weight: 500;
-}
-
-.dashboard-actions .btn-sm {
-  background: #f1f5f9;
-  border: none;
-  padding: 0.375rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  color: #475569;
-}
-
-.dashboard-metrics {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin: 1.25rem 0;
-}
-
-.metric-card {
-  background: #f8fafc;
-  border-radius: 12px;
-  padding: 1rem;
-  text-align: center;
-}
-
-.metric-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 0.25rem;
-}
-
-.metric-label {
-  font-size: 0.875rem;
-  color: #64748b;
-  margin-bottom: 0.25rem;
-}
-
-.metric-trend {
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.dashboard-section-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #475569;
-  margin: 1.5rem 0 0.75rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.upcoming-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.appointment-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  background: #f8fafc;
-  border-radius: 12px;
-  font-size: 0.9rem;
-}
-
-.time-badge {
-  min-width: 2.5rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.8rem;
-  text-align: center;
-}
-.morning { background: #dbeafe; color: #1d4ed8; }
-.afternoon { background: #fef3c7; color: #d97706; }
-.evening { background: #dcfce7; color: #16a34a; }
-
-.appointment-details {
-  flex: 1;
-}
-
-.client-name {
-  font-weight: 600;
-  color: #0f172a;
-  margin-bottom: 0.125rem;
-}
-
-.service {
-  color: #64748b;
-  font-size: 0.85rem;
-}
-
-.payment-status {
-  font-weight: 600;
-  font-size: 0.8rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 6px;
-}
-.paid { background: #dcfce7; color: #16a34a; }
-.pending { background: #fef3c7; color: #d97706; }
-
-.dashboard-footer {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e2e8f0;
-  font-size: 0.875rem;
-  color: #64748b;
-  text-align: center;
-}
-
-/* =============== Trusted By =============== */
-.trusted-by-section {
-  padding: 3rem 0;
-  background: white;
-  text-align: center;
-}
-
-.trusted-by-label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #64748b;
-  margin-bottom: 1.5rem;
-}
-
-.logos-grid {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 2rem;
-  margin: 1.5rem 0;
-}
-
-.logo {
-  background: #f1f5f9;
-  color: #475569;
-  padding: 0.75rem 1.5rem;
-  border-radius: 12px;
-  font-weight: 600;
-  min-width: 100px;
-}
-
-.trusted-by-note {
-  color: #64748b;
-  font-size: 0.95rem;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-/* =============== Platform =============== */
-.platform-section {
-  padding: 5rem 0;
-  background: #f1f5f9;
-}
-
-.platform-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.75rem;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.platform-card {
-  background: white;
-  border-radius: 16px;
-  padding: 2rem;
-  text-align: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-  border: 1px solid #e2e8f0;
-}
-.platform-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  border-color: #cbd5e1;
-}
-
-.platform-icon {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.25rem;
-  font-size: 1.75rem;
-}
-
-.platform-card h3 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
-  color: #0f172a;
-}
-
-.platform-card p {
-  color: #475569;
-  margin: 0;
-}
-
-/* =============== Testimonials =============== */
-.testimonials-section {
-  padding: 5rem 0;
-  background: white;
-}
-
-.testimonials-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2.5rem;
-}
-
-.column-header {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.column-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 0.5rem;
-}
-
-.column-badge {
-  background: #f1f5f9;
-  color: #475569;
-  padding: 0.25rem 1rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  display: inline-block;
-}
-
-.testimonial-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.testimonial-card {
-  background: white;
-  border-radius: 16px;
-  padding: 1.75rem;
-  border: 1px solid #e2e8f0;
-  transition: all 0.3s ease;
-}
-.testimonial-card:hover {
-  border-color: #c7d2fe;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-.testimonial-card.provider {
-  border-top: 4px solid #3b82f6;
-}
-.testimonial-card.client {
-  border-top: 4px solid #10b981;
-}
-
-.testimonial-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.user-avatar {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.1rem;
-}
-
-.user-info {
-  flex: 1;
-}
-
-.user-name {
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: #0f172a;
-  margin-bottom: 0.25rem;
-}
-
-.user-meta {
-  font-size: 0.875rem;
-  color: #64748b;
-  display: flex;
-  gap: 0.5rem;
-}
-
-.rating {
-  color: #fbbf24;
-  font-size: 1rem;
-  white-space: nowrap;
-}
-
-.testimonial-text {
-  font-style: italic;
-  color: #334155;
-  margin-bottom: 1.25rem;
+  color: #4a5568;
+  margin-bottom: 40px;
   line-height: 1.6;
 }
 
-.testimonial-results,
-.testimonial-benefits {
+.hero-cta {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e2e8f0;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 24px;
 }
 
-.result,
-.benefit {
-  background: #f1f5f9;
-  padding: 0.375rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-.result { color: #1e40af; }
-.benefit { color: #059669; }
-
-/* =============== Impact =============== */
-.impact-section {
-  padding: 5rem 0;
-  background: #f8fafc;
+.hero-note p {
+  color: #718096;
+  font-size: 0.875rem;
 }
 
-.steps-container {
+/* =============== Platform Overview =============== */
+.overview {
+  padding: 80px 0;
+  background: white;
+}
+
+.overview-content {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-  max-width: 900px;
+  gap: 40px;
+}
+
+.overview-item {
+  padding: 0;
+}
+
+.overview-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #2d3748;
+}
+
+.overview-item p {
+  color: #4a5568;
+  line-height: 1.7;
+}
+
+/* =============== Workflow Section =============== */
+.workflow {
+  padding: 80px 0;
+  background: #f7fafc;
+}
+
+.workflow-steps {
+  max-width: 800px;
   margin: 0 auto;
 }
 
 .step {
-  background: white;
-  border-radius: 16px;
-  padding: 2rem;
-  text-align: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+  display: flex;
+  gap: 30px;
+  margin-bottom: 40px;
+  align-items: flex-start;
 }
 
 .step-number {
-  width: 3rem;
-  height: 3rem;
-  background: #3b82f6;
+  width: 40px;
+  height: 40px;
+  background: #2d3748;
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 1.25rem;
-  margin: 0 auto 1.25rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+  flex-shrink: 0;
 }
 
-.step h3 {
-  font-size: 1.375rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
-  color: #0f172a;
+.step-content h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #2d3748;
 }
 
-.step p {
-  color: #475569;
-  margin: 0;
+.step-content p {
+  color: #4a5568;
+  line-height: 1.7;
 }
 
-/* =============== Pricing =============== */
-.pricing-section {
-  padding: 5rem 0;
+/* =============== Dashboard Preview =============== */
+.dashboard-preview {
+  padding: 80px 0;
   background: white;
 }
 
-.pricing-cards {
+.dashboard-example {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-tabs {
+  display: flex;
+  background: #f7fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tab {
+  flex: 1;
+  padding: 16px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-weight: 600;
+  color: #718096;
+  transition: all 0.3s;
+}
+
+.tab.active {
+  color: #2d3748;
+  border-bottom-color: #2d3748;
+  background: white;
+}
+
+.dashboard-content {
+  padding: 30px;
+}
+
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.view-header h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.view-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.view-stats .stat {
+  font-size: 0.875rem;
+  color: #4a5568;
+  padding: 6px 12px;
+  background: #f7fafc;
+  border-radius: 4px;
+}
+
+/* Appointments View */
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.appointment {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: #f7fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.appointment-time {
+  min-width: 80px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.appointment-details {
+  flex: 1;
+  margin: 0 20px;
+}
+
+.client-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #2d3748;
+}
+
+.service {
+  color: #4a5568;
+  margin-bottom: 4px;
+  font-size: 0.875rem;
+}
+
+.client-contact {
+  color: #718096;
+  font-size: 0.75rem;
+}
+
+.appointment-status {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.appointment-status.confirmed {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.appointment-status.pending {
+  background: #fed7d7;
+  color: #742a2a;
+}
+
+.view-actions {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* Revenue View */
+.revenue-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.breakdown-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: #f7fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.breakdown-title {
+  flex: 1;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.breakdown-amount {
+  margin: 0 20px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.breakdown-percentage {
+  padding: 4px 12px;
+  background: #2d3748;
+  color: white;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.payment-notes {
+  padding: 20px;
+  background: #f7fafc;
+  border-radius: 6px;
+  color: #4a5568;
+  font-size: 0.875rem;
+}
+
+/* Clients View */
+.clients-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.client {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: #f7fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.client-info {
+  flex: 1;
+}
+
+.client-name {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2d3748;
+}
+
+.client-details {
+  color: #4a5568;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+}
+
+.client-contact {
+  color: #718096;
+  font-size: 0.75rem;
+}
+
+.client-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.client-insights {
+  padding: 20px;
+  background: #f7fafc;
+  border-radius: 6px;
+  color: #4a5568;
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* Dashboard Features */
+.dashboard-features {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  max-width: 800px;
-  margin: 0 auto 3rem;
+  gap: 30px;
 }
 
-.pricing-card {
-  background: white;
-  border-radius: 16px;
-  padding: 2.5rem 2rem;
+.feature {
   text-align: center;
-  position: relative;
+}
+
+.feature h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #2d3748;
+}
+
+.feature p {
+  color: #4a5568;
+  line-height: 1.6;
+}
+
+/* =============== Benefits Section =============== */
+.benefits {
+  padding: 80px 0;
+  background: #f7fafc;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 30px;
+}
+
+.benefit-card {
+  padding: 30px;
+  background: white;
+  border-radius: 8px;
   border: 1px solid #e2e8f0;
-  transition: all 0.3s ease;
+  transition: transform 0.3s, box-shadow 0.3s;
 }
-.pricing-card:hover {
+
+.benefit-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-.featured {
-  border-color: #3b82f6;
-  box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1);
+.benefit-card h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #2d3748;
 }
 
-.featured-tag {
+.benefit-card p {
+  color: #4a5568;
+  line-height: 1.7;
+}
+
+/* =============== Success Stories =============== */
+.success {
+  padding: 80px 0;
+  background: white;
+}
+
+.success-stories {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.story {
+  margin-bottom: 40px;
+  padding: 30px;
+  background: #f7fafc;
+  border-radius: 8px;
+  border-left: 4px solid #2d3748;
+}
+
+.story-content h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #2d3748;
+}
+
+.story-content p {
+  color: #4a5568;
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.story-metrics {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.story-metrics .metric {
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: #4a5568;
+}
+
+/* =============== Pricing Section =============== */
+.pricing {
+  padding: 80px 0;
+  background: #f7fafc;
+}
+
+.pricing-plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 30px;
+  max-width: 800px;
+  margin: 0 auto 40px;
+}
+
+.plan {
+  padding: 30px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  position: relative;
+}
+
+.plan.featured {
+  border-color: #2d3748;
+  box-shadow: 0 10px 15px -3px rgba(45, 55, 72, 0.1);
+}
+
+.plan-badge {
   position: absolute;
   top: -12px;
   left: 50%;
   transform: translateX(-50%);
-  background: #3b82f6;
+  background: #2d3748;
   color: white;
-  padding: 0.375rem 1.25rem;
+  padding: 6px 20px;
   border-radius: 20px;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  z-index: 2;
 }
 
 .plan-header {
-  margin-bottom: 1rem;
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.plan-name {
+.plan-header h3 {
   font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2d3748;
+}
+
+.plan-price {
+  font-size: 2.5rem;
   font-weight: 700;
-  color: #0f172a;
+  color: #2d3748;
+  margin-bottom: 4px;
+}
+
+.plan-price span {
+  font-size: 1rem;
+  color: #718096;
+}
+
+.plan-period {
+  color: #718096;
+  font-size: 0.875rem;
+}
+
+.plan-features p {
+  color: #4a5568;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.plan-features ul {
+  list-style: none;
+  padding: 0;
   margin: 0;
 }
 
-.plan-badge {
-  font-size: 2.25rem;
-  font-weight: 800;
-  margin: 0.5rem 0;
-  color: #0f172a;
-}
-.plan-badge span {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #64748b;
-}
-
-.plan-desc {
-  color: #64748b;
-  margin-bottom: 1.5rem;
-  font-size: 0.95rem;
-}
-
-.plan-features {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 1.75rem;
-  text-align: left;
-}
 .plan-features li {
-  padding: 0.5rem 0;
-  color: #334155;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.plan-features li.dim {
-  color: #94a3b8;
-}
-.plan-features.highlight li {
-  font-weight: 500;
+  padding: 8px 0;
+  color: #4a5568;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.plan-button {
-  width: 100%;
-  padding: 0.875rem;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s;
-  border: none;
-}
-.plan-button.primary {
-  background: #3b82f6;
-  color: white;
-}
-.plan-button:not(.primary) {
-  background: #f1f5f9;
-  color: #0f172a;
-  border: 1px solid #cbd5e1;
+.plan-features li:last-child {
+  border-bottom: none;
 }
 
-.plan-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.plan-note {
-  font-size: 0.85rem;
-  color: #64748b;
-  margin-top: 1rem;
-}
-
-.pricing-faq {
+.pricing-note {
   text-align: center;
-  color: #64748b;
-  font-size: 0.95rem;
-}
-.pricing-faq span {
-  margin-left: 1rem;
+  color: #718096;
+  font-size: 0.875rem;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-/* =============== CTA =============== */
-.cta-section {
-  padding: 5rem 0;
-  background: linear-gradient(135deg, #1e3a8a 0%, #0c4a6e 100%);
+.pricing-note a {
+  color: #2d3748;
+  text-decoration: underline;
+}
+
+/* =============== Final CTA =============== */
+.final-cta {
+  padding: 80px 0;
+  background: #2d3748;
   color: white;
   text-align: center;
 }
@@ -1190,141 +1174,152 @@ export default {
   margin: 0 auto;
 }
 
-.cta-title {
+.cta-content h2 {
   font-size: 2.5rem;
-  font-weight: 800;
-  margin-bottom: 1.25rem;
-  line-height: 1.2;
-}
-.cta-title .highlight {
-  color: #93c5fd;
-}
-
-.cta-subtitle {
-  font-size: 1.25rem;
-  opacity: 0.9;
-  margin-bottom: 3rem;
-}
-
-.cta-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
-}
-
-.cta-stat {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.stat-icon {
-  font-size: 1.75rem;
-}
-
-.stat-value {
-  font-size: 1.25rem;
   font-weight: 700;
+  margin-bottom: 16px;
 }
 
-.stat-desc {
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
-
-.cta-button {
-  background: white;
-  color: #0c4a6e;
-  border: none;
-  padding: 1rem 2.5rem;
-  border-radius: 12px;
+.cta-content > p {
   font-size: 1.125rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.cta-button:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  color: #cbd5e0;
+  margin-bottom: 40px;
+  line-height: 1.6;
 }
 
-.cta-footer {
-  margin-top: 2rem;
-  font-size: 0.9rem;
-  opacity: 0.9;
-}
-.cta-footer strong {
-  color: #93c5fd;
-}
-
-/* =============== Responsive =============== */
-@media (max-width: 1024px) {
-  .hero-container {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-  .hero-content {
-    max-width: 100%;
-  }
-  .hero-stats {
-    justify-content: center;
-  }
-  .dashboard-preview {
-    max-width: 450px;
-    margin: 0 auto;
-  }
-  .testimonials-grid {
-    grid-template-columns: 1fr;
-  }
+.cta-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 40px;
+  text-align: left;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
+.cta-benefits .benefit {
+  padding: 12px 0;
+  border-bottom: 1px solid #4a5568;
+  color: #e2e8f0;
+}
+
+.cta-benefits .benefit:last-child {
+  border-bottom: none;
+}
+
+.cta-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.cta-contact {
+  color: #cbd5e0;
+  font-size: 0.875rem;
+}
+
+.cta-contact strong {
+  color: white;
+}
+
+/* =============== Responsive Design =============== */
 @media (max-width: 768px) {
   .hero {
-    padding: 4rem 0 3rem;
+    padding: 60px 0;
   }
+  
   .hero-title {
-    font-size: 2.5rem;
-  }
-  .section-title {
     font-size: 2rem;
   }
-  .hero-buttons {
+  
+  .hero-subtitle {
+    font-size: 1.125rem;
+  }
+  
+  .hero-cta {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .section-header h2 {
+    font-size: 2rem;
+  }
+  
+  .step {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .dashboard-tabs {
     flex-direction: column;
   }
-  .platform-grid,
-  .steps-container,
-  .pricing-cards,
-  .cta-stats {
+  
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .view-stats {
+    flex-wrap: wrap;
+  }
+  
+  .appointment {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .appointment-details {
+    margin: 0;
+  }
+  
+  .client {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .client-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  
+  .pricing-plans {
+    grid-template-columns: 1fr;
+  }
+  
+  .cta-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-features {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 480px) {
   .hero-title {
-    font-size: 2rem;
-  }
-  .section-title {
     font-size: 1.75rem;
   }
-  .dashboard-header {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
+  
+  .section-header h2 {
+    font-size: 1.75rem;
   }
-  .dashboard-actions {
+  
+  .btn-cta {
     width: 100%;
   }
-  .testimonials-grid,
-  .pricing-cards {
-    gap: 1.5rem;
-  }
-  .pricing-card {
-    padding: 2rem 1.5rem;
+  
+  .story-metrics {
+    flex-direction: column;
   }
 }
 </style>

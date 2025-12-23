@@ -267,7 +267,8 @@
                 </div>
               </div>
               <div class="service-amount-enhanced">
-                <span class="amount-value-enhanced">ETB {{ booking.actualPrice || booking.servicePrice || booking.amount }}</span>
+                <!-- UPDATED: Show service price from service details if available -->
+                <span class="amount-value-enhanced">{{ booking.servicePriceUnit || 'ETB' }} {{ booking.serviceTotalPrice || booking.serviceBookingPrice || booking.actualPrice || booking.servicePrice || booking.amount }}</span>
               </div>
             </div>
 
@@ -288,7 +289,7 @@
               <span><i class="fa-solid fa-calendar-plus"></i> Booked {{ formatRelativeTime(booking.createdAt) }}</span>
             </div>
 
-            <!-- Action Buttons - CLEAN -->
+            <!-- Action Buttons - UPDATED: Added Service Details Button -->
             <div class="action-buttons-enhanced">
               <button 
                 v-if="!isPastBooking(booking) && booking.status === 'confirmed'"
@@ -304,6 +305,15 @@
               >
                 <i class="fa-solid fa-user-circle"></i>
                 User Details
+              </button>
+              <!-- NEW: Service Details Button -->
+              <button 
+                class="action-btn-enhanced service-details"
+                @click="viewServiceDetailsModal(booking)"
+                title="View Service Details"
+              >
+                <i class="fa-solid fa-scissors"></i>
+                Service Details
               </button>
             </div>
           </div>
@@ -378,9 +388,10 @@
                 </span>
               </div>
               <div class="table-cell amount-cell">
+                <!-- UPDATED: Show service price from service details if available -->
                 <div class="amount-container">
                   <i class="fa-solid fa-money-bill"></i>
-                  <strong>ETB {{ booking.actualPrice || booking.servicePrice || booking.amount }}</strong>
+                  <strong>{{ booking.servicePriceUnit || 'ETB' }} {{ booking.serviceTotalPrice || booking.serviceBookingPrice || booking.actualPrice || booking.servicePrice || booking.amount }}</strong>
                 </div>
               </div>
               <div class="table-cell actions-cell">
@@ -399,6 +410,14 @@
                     title="View Customer Details"
                   >
                     <i class="fa-solid fa-user-circle"></i>
+                  </button>
+                  <!-- NEW: Service Details Button in List View -->
+                  <button 
+                    class="btn-action service-details"
+                    @click="viewServiceDetailsModal(booking)"
+                    title="View Service Details"
+                  >
+                    <i class="fa-solid fa-scissors"></i>
                   </button>
                 </div>
               </div>
@@ -522,6 +541,167 @@
       </div>
     </div>
 
+    <!-- NEW: Service Details Modal -->
+    <div v-if="selectedService" class="modal-overlay" @click.self="closeServiceModal">
+      <div class="modal-content service-details-modal">
+        <div class="modal-header">
+          <h3><i class="fa-solid fa-scissors"></i> Service Details</h3>
+          <button class="modal-close" @click="closeServiceModal">
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div v-if="selectedService" class="service-details-content">
+            <!-- Service Banner -->
+            <div v-if="selectedService.banner" class="service-banner-section">
+              <div class="service-banner-container">
+                <img 
+                  :src="selectedService.banner" 
+                  :alt="selectedService.title"
+                  class="service-banner-image"
+                  @error="handleServiceImageError"
+                />
+              </div>
+            </div>
+            
+            <!-- Service Basic Info -->
+            <div class="service-basic-info">
+              <div class="service-title-section">
+                <h3>{{ selectedService.title || 'Service' }}</h3>
+                <div class="service-status-badge" :class="selectedService.status || 'draft'">
+                  {{ formatServiceStatus(selectedService.status) }}
+                </div>
+              </div>
+              
+              <div class="service-category-section">
+                <div class="service-category-badge">
+                  <i class="fa-solid fa-tag"></i>
+                  {{ selectedService.categoryName || selectedService.serviceCategory || 'General' }}
+                </div>
+                <div class="service-type-badge">
+                  <i class="fa-solid fa-briefcase"></i>
+                  {{ selectedService.serviceType || 'fixed' }}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Price Information -->
+            <div class="service-price-section">
+              <div class="price-card">
+                <div class="price-label">
+                  <i class="fa-solid fa-money-bill-wave"></i>
+                  Total Price
+                </div>
+                <div class="price-value total-price">
+                  {{ selectedService.priceUnit || 'ETB' }} {{ selectedService.totalPrice || selectedService.actualPrice || 0 }}
+                </div>
+              </div>
+              
+              <div class="price-card">
+                <div class="price-label">
+                  <i class="fa-solid fa-credit-card"></i>
+                  Booking Price
+                </div>
+                <div class="price-value booking-price">
+                  {{ selectedService.priceUnit || 'ETB' }} {{ selectedService.bookingPrice || selectedService.servicePrice || 0 }}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Service Description -->
+            <div class="service-description-section">
+              <h4><i class="fa-solid fa-align-left"></i> Description</h4>
+              <div class="service-description-content">
+                <p>{{ selectedService.description || 'No description provided' }}</p>
+              </div>
+            </div>
+            
+            <!-- Additional Service Details -->
+            <div class="service-extra-details">
+              <div class="detail-row">
+                <div class="detail-item">
+                  <div class="detail-label">
+                    <i class="fa-solid fa-hashtag"></i>
+                    Service ID
+                  </div>
+                  <div class="detail-value">
+                    {{ selectedService.serviceId || selectedService._id || 'N/A' }}
+                  </div>
+                </div>
+                
+                <div class="detail-item">
+                  <div class="detail-label">
+                    <i class="fa-solid fa-chart-line"></i>
+                    Total Bookings
+                  </div>
+                  <div class="detail-value">
+                    {{ selectedService.totalBookings || 0 }}
+                  </div>
+                </div>
+              </div>
+              
+              <div class="detail-row">
+                <div class="detail-item">
+                  <div class="detail-label">
+                    <i class="fa-solid fa-star"></i>
+                    Rating
+                  </div>
+                  <div class="detail-value">
+                    {{ selectedService.rating || 0 }}/5 ({{ selectedService.reviews?.length || 0 }} reviews)
+                  </div>
+                </div>
+                
+                <div class="detail-item">
+                  <div class="detail-label">
+                    <i class="fa-solid fa-eye"></i>
+                    Views
+                  </div>
+                  <div class="detail-value">
+                    {{ selectedService.views || 0 }}
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Payment Method -->
+              <div v-if="selectedService.paymentMethod" class="detail-row">
+                <div class="detail-item">
+                  <div class="detail-label">
+                    <i class="fa-solid fa-credit-card"></i>
+                    Payment Method
+                  </div>
+                  <div class="detail-value">
+                    {{ selectedService.paymentMethod }}
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Featured Status -->
+              <div class="detail-row">
+                <div class="detail-item">
+                  <div class="detail-label">
+                    <i class="fa-solid fa-crown"></i>
+                    Featured
+                  </div>
+                  <div class="detail-value">
+                    <span class="featured-badge" :class="{ 'featured': selectedService.isFeatured }">
+                      {{ selectedService.isFeatured ? 'Yes' : 'No' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Close Button -->
+            <div class="modal-actions-simple">
+              <button class="btn btn-primary" @click="closeServiceModal">
+                <i class="fa-solid fa-check"></i> Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Booking Details Modal (Original - kept for reference) -->
     <div v-if="selectedBooking" class="modal-overlay" @click.self="closeBookingModal">
       <div class="modal-content">
@@ -584,7 +764,8 @@
                 </div>
                 <div class="service-detail-item">
                   <strong>Amount:</strong>
-                  <span class="service-amount-highlight">ETB {{ selectedBooking.actualPrice || selectedBooking.servicePrice || selectedBooking.amount }}</span>
+                  <!-- UPDATED: Show service price from service details if available -->
+                  <span class="service-amount-highlight">{{ selectedBooking.servicePriceUnit || 'ETB' }} {{ selectedBooking.serviceTotalPrice || selectedBooking.serviceBookingPrice || selectedBooking.actualPrice || selectedBooking.servicePrice || selectedBooking.amount }}</span>
                 </div>
               </div>
             </div>
@@ -656,14 +837,15 @@ export default {
     const currentPage = ref(1);
     const itemsPerPage = ref(12);
     const selectedBooking = ref(null);
-    const selectedCustomer = ref(null); // New: for customer details modal
+    const selectedCustomer = ref(null);
+    const selectedService = ref(null); // NEW: for service details modal
     const lastUpdatedTime = ref("");
 
     // Service details cache
     const serviceDetailsCache = ref({});
     const servicesMap = ref({});
 
-    // Customer cache - GLOBAL for immediate display
+    // Customer cache
     const customerCache = ref({});
 
     // Timeline periods - WITHOUT "All Bookings"
@@ -683,18 +865,202 @@ export default {
       revenue: 0
     });
 
+    // ==================== NEW: SERVICE DETAILS FUNCTIONS ====================
+    const fetchServiceDetails = async (serviceId) => {
+      if (!serviceId || serviceId === 'unknown') {
+        console.log("⚠️ No service ID provided");
+        return null;
+      }
+      
+      // Check cache first
+      if (serviceDetailsCache.value[serviceId]) {
+        console.log(`✅ Service ${serviceId} found in cache`);
+        return serviceDetailsCache.value[serviceId];
+      }
+
+      try {
+        console.log(`🔍 Fetching service details for: ${serviceId}`);
+        
+        // Try different service endpoints
+        const endpoints = [
+          `/services/${serviceId}`,
+          `/api/services/${serviceId}`,
+          `/services/find/${serviceId}`,
+          `/services?id=${serviceId}`
+        ];
+        
+        for (const endpoint of endpoints) {
+          try {
+            const response = await http.get(endpoint);
+            if (response.data) {
+              let serviceData = response.data;
+              
+              // Handle different response formats
+              if (Array.isArray(serviceData) && serviceData.length > 0) {
+                serviceData = serviceData[0];
+              } else if (serviceData.data && Array.isArray(serviceData.data)) {
+                serviceData = serviceData.data[0];
+              } else if (serviceData.service) {
+                serviceData = serviceData.service;
+              }
+              
+              if (serviceData) {
+                // Store in cache
+                serviceDetailsCache.value[serviceId] = serviceData;
+                console.log(`✅ Successfully loaded service: ${serviceData.title || serviceData.name}`);
+                
+                // Debug: Log service structure
+                console.log("Service structure:", {
+                  title: serviceData.title,
+                  totalPrice: serviceData.totalPrice,
+                  bookingPrice: serviceData.bookingPrice,
+                  priceUnit: serviceData.priceUnit,
+                  banner: serviceData.banner,
+                  categoryName: serviceData.categoryName
+                });
+                
+                return serviceData;
+              }
+            }
+          } catch (err) {
+            console.log(`⚠️ Service endpoint ${endpoint} failed:`, err.message);
+          }
+        }
+        
+        console.log(`ℹ️ Could not fetch service details for ${serviceId}`);
+        return null;
+      } catch (err) {
+        console.error(`❌ Error fetching service ${serviceId}:`, err);
+        return null;
+      }
+    };
+
+    const preloadServiceDetails = async (booking) => {
+      if (!booking.serviceId || booking.serviceId === 'unknown') {
+        console.log(`⚠️ No service ID for booking ${booking._id}`);
+        return null;
+      }
+
+      try {
+        const serviceDetails = await fetchServiceDetails(booking.serviceId);
+        if (serviceDetails) {
+          // Update booking with service details
+          booking.serviceName = serviceDetails.title || serviceDetails.name || booking.serviceName;
+          booking.serviceCategory = serviceDetails.categoryName || serviceDetails.category || booking.serviceCategory;
+          booking.serviceTotalPrice = serviceDetails.totalPrice;
+          booking.serviceBookingPrice = serviceDetails.bookingPrice;
+          booking.servicePriceUnit = serviceDetails.priceUnit;
+          booking.serviceBanner = serviceDetails.banner;
+          booking.serviceDescription = serviceDetails.description;
+          booking.serviceStatus = serviceDetails.status;
+          booking.serviceType = serviceDetails.serviceType;
+          booking.isFeatured = serviceDetails.isFeatured;
+          booking.totalBookings = serviceDetails.totalBookings;
+          booking.rating = serviceDetails.rating;
+          booking.reviews = serviceDetails.reviews;
+          booking.views = serviceDetails.views;
+          booking.paymentMethod = serviceDetails.paymentMethod;
+          
+          // Also update the price display in the booking
+          if (serviceDetails.totalPrice && !booking.actualPrice) {
+            booking.actualPrice = serviceDetails.totalPrice;
+          }
+          
+          console.log(`✅ Updated booking ${booking._id} with service details`);
+        }
+        return serviceDetails;
+      } catch (err) {
+        console.error(`❌ Error preloading service for booking ${booking._id}:`, err);
+        return null;
+      }
+    };
+
+    const viewServiceDetailsModal = async (booking) => {
+      try {
+        // Try to load fresh service details
+        let serviceDetails = null;
+        if (booking.serviceId && booking.serviceId !== 'unknown') {
+          serviceDetails = await preloadServiceDetails(booking);
+        }
+        
+        if (!serviceDetails) {
+          // Use existing booking data if service fetch failed
+          serviceDetails = {
+            title: booking.serviceName,
+            categoryName: booking.serviceCategory,
+            totalPrice: booking.serviceTotalPrice || booking.actualPrice || booking.servicePrice || booking.amount,
+            bookingPrice: booking.serviceBookingPrice,
+            priceUnit: booking.servicePriceUnit || 'ETB',
+            banner: booking.serviceBanner,
+            description: booking.serviceDescription,
+            status: booking.serviceStatus,
+            serviceType: booking.serviceType,
+            isFeatured: booking.isFeatured,
+            totalBookings: booking.totalBookings,
+            rating: booking.rating,
+            reviews: booking.reviews,
+            views: booking.views,
+            paymentMethod: booking.paymentMethod,
+            serviceId: booking.serviceId
+          };
+        }
+        
+        selectedService.value = serviceDetails;
+        console.log("🔧 Showing service details:", selectedService.value);
+      } catch (err) {
+        console.error("❌ Error loading service details:", err);
+        // Still show modal with available data
+        selectedService.value = {
+          title: booking.serviceName,
+          categoryName: booking.serviceCategory,
+          totalPrice: booking.actualPrice || booking.servicePrice || booking.amount,
+          priceUnit: 'ETB',
+          description: 'Service details could not be loaded',
+          status: 'unknown'
+        };
+      }
+    };
+
+    const closeServiceModal = () => {
+      selectedService.value = null;
+    };
+
+    const handleServiceImageError = (event) => {
+      if (event.target) {
+        event.target.style.display = 'none';
+        const parent = event.target.parentElement;
+        parent.innerHTML = `
+          <div class="service-banner-fallback">
+            <i class="fa-solid fa-scissors"></i>
+            <p>Service Banner</p>
+          </div>
+        `;
+      }
+    };
+
+    const formatServiceStatus = (status) => {
+      const statusMap = {
+        draft: 'Draft',
+        published: 'Published',
+        active: 'Active',
+        inactive: 'Inactive',
+        archived: 'Archived'
+      };
+      return statusMap[status] || (status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown');
+    };
+
     // ==================== ENHANCED PROCESS SINGLE BOOKING ====================
     const processSingleBooking = async (booking) => {
       try {
         const isAdminBooking = booking.createdBy === 'admin' || booking.adminId || booking.isAdminBooking;
         
-        // Extract customer data - LOOK FOR CUSTOMER DETAILS IN ALL POSSIBLE LOCATIONS
+        // Extract customer data
         const customer = booking.customer || booking.originalData?.customer || booking.user || {};
         const customerProfile = customer.customerProfile || customer;
         
         let customerId = customer.cid || booking.customerId || booking.cid || customer._id || 'unknown';
         
-        // Extract profile photo from multiple possible locations
+        // Extract profile photo
         let customerProfilePhoto = '';
         if (customer.profilePhoto) {
           customerProfilePhoto = customer.profilePhoto;
@@ -730,7 +1096,7 @@ export default {
           customerName = isAdminBooking ? 'Admin' : 'Customer';
         }
         
-        // Extract email & phone - CHECK ALL POSSIBLE LOCATIONS
+        // Extract email & phone
         let customerEmail = customer.email || customerProfile.email || booking.customerEmail || '';
         let customerPhone = customer.phonenumber || customerProfile.phonenumber || customer.phone || booking.customerPhone || '';
         
@@ -741,6 +1107,8 @@ export default {
         const serviceId = booking.serviceId || booking.service?._id || 'unknown';
         let serviceName = booking.serviceName || 'Service';
         let serviceCategory = booking.serviceCategory || 'General';
+        
+        // UPDATED: Try to get actual service price from service details if available
         let actualPrice = booking.servicePrice || booking.amount || 0;
         
         // Get booking date and times
@@ -785,6 +1153,13 @@ export default {
           }, 0);
         }
         
+        // NEW: PRE-LOAD SERVICE DETAILS IMMEDIATELY
+        if (serviceId && serviceId !== 'unknown') {
+          setTimeout(() => {
+            preloadServiceDetails(processedBooking);
+          }, 100); // Small delay to avoid blocking
+        }
+        
         return processedBooking;
       } catch (err) {
         console.error("❌ Error processing booking:", err);
@@ -792,17 +1167,15 @@ export default {
       }
     };
 
-    // ==================== CUSTOMER DETAILS FUNCTIONS ====================
+    // ==================== CUSTOMER DETAILS FUNCTIONS (PRESERVED) ====================
     const preloadCustomerDetails = async (booking) => {
       if (!booking.customerId || booking.customerId === 'unknown') return;
       
-      // Check cache first
       if (customerCache.value[booking.customerId]) {
         return customerCache.value[booking.customerId];
       }
 
       try {
-        // Try different endpoints to get customer details
         const endpoints = [
           `/users/customers/by-cid/${booking.customerId}`,
           `/users/${booking.customerId}`,
@@ -818,7 +1191,6 @@ export default {
               const user = response.data;
               const customerProfile = user.customerProfile || user;
               
-              // Extract all possible customer details
               const customerData = {
                 fullname: customerProfile.fullname || user.fullname || user.name || booking.customerName || 'Customer',
                 email: user.email || customerProfile.email || booking.customerEmail || '',
@@ -829,10 +1201,8 @@ export default {
                 status: customerProfile.status || user.status || 'active'
               };
               
-              // Store in cache
               customerCache.value[booking.customerId] = customerData;
               
-              // Update booking with fresh data
               if (customerData.fullname && customerData.fullname !== 'Customer') {
                 booking.customerName = customerData.fullname;
               }
@@ -864,23 +1234,17 @@ export default {
 
     const viewCustomerDetailsModal = async (booking) => {
       try {
-        // Try to load fresh customer details
         let customerDetails = null;
         if (booking.customerId && booking.customerId !== 'unknown') {
           customerDetails = await preloadCustomerDetails(booking);
         }
         
-        // Prepare customer data for modal
         selectedCustomer.value = {
           ...booking,
-          // Override with fresh details if available
           ...(customerDetails || {})
         };
-        
-        console.log("📱 Showing customer details:", selectedCustomer.value);
       } catch (err) {
         console.error("❌ Error loading customer details:", err);
-        // Still show modal with available data
         selectedCustomer.value = booking;
       }
     };
@@ -901,7 +1265,7 @@ export default {
       parent.innerHTML = `<div class="fallback-initials-simple" style="background-color: ${getAvatarColor(customerName)}">${getCleanInitials(customerName)}</div>`;
     };
 
-    // ==================== HELPER FUNCTIONS ====================
+    // ==================== HELPER FUNCTIONS (PRESERVED) ====================
     const getAvatarColor = (name) => {
       const colors = [
         '#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', 
@@ -1009,7 +1373,7 @@ export default {
       }
     };
 
-    // ==================== DATE HELPERS ====================
+    // ==================== DATE HELPERS (PRESERVED) ====================
     const getTodayStart = () => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -1077,7 +1441,7 @@ export default {
       }
     };
 
-    // ==================== CORE FUNCTIONS ====================
+    // ==================== CORE FUNCTIONS (PRESERVED) ====================
     const getProviderId = () => {
       const providerId = localStorage.getItem('providerId');
       if (providerId) return providerId;
@@ -1111,7 +1475,6 @@ export default {
         
         loadingProgress.value = 30;
         
-        // Try booking endpoints
         const bookingEndpoints = [
           `/bookings/provider/${providerId}`,
           `/bookings?providerId=${providerId}`,
@@ -1137,7 +1500,6 @@ export default {
           throw new Error("No bookings data found");
         }
         
-        // Process bookings
         let bookingsArray = [];
         if (Array.isArray(bookingsData)) {
           bookingsArray = bookingsData;
@@ -1147,7 +1509,6 @@ export default {
           bookingsArray = bookingsData.data;
         }
         
-        // Process all bookings
         const processedBookings = [];
         for (const booking of bookingsArray) {
           const processed = await processSingleBooking(booking);
@@ -1158,7 +1519,6 @@ export default {
         
         loadingProgress.value = 90;
         
-        // Sort by date (newest first)
         processedBookings.sort((a, b) => {
           const dateA = a.bookingDate ? new Date(a.bookingDate) : new Date();
           const dateB = b.bookingDate ? new Date(b.bookingDate) : new Date();
@@ -1200,7 +1560,7 @@ export default {
       };
     };
 
-    // ==================== FILTERING ====================
+    // ==================== FILTERING (PRESERVED) ====================
     const timelineFilteredBookings = computed(() => {
       if (selectedPeriod.value === "all") {
         return bookings.value;
@@ -1250,7 +1610,7 @@ export default {
 
     const totalPages = computed(() => Math.ceil(displayBookings.value.length / itemsPerPage.value));
 
-    // ==================== ACTION FUNCTIONS ====================
+    // ==================== ACTION FUNCTIONS (PRESERVED) ====================
     const selectTimelinePeriod = (periodId) => {
       selectedPeriod.value = periodId;
       currentPage.value = 1;
@@ -1314,7 +1674,7 @@ export default {
           `"${formatCleanDate(b.bookingDate)}"`,
           `"${formatTimeSlot(b.startTime, b.endTime)}"`,
           `"${formatStatus(b.status)}"`,
-          `"ETB ${b.actualPrice || b.servicePrice || b.amount}"`
+          `"${b.servicePriceUnit || 'ETB'} ${b.serviceTotalPrice || b.serviceBookingPrice || b.actualPrice || b.servicePrice || b.amount}"`
         ].join(','))
       ].join('\n');
       
@@ -1347,6 +1707,7 @@ export default {
       itemsPerPage,
       selectedBooking,
       selectedCustomer,
+      selectedService,
       lastUpdatedTime,
       stats,
       
@@ -1361,9 +1722,11 @@ export default {
       clearFilters,
       completeBooking,
       viewCustomerDetailsModal,
+      viewServiceDetailsModal,
       viewBookingDetailsModal,
       closeModal,
       closeBookingModal,
+      closeServiceModal,
       selectTimelinePeriod,
       clearTimelinePeriod,
       promoteServices,
@@ -1376,6 +1739,7 @@ export default {
       formatCleanDate,
       formatServiceName,
       formatStatus,
+      formatServiceStatus,
       calculateDuration,
       formatTimeSlot,
       formatRelativeTime,
@@ -1383,13 +1747,431 @@ export default {
       isPastBooking,
       getServiceIcon,
       handleImageError,
-      handleCustomerImageError
+      handleCustomerImageError,
+      handleServiceImageError
     };
   }
 };
 </script>
 
 <style scoped>
+/* ==================== NEW SERVICE DETAILS MODAL STYLES ==================== */
+.service-details-modal {
+  max-width: 700px;
+  width: 95%;
+  max-height: 90vh;
+  animation: slideIn 0.3s ease;
+}
+
+.service-details-content {
+  padding: 0;
+}
+
+/* Service Banner */
+.service-banner-section {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 16px 16px 0 0;
+}
+
+.service-banner-container {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.service-banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.service-banner-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
+
+.service-banner-fallback i {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.service-banner-fallback p {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Service Basic Info */
+.service-basic-info {
+  padding: 20px;
+  background: white;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.service-title-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.service-title-section h3 {
+  color: #1f2937;
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0;
+  flex: 1;
+}
+
+.service-status-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.service-status-badge.draft {
+  background: linear-gradient(135deg, #f3f4f6, #d1d5db);
+  color: #374151;
+}
+
+.service-status-badge.published,
+.service-status-badge.active {
+  background: linear-gradient(135deg, #d1fae5, #86efac);
+  color: #065f46;
+}
+
+.service-status-badge.inactive {
+  background: linear-gradient(135deg, #fef3c7, #fcd34d);
+  color: #92400e;
+}
+
+.service-category-section {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.service-category-badge,
+.service-type-badge {
+  padding: 8px 16px;
+  background: #f3f4f6;
+  border-radius: 12px;
+  color: #4b5563;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.service-category-badge i,
+.service-type-badge i {
+  color: #6b7280;
+}
+
+/* Price Section */
+.service-price-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.price-card {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.price-label {
+  color: #6b7280;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.price-label i {
+  color: #3b82f6;
+}
+
+.price-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.total-price {
+  color: #059669;
+}
+
+.booking-price {
+  color: #3b82f6;
+}
+
+/* Service Description */
+.service-description-section {
+  padding: 20px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.service-description-section h4 {
+  color: #1f2937;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.service-description-section h4 i {
+  color: #3b82f6;
+}
+
+.service-description-content {
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #f3f4f6;
+}
+
+.service-description-content p {
+  color: #4b5563;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Extra Details */
+.service-extra-details {
+  padding: 20px;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.detail-item {
+  background: #f9fafb;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #f3f4f6;
+}
+
+.detail-label {
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-label i {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.detail-value {
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.featured-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.featured-badge.featured {
+  background: linear-gradient(135deg, #fef3c7, #fcd34d);
+  color: #92400e;
+}
+
+.featured-badge:not(.featured) {
+  background: linear-gradient(135deg, #f3f4f6, #d1d5db);
+  color: #6b7280;
+}
+
+/* ==================== UPDATED ACTION BUTTON STYLES ==================== */
+.action-buttons-enhanced {
+  display: flex;
+  gap: 10px;
+}
+
+.action-btn-enhanced {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.action-btn-enhanced.complete {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.action-btn-enhanced.complete:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.action-btn-enhanced.details {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.action-btn-enhanced.details:hover {
+  background: #e5e7eb;
+  transform: translateY(-2px);
+}
+
+/* NEW: Service Details Button Style */
+.action-btn-enhanced.service-details {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+}
+
+.action-btn-enhanced.service-details:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* Updated List View Action Buttons */
+.action-buttons-list {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-action {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.btn-action.complete {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.btn-action.view {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* NEW: Service Details Button in List View */
+.btn-action.service-details {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+}
+
+.btn-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ==================== EXISTING STYLES (PRESERVED) ==================== */
+/* All existing CSS remains exactly the same as before */
+/* Only new styles added above */
+
+/* ==================== RESPONSIVE ENHANCEMENTS ==================== */
+@media (max-width: 768px) {
+  .action-buttons-enhanced {
+    flex-direction: column;
+  }
+  
+  .service-price-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .detail-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .service-banner-section {
+    height: 150px;
+  }
+  
+  .service-title-section {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .service-title-section h3 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .service-category-section {
+    flex-direction: column;
+  }
+  
+  .action-buttons-list {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .btn-action {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Animation for modal */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ==================== SIMPLIFIED CUSTOMER DETAILS MODAL STYLES ==================== */
 .customer-details-modal-simple {
   max-width: 500px;

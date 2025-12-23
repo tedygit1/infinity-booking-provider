@@ -324,6 +324,14 @@ export default {
       
       // For editing: either existing banner OR new file
       return !!(this.originalBanner || this.local.bannerFile);
+    },
+    
+    // FIXED: Get consistent service identifier
+    getServiceIdentifier() {
+      return (service) => {
+        if (!service) return null;
+        return service._id || service.serviceId || service.id;
+      };
     }
   },
 
@@ -334,8 +342,8 @@ export default {
         console.log('🔍 ServiceForm: service prop changed:', val);
         
         if (val) {
-          // Store service ID
-          this.local._id = val._id || val.serviceId || val.id;
+          // Store service ID using consistent method
+          this.local._id = this.getServiceIdentifier(val);
           
           // Extract category ID
           let categoryId = val.categoryId;
@@ -538,7 +546,11 @@ export default {
       console.log('🗑️ Removing image...');
       this.previewImage = null;
       this.local.bannerFile = null;
-      this.originalBanner = null; // Also clear original banner
+      
+      // Only clear original banner if we're in new service mode
+      if (!this.isEdit) {
+        this.originalBanner = null;
+      }
       
       if (this.$refs.fileInput) {
         this.$refs.fileInput.value = '';
@@ -584,6 +596,7 @@ export default {
       return true;
     },
 
+    // FIXED: Save service with proper ID handling
     async saveService() {
       console.log('💾 Saving service...');
       console.log('🔍 Mode:', this.isEdit ? 'EDIT' : 'CREATE');
@@ -652,7 +665,7 @@ export default {
           formData.append('subcategories[]', name);
         });
 
-        // Handle banner - CRITICAL FIX
+        // FIXED: Handle banner properly
         if (this.local.bannerFile) {
           // New file uploaded
           console.log('📸 Adding new banner file to form data');
@@ -660,18 +673,22 @@ export default {
         } else if (this.isEdit && this.originalBanner) {
           // For editing, if no new file but we have original banner
           console.log('📸 Keeping original banner URL:', this.originalBanner);
-          formData.append('banner', this.originalBanner);
+          formData.append('bannerUrl', this.originalBanner);
+        } else if (!this.isEdit) {
+          // New service must have a banner file (already validated)
+          throw new Error("Banner image is required for new services");
         }
-        // If no banner at all (new service without file), validation should have failed
 
         // Determine URL and method
         let url, method;
         if (this.isEdit && this.local._id) {
           url = `/services/${this.local._id}`;
           method = 'put';
+          console.log('🔄 Editing existing service:', this.local._id);
         } else {
           url = "/services";
           method = 'post';
+          console.log('🆕 Creating new service');
         }
 
         const config = {
@@ -700,26 +717,39 @@ export default {
         
         const savedService = response.data;
         
-        // IMPORTANT: Return the FULL service object including the ID
-        // The parent component needs to know if this is an update or new creation
+        if (!savedService) {
+          throw new Error("Server returned empty response");
+        }
+        
+        // FIXED: Get consistent service ID from response
+        const serviceId = savedService._id || savedService.serviceId || savedService.id;
+        if (!serviceId) {
+          console.error('❌ No service ID in response:', savedService);
+          throw new Error("Service saved but no ID returned from server");
+        }
+        
+        console.log('🎯 Service saved with ID:', serviceId);
+        
+        // FIXED: Return complete, consistent service object
         const updatedService = {
-          // Include the ID from the response OR from local
-          _id: savedService._id || this.local._id,
-          serviceId: savedService.serviceId || savedService._id || this.local._id,
-          id: savedService.id || savedService._id || this.local._id,
+          // ID fields - all consistent
+          _id: serviceId,
+          serviceId: serviceId,
+          id: serviceId,
           
           // Form data
-          title: this.local.title,
-          description: this.local.description,
-          totalPrice: this.local.totalPrice,
-          bookingPrice: Math.round(this.local.totalPrice * 0.1),
+          title: this.local.title.trim(),
+          description: this.local.description.trim(),
+          totalPrice: Number(this.local.totalPrice),
+          bookingPrice: Math.round(Number(this.local.totalPrice) * 0.1),
           categoryId: this.local.categoryId,
           category: selectedCategory.name,
           status: this.local.status || "draft",
           paymentMethod: this.local.paymentMethod || "Telebirr",
           priceUnit: "ETB",
+          serviceType: "fixed",
           
-          // Banner from response or original
+          // Banner - get from response if available, otherwise use what we have
           banner: savedService.banner || this.originalBanner || this.previewImage,
           
           // Subcategories
@@ -729,16 +759,17 @@ export default {
           // Other important fields
           providerId: providerId,
           createdAt: savedService.createdAt || new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          updatedAt: savedService.updatedAt || new Date().toISOString(),
           
-          // Preserve slots if they exist
+          // Slots - preserve if they exist
           slots: savedService.slots || this.local.slots || []
         };
 
         console.log('🎯 Emitting saved service:', updatedService);
         console.log('🎯 Service ID:', updatedService._id);
-        console.log('🎯 Is Edit mode:', this.isEdit);
+        console.log('🎯 Has banner:', !!updatedService.banner);
         
+        // Emit the saved service
         this.$emit("save", updatedService);
 
       } catch (err) {
@@ -760,6 +791,8 @@ export default {
             errorMessage = "Authentication failed. Please log in again.";
           } else if (status === 503) {
             errorMessage = "Server is currently unavailable. Please try again later.";
+          } else if (status === 422) {
+            errorMessage = data.message || "Validation error. Please check your input.";
           } else {
             errorMessage = `Server error (${status}). Please try again.`;
           }
@@ -774,6 +807,12 @@ export default {
       } finally {
         this.isSaving = false;
       }
+    },
+    
+    // FIXED: Helper method for consistent ID handling
+    getServiceIdentifier(service) {
+      if (!service) return null;
+      return service._id || service.serviceId || service.id;
     }
   }
 };
@@ -919,6 +958,8 @@ input:focus, select:focus, textarea:focus {
 .banner-preview {
   max-width: 100%;
   display: block;
+  max-height: 200px;
+  object-fit: contain;
 }
 
 .remove-image-btn {
@@ -1325,6 +1366,18 @@ input:focus, select:focus, textarea:focus {
 
   input, select, textarea {
     padding: 18px;
+  }
+}
+
+/* Animation for fade in */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>
