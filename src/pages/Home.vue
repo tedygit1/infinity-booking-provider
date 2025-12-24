@@ -1,348 +1,299 @@
-<!-- src/pages/Home.vue -->
 <template>
   <div class="home">
     <!-- Hero Section -->
-    <section class="hero">
-      <div class="container">
-        <div class="hero-content">
-          <h1 class="hero-title">Infinity Booking: The Complete Platform for Ethiopian Service Businesses</h1>
-          <p class="hero-subtitle">
-            Connect with clients, manage appointments, accept local payments, and grow your business — all from one professional platform designed specifically for Ethiopia.
-          </p>
-          
-          <div class="hero-cta">
-            <button @click="goToRegister" class="btn-primary">
-              Start Your Free 30-Day Trial
-            </button>
-            <button @click="goToDemo" class="btn-secondary">
-              See Platform Demo
-            </button>
-          </div>
-          
-          <div class="hero-note">
-            <p>No credit card required • Cancel anytime • Ethiopian support team</p>
-          </div>
+    <section id="hero" class="hero" :style="{ backgroundImage: `url(${mekelleCity})` }">
+      <div class="overlay"></div>
+      <div class="content">
+        <h1 class="animated-title">
+          Welcome to <span class="highlight">Infinity-Booking</span>
+        </h1>
+        <p class="subtitle">
+          The all-in-one platform built to empower <strong>service providers of every kind</strong>.  
+          Launched with <strong>Home Services</strong>, <strong>Beauty & Salon</strong>, and <strong>Education/Tutoring</strong>,  
+          Infinity-Booking is designed to <strong>grow infinitely</strong> — expanding into new industries as more providers join.  
+          From small startups to established professionals, our platform helps you manage bookings, build trust,  
+          and reach customers effortlessly <strong>Everywhere</strong>.
+        </p>
+        <div class="hero-buttons">
+          <router-link to="/provider/register" class="btn btn-primary">
+            Start Free Account <i class="fas fa-arrow-right"></i>
+          </router-link>
+          <a href="#how-it-works" class="btn btn-secondary">
+            <i class="fas fa-play-circle"></i> See How It Works
+          </a>
         </div>
       </div>
     </section>
 
-    <!-- Platform Overview -->
-    <section class="overview">
-      <div class="container">
-        <div class="section-header">
-          <h2>What Infinity Booking Offers</h2>
-          <p>A comprehensive platform built to address the specific needs of Ethiopian service providers</p>
-        </div>
-        
-        <div class="overview-content">
-          <div class="overview-item">
-            <div class="overview-title">Digital Client Connection</div>
-            <p>Create your professional business profile and share your unique booking link. Clients can book appointments 24/7 through WhatsApp, Telegram, or your website. No more missed calls or scheduling conflicts.</p>
-          </div>
-          
-          <div class="overview-item">
-            <div class="overview-title">Local Payment Integration</div>
-            <p>Accept payments through Telebirr, CBE Birr, bank transfers, and cash — all tracked in one dashboard. Receive instant notifications when clients pay, and automatically reconcile payments with appointments.</p>
-          </div>
-          
-          <div class="overview-item">
-            <div class="overview-title">Business Management Dashboard</div>
-            <p>Manage your entire operation from one central dashboard. View daily appointments, track revenue, manage client information, and access business insights that help you make informed decisions.</p>
-          </div>
-          
-          <div class="overview-item">
-            <div class="overview-title">Growth & Analytics Tools</div>
-            <p>Understand your business performance with detailed analytics. Identify peak hours, track service popularity, monitor client retention, and discover opportunities to increase your revenue.</p>
-          </div>
+    <!-- Stats Section -->
+    <section class="stats-section">
+      <div class="stats-container">
+        <div class="stat-card" v-for="stat in stats" :key="stat.id">
+          <h2><span ref="statCounter">{{ stat.start }}</span>{{ stat.suffix }}</h2>
+          <p>{{ stat.label }}</p>
         </div>
       </div>
     </section>
 
     <!-- How It Works -->
-    <section class="workflow">
+    <section id="how-it-works" class="process-section">
       <div class="container">
-        <div class="section-header">
-          <h2>How Your Business Operates with Infinity Booking</h2>
-          <p>A streamlined process designed for efficiency and growth</p>
-        </div>
+        <h2 class="section-title">Get Started in 4 Simple Steps</h2>
+        <p class="section-subtitle">
+          Join thousands of providers who have transformed their business with our platform.
+        </p>
         
-        <div class="workflow-steps">
-          <div class="step">
-            <div class="step-number">1</div>
+        <div class="process-steps">
+          <div class="process-step">
+            <div class="step-icon">
+              <i class="fas fa-user-plus"></i>
+            </div>
             <div class="step-content">
-              <h3>Setup Your Business Profile</h3>
-              <p>Register your business in minutes. Add your services, set pricing, define working hours, and configure your preferred payment methods. Your profile becomes your digital storefront.</p>
+              <h3>Create Your Profile</h3>
+              <p>Sign up and showcase your services, experience, and portfolio to attract clients.</p>
             </div>
           </div>
           
-          <div class="step">
-            <div class="step-number">2</div>
+          <div class="process-step">
+            <div class="step-icon">
+              <i class="fas fa-calendar-alt"></i>
+            </div>
             <div class="step-content">
-              <h3>Share Your Booking Link</h3>
-              <p>Share your personalized booking link with clients through social media, messaging apps, or your website. Clients can view your availability and book appointments at their convenience.</p>
+              <h3>Set Your Availability</h3>
+              <p>Define your working hours and customize your schedule to match your lifestyle.</p>
             </div>
           </div>
           
-          <div class="step">
-            <div class="step-number">3</div>
+          <div class="process-step">
+            <div class="step-icon">
+              <i class="fas fa-bell"></i>
+            </div>
             <div class="step-content">
-              <h3>Manage Appointments & Payments</h3>
-              <p>Receive instant notifications for new bookings. Clients can pay via their preferred method. Your dashboard automatically updates with confirmed appointments and payment status.</p>
+              <h3>Receive Bookings</h3>
+              <p>Get instant notifications when clients book your services and manage everything in one place.</p>
             </div>
           </div>
           
-          <div class="step">
-            <div class="step-number">4</div>
+          <div class="process-step">
+            <div class="step-icon">
+              <i class="fas fa-money-bill-wave"></i>
+            </div>
             <div class="step-content">
-              <h3>Analyze & Optimize</h3>
-              <p>Use our analytics tools to understand your business performance. Identify trends, optimize your schedule, adjust pricing, and implement strategies to grow your client base.</p>
+              <h3>Get Paid Securely</h3>
+              <p>Receive payments through multiple secure options and track your earnings effortlessly.</p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Dashboard Example -->
-    <section class="dashboard-preview">
-      <div class="container">
-        <div class="section-header">
-          <h2>Your Business Command Center</h2>
-          <p>Everything you need to manage your service business, organized in one intuitive interface</p>
+    <!-- Service Categories -->
+    <section class="categories-section">
+      <h2 class="section-title">Our Core Service Categories</h2>
+      <p class="section-subtitle">
+        Infinity-Booking starts with these essential sectors and continuously expands as new providers join the movement.
+      </p>
+      <div class="categories-grid">
+        <div class="category-card">
+          <img src="https://cdn-icons-png.flaticon.com/512/706/706164.png" alt="Home Services" />
+          <h3>Home Services</h3>
+          <p>From repairs to cleaning — find skilled home experts ready to serve your neighborhood.</p>
+          <ul class="service-list">
+            <li><i class="fas fa-check"></i> Cleaning Services</li>
+            <li><i class="fas fa-check"></i> Plumbing & Electrical</li>
+            <li><i class="fas fa-check"></i> Gardening & Landscaping</li>
+            <li><i class="fas fa-check"></i> Home Repairs</li>
+          </ul>
         </div>
+        <div class="category-card">
+          <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Beauty Services" />
+          <h3>Beauty & Salon</h3>
+          <p>Book professional stylists, barbers, and beauty specialists who bring confidence to your doorstep.</p>
+          <ul class="service-list">
+            <li><i class="fas fa-check"></i> Hair Styling</li>
+            <li><i class="fas fa-check"></i> Nail Care</li>
+            <li><i class="fas fa-check"></i> Skin Treatments</li>
+            <li><i class="fas fa-check"></i> Makeup Services</li>
+          </ul>
+        </div>
+        <div class="category-card">
+          <img src="https://cdn-icons-png.flaticon.com/512/3135/3135789.png" alt="Tutoring" />
+          <h3>Education & Tutoring</h3>
+          <p>Connect with experienced tutors and educators to support lifelong learning and growth.</p>
+          <ul class="service-list">
+            <li><i class="fas fa-check"></i> Academic Tutoring</li>
+            <li><i class="fas fa-check"></i> Language Lessons</li>
+            <li><i class="fas fa-check"></i> Music & Arts</li>
+            <li><i class="fas fa-check"></i> Professional Training</li>
+          </ul>
+        </div>
+        <div class="category-card">
+          <img src="https://cdn-icons-png.flaticon.com/512/2972/2972185.png" alt="Professional Services" />
+          <h3>Professional Services</h3>
+          <p>Access skilled professionals for your business and personal needs.</p>
+          <ul class="service-list">
+            <li><i class="fas fa-check"></i> IT Support</li>
+            <li><i class="fas fa-check"></i> Consulting</li>
+            <li><i class="fas fa-check"></i> Event Planning</li>
+            <li><i class="fas fa-check"></i> Photography</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="benefits-section">
+      <h2 class="section-title">Why Providers Choose Infinity-Booking</h2>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h3>Business Growth</h3>
+          <p>Reach new customers and grow your client base with our powerful marketing tools and platform visibility.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="fas fa-tools"></i>
+          </div>
+          <h3>Smart Management</h3>
+          <p>Organize schedules, track bookings, and manage your business with our intuitive dashboard.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <h3>Secure Payments</h3>
+          <p>Receive payments instantly via <strong>Telebirr</strong> with future integrations for <strong>PayPal</strong> and cards.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="fas fa-mobile-alt"></i>
+          </div>
+          <h3>Mobile Access</h3>
+          <p>Manage your business on the go with our mobile-optimized platform accessible from any device.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="fas fa-headset"></i>
+          </div>
+          <h3>24/7 Support</h3>
+          <p>Get help whenever you need it with our dedicated customer support team available round the clock.</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">
+            <i class="fas fa-star"></i>
+          </div>
+          <h3>Build Reputation</h3>
+          <p>Collect genuine reviews and build trust with our verified rating system that showcases your quality.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Platform Features -->
+    <section class="features-section">
+      <div class="container">
+        <h2 class="section-title">Powerful Platform Features</h2>
+        <p class="section-subtitle">
+          Everything you need to run and grow your service business efficiently.
+        </p>
         
-        <div class="dashboard-example">
-          <div class="dashboard-tabs">
-            <button :class="['tab', { active: activeTab === 'appointments' }]" @click="activeTab = 'appointments'">
-              Appointments
-            </button>
-            <button :class="['tab', { active: activeTab === 'revenue' }]" @click="activeTab = 'revenue'">
-              Revenue
-            </button>
-            <button :class="['tab', { active: activeTab === 'clients' }]" @click="activeTab = 'clients'">
-              Clients
-            </button>
+        <div class="features-content">
+          <div class="feature-image">
+            <div class="dashboard-preview">
+              <div class="preview-header">
+                <div class="preview-dots">
+                  <span class="dot red"></span>
+                  <span class="dot yellow"></span>
+                  <span class="dot green"></span>
+                </div>
+              </div>
+              <div class="preview-body">
+                <div class="metric-row">
+                  <div class="metric">
+                    <div class="metric-icon"><i class="fas fa-calendar-check"></i></div>
+                    <div class="metric-info">
+                      <div class="metric-value">24</div>
+                      <div class="metric-label">Today's Bookings</div>
+                    </div>
+                  </div>
+                  <div class="metric">
+                    <div class="metric-icon"><i class="fas fa-dollar-sign"></i></div>
+                    <div class="metric-info">
+                      <div class="metric-value">$1,240</div>
+                      <div class="metric-label">Today's Revenue</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="chart-placeholder">
+                  <div class="chart-bar" style="height: 80%;"></div>
+                  <div class="chart-bar" style="height: 60%;"></div>
+                  <div class="chart-bar" style="height: 90%;"></div>
+                  <div class="chart-bar" style="height: 70%;"></div>
+                  <div class="chart-bar" style="height: 85%;"></div>
+                </div>
+              </div>
+            </div>
           </div>
           
-          <div class="dashboard-content">
-            <!-- Appointments View -->
-            <div v-if="activeTab === 'appointments'" class="view appointments-view">
-              <div class="view-header">
-                <h3>Today's Schedule</h3>
-                <div class="view-stats">
-                  <div class="stat">Total: 12 appointments</div>
-                  <div class="stat">Confirmed: 10</div>
-                  <div class="stat">Pending: 2</div>
-                </div>
+          <div class="feature-list">
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-calendar"></i>
               </div>
-              
-              <div class="appointments-list">
-                <div class="appointment">
-                  <div class="appointment-time">09:00 AM</div>
-                  <div class="appointment-details">
-                    <div class="client-name">Meseret Girma</div>
-                    <div class="service">Hair Styling - 60 minutes</div>
-                    <div class="client-contact">+251 91 234 5678</div>
-                  </div>
-                  <div class="appointment-status confirmed">Confirmed</div>
-                </div>
-                
-                <div class="appointment">
-                  <div class="appointment-time">11:30 AM</div>
-                  <div class="appointment-details">
-                    <div class="client-name">Hana Mekonnen</div>
-                    <div class="service">Manicure & Pedicure - 90 minutes</div>
-                    <div class="client-contact">+251 92 345 6789</div>
-                  </div>
-                  <div class="appointment-status confirmed">Confirmed</div>
-                </div>
-                
-                <div class="appointment">
-                  <div class="appointment-time">02:00 PM</div>
-                  <div class="appointment-details">
-                    <div class="client-name">Samuel Kebede</div>
-                    <div class="service">Beard Trim - 30 minutes</div>
-                    <div class="client-contact">+251 93 456 7890</div>
-                  </div>
-                  <div class="appointment-status pending">Pending Payment</div>
-                </div>
-              </div>
-              
-              <div class="view-actions">
-                <button class="btn-action">View Full Schedule</button>
-                <button class="btn-action primary">Add New Appointment</button>
+              <div class="feature-text">
+                <h4>Smart Scheduling</h4>
+                <p>Automated calendar management with real-time availability updates</p>
               </div>
             </div>
             
-            <!-- Revenue View -->
-            <div v-if="activeTab === 'revenue'" class="view revenue-view">
-              <div class="view-header">
-                <h3>Revenue Overview</h3>
-                <div class="view-stats">
-                  <div class="stat">Today: ETB 8,450</div>
-                  <div class="stat">This Week: ETB 42,800</div>
-                  <div class="stat">This Month: ETB 156,300</div>
-                </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-bell"></i>
               </div>
-              
-              <div class="revenue-breakdown">
-                <div class="breakdown-item">
-                  <div class="breakdown-title">Telebirr Payments</div>
-                  <div class="breakdown-amount">ETB 5,200</div>
-                  <div class="breakdown-percentage">62%</div>
-                </div>
-                
-                <div class="breakdown-item">
-                  <div class="breakdown-title">CBE Birr Payments</div>
-                  <div class="breakdown-amount">ETB 2,100</div>
-                  <div class="breakdown-percentage">25%</div>
-                </div>
-                
-                <div class="breakdown-item">
-                  <div class="breakdown-title">Cash Payments</div>
-                  <div class="breakdown-amount">ETB 1,150</div>
-                  <div class="breakdown-percentage">13%</div>
-                </div>
-              </div>
-              
-              <div class="payment-notes">
-                <p>All payments are automatically recorded and reconciled with appointments. You can generate detailed reports for any time period.</p>
+              <div class="feature-text">
+                <h4>Instant Notifications</h4>
+                <p>Get alerts for new bookings, messages, and payment confirmations</p>
               </div>
             </div>
             
-            <!-- Clients View -->
-            <div v-if="activeTab === 'clients'" class="view clients-view">
-              <div class="view-header">
-                <h3>Client Management</h3>
-                <div class="view-stats">
-                  <div class="stat">Total Clients: 245</div>
-                  <div class="stat">Active This Month: 68</div>
-                  <div class="stat">New This Week: 12</div>
-                </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-chart-pie"></i>
               </div>
-              
-              <div class="clients-list">
-                <div class="client">
-                  <div class="client-info">
-                    <div class="client-name">Meseret Girma</div>
-                    <div class="client-details">4 appointments • ETB 5,200 total • Last visit: Nov 15</div>
-                    <div class="client-contact">meseretg@email.com • +251 91 234 5678</div>
-                  </div>
-                  <div class="client-actions">
-                    <button class="btn-small">View History</button>
-                    <button class="btn-small">Send Reminder</button>
-                  </div>
-                </div>
-                
-                <div class="client">
-                  <div class="client-info">
-                    <div class="client-name">Hana Mekonnen</div>
-                    <div class="client-details">2 appointments • ETB 3,800 total • Last visit: Nov 12</div>
-                    <div class="client-contact">hana.m@email.com • +251 92 345 6789</div>
-                  </div>
-                  <div class="client-actions">
-                    <button class="btn-small">View History</button>
-                    <button class="btn-small">Send Reminder</button>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="client-insights">
-                <p>Client retention rate: 78% • Average appointment value: ETB 1,200 • Most popular service: Hair Styling</p>
+              <div class="feature-text">
+                <h4>Business Analytics</h4>
+                <p>Track your performance with detailed reports and insights</p>
               </div>
             </div>
-          </div>
-        </div>
-        
-        <div class="dashboard-features">
-          <div class="feature">
-            <h4>Real-time Updates</h4>
-            <p>Your dashboard updates instantly when clients book appointments or make payments.</p>
-          </div>
-          
-          <div class="feature">
-            <h4>Mobile Access</h4>
-            <p>Access your dashboard from any device — desktop, tablet, or smartphone.</p>
-          </div>
-          
-          <div class="feature">
-            <h4>Secure & Private</h4>
-            <p>Your business data is protected with enterprise-level security measures.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Business Benefits -->
-    <section class="benefits">
-      <div class="container">
-        <div class="section-header">
-          <h2>Why Ethiopian Service Providers Choose Infinity Booking</h2>
-          <p>Practical benefits that make a real difference to your business operations</p>
-        </div>
-        
-        <div class="benefits-grid">
-          <div class="benefit-card">
-            <h3>Reduce Administrative Work</h3>
-            <p>Automate scheduling, reminders, and payment tracking. Save hours each week that you can dedicate to serving clients and growing your business.</p>
-          </div>
-          
-          <div class="benefit-card">
-            <h3>Increase Revenue</h3>
-            <p>Accept bookings 24/7, reduce no-shows with automated reminders, and upsell services through your professional booking interface.</p>
-          </div>
-          
-          <div class="benefit-card">
-            <h3>Build Professional Credibility</h3>
-            <p>Present a modern, professional image to clients with your branded booking page and organized appointment management.</p>
-          </div>
-          
-          <div class="benefit-card">
-            <h3>Make Data-Driven Decisions</h3>
-            <p>Access clear business insights about your most profitable services, busiest times, and client preferences.</p>
-          </div>
-          
-          <div class="benefit-card">
-            <h3>Simplify Payment Collection</h3>
-            <p>Streamline payment tracking across multiple methods. Know exactly what's been paid and what's outstanding at any moment.</p>
-          </div>
-          
-          <div class="benefit-card">
-            <h3>Scale Your Operations</h3>
-            <p>As your business grows, our platform scales with you. Add staff members, new services, and additional locations seamlessly.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Success Stories -->
-    <section class="success">
-      <div class="container">
-        <div class="section-header">
-          <h2>Real Business Transformations</h2>
-          <p>Ethiopian service providers who have grown their businesses with Infinity Booking</p>
-        </div>
-        
-        <div class="success-stories">
-          <div class="story">
-            <div class="story-content">
-              <h3>Selam's Beauty Salon - Addis Ababa</h3>
-              <p>"Before Infinity Booking, I was managing appointments through phone calls and a paper notebook. I regularly double-booked or missed appointments. Now, my clients book online, pay through Telebirr, and my schedule is always up to date. I've increased my client base by 60% while reducing administrative time by 15 hours per week."</p>
-              <div class="story-metrics">
-                <div class="metric">+60% more clients</div>
-                <div class="metric">-15 hours admin/week</div>
-                <div class="metric">98% payment success rate</div>
+            
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <div class="feature-text">
+                <h4>Customer Management</h4>
+                <p>Keep track of client information and booking history</p>
               </div>
             </div>
-          </div>
-          
-          <div class="story">
-            <div class="story-content">
-              <h3>Daniel's Cleaning Service - Adama</h3>
-              <p>"Managing a team of 8 cleaners with varying schedules was challenging. Infinity Booking allows clients to book specific services, and my team receives automatic notifications. Payment tracking was previously a major issue — now everything is recorded and reconciled automatically. We've expanded to 12 employees in 6 months."</p>
-              <div class="story-metrics">
-                <div class="metric">12 employees managed</div>
-                <div class="metric">350+ monthly bookings</div>
-                <div class="metric">100% payment tracking</div>
+            
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-star"></i>
+              </div>
+              <div class="feature-text">
+                <h4>Review System</h4>
+                <p>Collect and showcase customer reviews to build credibility</p>
+              </div>
+            </div>
+            
+            <div class="feature-item">
+              <div class="feature-icon">
+                <i class="fas fa-file-invoice-dollar"></i>
+              </div>
+              <div class="feature-text">
+                <h4>Invoicing & Payments</h4>
+                <p>Generate professional invoices and accept multiple payment methods</p>
               </div>
             </div>
           </div>
@@ -350,97 +301,220 @@
       </div>
     </section>
 
-    <!-- Pricing -->
-    <section class="pricing">
-      <div class="container">
-        <div class="section-header">
-          <h2>Simple, Transparent Pricing</h2>
-          <p>Choose the plan that fits your business needs. No hidden fees, no long-term contracts.</p>
+    <!-- Testimonials Section -->
+    <section class="testimonials-section">
+      <h2 class="section-title">What Our Service Providers & Customers Say</h2>
+      <p class="section-subtitle">
+        Hear from providers and customers who have transformed their service experience with Infinity-Booking.
+      </p>
+
+      <div class="testimonial-slider">
+        <div class="testimonial-card" v-for="(item, index) in testimonials" :key="index">
+          <div class="quote">"</div>
+          <p class="feedback">{{ item.feedback }}</p>
+          <div class="user-info">
+            <img :src="item.image" alt="user photo" />
+            <div>
+              <h4>{{ item.name }}</h4>
+              <p>{{ item.role }}</p>
+              <div class="rating">
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+                <i class="fas fa-star"></i>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
+      
+      <div class="testimonial-navigation">
+        <button class="nav-btn prev" @click="prevTestimonial">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="nav-btn next" @click="nextTestimonial">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing-section">
+      <div class="container">
+        <h2 class="section-title">Simple, Transparent Pricing</h2>
+        <p class="section-subtitle">
+          Choose the plan that fits your business. No hidden fees, no surprises.
+        </p>
         
-        <div class="pricing-plans">
-          <div class="plan">
+        <div class="pricing-grid">
+          <div class="pricing-card">
             <div class="plan-header">
-              <h3>Free Trial</h3>
-              <div class="plan-price">ETB 0</div>
-              <div class="plan-period">30 days</div>
+              <h3>Free</h3>
+              <div class="price">
+                <span class="amount">$0</span>
+                <span class="period">/month</span>
+              </div>
             </div>
-            
-            <div class="plan-features">
-              <p>Perfect for exploring the platform and setting up your business</p>
-              <ul>
-                <li>Up to 50 appointments per month</li>
-                <li>Basic booking page</li>
-                <li>Email and SMS reminders</li>
-                <li>Manual payment tracking</li>
-                <li>Standard support</li>
-              </ul>
-            </div>
-            
-            <button @click="goToRegister" class="btn-plan">
-              Start Free Trial
+            <ul class="plan-features">
+              <li><i class="fas fa-check"></i> Basic Profile Listing</li>
+              <li><i class="fas fa-check"></i> Up to 5 Services</li>
+              <li><i class="fas fa-check"></i> 20 Monthly Bookings</li>
+              <li><i class="fas fa-check"></i> Email Support</li>
+              <li><i class="fas fa-check"></i> Basic Analytics</li>
+            </ul>
+            <button class="plan-btn" @click="scrollToRegistration">
+              Get Started Free
             </button>
           </div>
           
-          <div class="plan featured">
-            <div class="plan-badge">Most Popular</div>
+          <div class="pricing-card popular">
+            <div class="popular-badge">Most Popular</div>
             <div class="plan-header">
               <h3>Professional</h3>
-              <div class="plan-price">ETB 299<span>/month</span></div>
-              <div class="plan-period">After free trial</div>
+              <div class="price">
+                <span class="amount">$19</span>
+                <span class="period">/month</span>
+              </div>
             </div>
-            
-            <div class="plan-features">
-              <p>Complete platform access for growing service businesses</p>
-              <ul>
-                <li>Unlimited appointments</li>
-                <li>Telebirr & CBE Birr integration</li>
-                <li>Advanced business analytics</li>
-                <li>Staff management tools</li>
-                <li>Priority Ethiopian support</li>
-                <li>Custom booking page</li>
-                <li>Automated reports</li>
-              </ul>
-            </div>
-            
-            <button @click="goToRegister" class="btn-plan primary">
-              Get Started
+            <ul class="plan-features">
+              <li><i class="fas fa-check"></i> Everything in Free</li>
+              <li><i class="fas fa-check"></i> Unlimited Services</li>
+              <li><i class="fas fa-check"></i> Unlimited Bookings</li>
+              <li><i class="fas fa-check"></i> Priority Support</li>
+              <li><i class="fas fa-check"></i> Advanced Analytics</li>
+              <li><i class="fas fa-check"></i> Marketing Tools</li>
+              <li><i class="fas fa-check"></i> Custom Booking Page</li>
+            </ul>
+            <button class="plan-btn primary" @click="scrollToRegistration">
+              Start 14-Day Trial
             </button>
           </div>
-        </div>
-        
-        <div class="pricing-note">
-          <p>All plans include: Secure data storage • Mobile access • Ethiopian business support • No setup fees</p>
-          <p>Need a custom plan for multiple locations or large teams? <a href="/contact">Contact our sales team</a></p>
+          
+          <div class="pricing-card">
+            <div class="plan-header">
+              <h3>Business</h3>
+              <div class="price">
+                <span class="amount">$39</span>
+                <span class="period">/month</span>
+              </div>
+            </div>
+            <ul class="plan-features">
+              <li><i class="fas fa-check"></i> Everything in Professional</li>
+              <li><i class="fas fa-check"></i> Team Management</li>
+              <li><i class="fas fa-check"></i> White-label Solution</li>
+              <li><i class="fas fa-check"></i> API Access</li>
+              <li><i class="fas fa-check"></i> Dedicated Support</li>
+              <li><i class="fas fa-check"></i> Custom Integrations</li>
+            </ul>
+            <button class="plan-btn" @click="scrollToRegistration">
+              Contact Sales
+            </button>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Final CTA -->
-    <section class="final-cta">
+    <!-- FAQ Section -->
+    <section class="faq-section">
       <div class="container">
-        <div class="cta-content">
-          <h2>Start Growing Your Service Business Today</h2>
-          <p>Join hundreds of Ethiopian service providers who are already using Infinity Booking to streamline their operations and increase their revenue.</p>
-          
-          <div class="cta-benefits">
-            <div class="benefit">30-day free trial with full platform access</div>
-            <div class="benefit">Personal onboarding assistance</div>
-            <div class="benefit">Ethiopian support team available in Amharic and English</div>
-            <div class="benefit">No commitment - cancel anytime</div>
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <p class="section-subtitle">
+          Get answers to common questions about joining Infinity-Booking.
+        </p>
+        
+        <div class="faq-grid">
+          <div class="faq-item" :class="{ active: activeFaq === 1 }" @click="toggleFaq(1)">
+            <div class="faq-question">
+              <h4>How quickly can I start receiving bookings?</h4>
+              <i class="fas" :class="activeFaq === 1 ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </div>
+            <div class="faq-answer" v-if="activeFaq === 1">
+              <p>Most providers start receiving booking requests within 24-48 hours of completing their profile. We recommend adding detailed service descriptions, professional photos, and setting competitive pricing to attract customers faster.</p>
+            </div>
           </div>
           
-          <div class="cta-actions">
-            <button @click="goToRegister" class="btn-cta">
-              Create Your Free Account
-            </button>
-            <button @click="goToContact" class="btn-cta secondary">
-              Schedule a Demo
-            </button>
+          <div class="faq-item" :class="{ active: activeFaq === 2 }" @click="toggleFaq(2)">
+            <div class="faq-question">
+              <h4>What payment methods do you support?</h4>
+              <i class="fas" :class="activeFaq === 2 ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </div>
+            <div class="faq-answer" v-if="activeFaq === 2">
+              <p>We currently support Telebirr for local payments and are working on integrating PayPal and card payments. All transactions are secured with bank-level encryption, and you can withdraw your earnings directly to your bank account.</p>
+            </div>
           </div>
           
-          <div class="cta-contact">
-            <p>Questions? Contact our Ethiopian support team: <strong>support@infinitybooking.et</strong> or <strong>+251 11 123 4567</strong></p>
+          <div class="faq-item" :class="{ active: activeFaq === 3 }" @click="toggleFaq(3)">
+            <div class="faq-question">
+              <h4>Can I manage multiple service locations?</h4>
+              <i class="fas" :class="activeFaq === 3 ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </div>
+            <div class="faq-answer" v-if="activeFaq === 3">
+              <p>Yes! Our platform allows you to add multiple service locations and set different availability, pricing, and services for each location. This is perfect for providers who serve multiple neighborhoods or cities.</p>
+            </div>
+          </div>
+          
+          <div class="faq-item" :class="{ active: activeFaq === 4 }" @click="toggleFaq(4)">
+            <div class="faq-question">
+              <h4>Is there a contract or long-term commitment?</h4>
+              <i class="fas" :class="activeFaq === 4 ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </div>
+            <div class="faq-answer" v-if="activeFaq === 4">
+              <p>No long-term contracts! You can start with our free plan and upgrade or downgrade at any time. The Professional plan offers a 14-day free trial, and you can cancel your subscription anytime without penalties.</p>
+            </div>
+          </div>
+          
+          <div class="faq-item" :class="{ active: activeFaq === 5 }" @click="toggleFaq(5)">
+            <div class="faq-question">
+              <h4>How do you help me attract more customers?</h4>
+              <i class="fas" :class="activeFaq === 5 ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </div>
+            <div class="faq-answer" v-if="activeFaq === 5">
+              <p>We use multiple strategies including SEO optimization for your profile, featured listings in relevant categories, email campaigns to potential customers in your area, and integration with social media platforms to increase your visibility.</p>
+            </div>
+          </div>
+          
+          <div class="faq-item" :class="{ active: activeFaq === 6 }" @click="toggleFaq(6)">
+            <div class="faq-question">
+              <h4>What kind of support do you provide?</h4>
+              <i class="fas" :class="activeFaq === 6 ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+            </div>
+            <div class="faq-answer" v-if="activeFaq === 6">
+              <p>We provide 24/7 email support, detailed documentation, video tutorials, and regular training webinars. Professional and Business plan users get priority support with faster response times and dedicated assistance for business growth.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final CTA Section -->
+    <section class="cta-section">
+      <div class="container">
+        <h2>Ready to Grow Your Service Business?</h2>
+        <p>
+          Join thousands of successful providers who trust Infinity-Booking to power their business growth.
+          Start your journey today — it's free to begin.
+        </p>
+        <div class="cta-buttons">
+          <router-link to="/provider/register" class="cta-btn primary">
+            <i class="fas fa-rocket"></i> Start Free Account
+          </router-link>
+          <router-link to="/provider/login" class="cta-btn secondary">
+            <i class="fas fa-sign-in-alt"></i> Login to Dashboard
+          </router-link>
+        </div>
+        <div class="cta-features">
+          <div class="feature">
+            <i class="fas fa-check-circle"></i>
+            <span>No credit card required</span>
+          </div>
+          <div class="feature">
+            <i class="fas fa-check-circle"></i>
+            <span>Free forever plan available</span>
+          </div>
+          <div class="feature">
+            <i class="fas fa-check-circle"></i>
+            <span>Setup in under 10 minutes</span>
           </div>
         </div>
       </div>
@@ -448,34 +522,120 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'HomePage',
-  data() {
-    return {
-      activeTab: 'appointments'
-    }
+<script setup>
+import { ref, onMounted } from 'vue'
+import mekelleCity from '../assets/Mekelle-City.jpg'
+
+const testimonials = [
+  {
+    name: 'Sophia L.',
+    role: 'Home Service Provider',
+    feedback: 'Infinity-Booking helped me reach hundreds of customers without any marketing hassle. The platform feels modern, easy, and powerful.',
+    image: 'https://randomuser.me/api/portraits/women/68.jpg',
   },
-  methods: {
-    goToRegister() {
-      this.$router.push('/register');
-    },
-    goToDemo() {
-      window.open('/demo', '_blank');
-    },
-    goToContact() {
-      this.$router.push('/contact');
-    }
+  {
+    name: 'Michael B.',
+    role: 'Salon Owner',
+    feedback: 'I love how simple it is to manage bookings and payments! My clients now book me directly — it has boosted my business visibility.',
+    image: 'https://randomuser.me/api/portraits/men/64.jpg',
+  },
+  {
+    name: 'Sara T.',
+    role: 'Tutor & Educator',
+    feedback: 'The system made it so easy for me to offer online and in-person sessions. Infinity-Booking really connects us with learners everywhere!',
+    image: 'https://randomuser.me/api/portraits/women/65.jpg',
+  },
+  {
+    name: 'Daniel K.',
+    role: 'Customer',
+    feedback: 'Booking home and beauty services has never been smoother. I appreciate the trust and quality providers I can find here.',
+    image: 'https://randomuser.me/api/portraits/men/56.jpg',
+  },
+  {
+    name: 'Jessica M.',
+    role: 'Beauty Specialist',
+    feedback: 'My bookings increased by 300% in just two months. The platform handles everything from scheduling to payments perfectly.',
+    image: 'https://randomuser.me/api/portraits/women/44.jpg',
+  },
+  {
+    name: 'Robert K.',
+    role: 'IT Consultant',
+    feedback: 'As a professional service provider, I needed a platform that understood my business needs. Infinity-Booking delivered beyond expectations.',
+    image: 'https://randomuser.me/api/portraits/men/32.jpg',
   }
+]
+
+const stats = ref([
+  { id: 1, start: 0, end: 150, suffix: '+', label: 'Providers Onboarded' },
+  { id: 2, start: 0, end: 500, suffix: '+', label: 'Services Listed' },
+  { id: 3, start: 0, end: 1200, suffix: '+', label: 'Bookings Completed' },
+  { id: 4, start: 0, end: 25, suffix: '+', label: 'Cities Covered' }
+])
+
+const activeFaq = ref(1)
+const currentTestimonial = ref(0)
+
+const toggleFaq = (index) => {
+  activeFaq.value = activeFaq.value === index ? null : index
 }
+
+const nextTestimonial = () => {
+  currentTestimonial.value = (currentTestimonial.value + 1) % testimonials.length
+}
+
+const prevTestimonial = () => {
+  currentTestimonial.value = currentTestimonial.value === 0 ? testimonials.length - 1 : currentTestimonial.value - 1
+}
+
+const scrollToRegistration = () => {
+  const ctaSection = document.querySelector('.cta-section')
+  ctaSection?.scrollIntoView({ behavior: 'smooth' })
+}
+
+// Animate counters
+onMounted(() => {
+  // Animate stats counters
+  stats.value.forEach((stat, index) => {
+    setTimeout(() => {
+      let current = stat.start
+      const increment = Math.ceil(stat.end / 100)
+      const timer = setInterval(() => {
+        current += increment
+        if (current >= stat.end) {
+          current = stat.end
+          clearInterval(timer)
+        }
+        const element = document.querySelectorAll('.stat-card h2 span')[index]
+        if (element) {
+          element.textContent = current
+        }
+      }, 30)
+    }, index * 300)
+  })
+
+  // Setup testimonial auto-slide
+  setInterval(() => {
+    nextTestimonial()
+  }, 5000)
+})
 </script>
 
 <style scoped>
-/* =============== Base Styles =============== */
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 .home {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  line-height: 1.6;
-  color: #1a202c;
+  color: #8f8888;
+  overflow-x: hidden;
 }
 
 .container {
@@ -484,614 +644,650 @@ export default {
   padding: 0 20px;
 }
 
-.section-header {
-  text-align: center;
-  margin-bottom: 60px;
-}
-
-.section-header h2 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: #2d3748;
-}
-
-.section-header p {
-  font-size: 1.125rem;
-  color: #718096;
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-/* =============== Buttons =============== */
-.btn-primary {
-  background: #2d3748;
-  color: white;
-  border: none;
-  padding: 14px 32px;
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
   font-size: 1rem;
   font-weight: 600;
-  border-radius: 6px;
+  text-decoration: none;
+  border-radius: 8px;
+  border: none;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
 }
 
 .btn-primary:hover {
-  background: #4a5568;
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
 }
 
 .btn-secondary {
-  background: transparent;
-  color: #2d3748;
-  border: 2px solid #2d3748;
-  padding: 12px 30px;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
 }
 
 .btn-secondary:hover {
-  background: #f7fafc;
+  background: #e2e8f0;
+  transform: translateY(-2px);
 }
 
-.btn-action {
-  background: #f7fafc;
-  color: #4a5568;
-  border: 1px solid #e2e8f0;
-  padding: 10px 20px;
-  font-size: 0.875rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-action.primary {
-  background: #2d3748;
-  color: white;
-  border-color: #2d3748;
-}
-
-.btn-small {
-  background: #f7fafc;
-  color: #4a5568;
-  border: 1px solid #e2e8f0;
-  padding: 6px 12px;
-  font-size: 0.75rem;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-plan {
-  width: 100%;
-  padding: 14px;
-  background: #f7fafc;
-  color: #4a5568;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 20px;
-}
-
-.btn-plan.primary {
-  background: #2d3748;
-  color: white;
-  border-color: #2d3748;
-}
-
-.btn-cta {
-  background: #2d3748;
-  color: white;
-  border: none;
-  padding: 16px 40px;
-  font-size: 1.125rem;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.btn-cta.secondary {
-  background: transparent;
-  color: #2d3748;
-  border: 2px solid #2d3748;
-}
-
-/* =============== Hero Section =============== */
+/* Hero Section */
 .hero {
-  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
-  padding: 100px 0;
+  min-height: 90vh;
+  background-size: cover;
+  
+  background-position: center;
+  background-attachment: fixed;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   text-align: center;
+  color: rgb(243, 243, 244);
+  padding: 40px 20px;
 }
 
-.hero-content {
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5));
+}
+
+.content {
+  position: relative;
+  z-index: 2;
   max-width: 800px;
+  padding: 0 20px;
+}
+
+.animated-title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  animation: fadeInDown 1s ease-out;
+  line-height: 1.2;
+  padding-top: 3rem;
+ 
+}
+
+.highlight {
+  color: #70dddd;
+  position: relative;
+  display: inline-block;
+}
+
+.highlight::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: #ffcc00;
+  border-radius: 2px;
+}
+
+.subtitle {
+  font-size: 1rem;
+  line-height: 1.8;
+  margin-bottom: 2.5rem;
+  animation: fadeInUp 1.2s ease-out;
+  opacity: 0.95;
+ 
+}
+
+.subtitle strong {
+  color: #ded977;
+  font-weight: 600;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+  animation: fadeInUp 1.4s ease-out;
+}
+
+/* Stats Section */
+.stats-section {
+  background: #f8fafc;
+  padding: 80px 20px;
+}
+
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
-.hero-title {
-  font-size: 3rem;
-  font-weight: 700;
-  margin-bottom: 24px;
-  color: #2d3748;
-  line-height: 1.2;
+.stat-card {
+  text-align: center;
+  padding: 30px 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
 }
 
-.hero-subtitle {
-  font-size: 1.25rem;
-  color: #4a5568;
-  margin-bottom: 40px;
-  line-height: 1.6;
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
 
-.hero-cta {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  margin-bottom: 24px;
+.stat-card h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #3b82f6;
+  margin-bottom: 10px;
 }
 
-.hero-note p {
-  color: #718096;
-  font-size: 0.875rem;
+.stat-card p {
+  font-size: 1.1rem;
+  color: #64748b;
+  font-weight: 500;
 }
 
-/* =============== Platform Overview =============== */
-.overview {
-  padding: 80px 0;
+/* Process Section */
+.process-section {
+  padding: 100px 0;
   background: white;
 }
 
-.overview-content {
+.section-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #1e293b;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.section-subtitle {
+  font-size: 1.1rem;
+  color: #64748b;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 50px;
+  line-height: 1.6;
+}
+
+.process-steps {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 40px;
-}
-
-.overview-item {
-  padding: 0;
-}
-
-.overview-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: #2d3748;
-}
-
-.overview-item p {
-  color: #4a5568;
-  line-height: 1.7;
-}
-
-/* =============== Workflow Section =============== */
-.workflow {
-  padding: 80px 0;
-  background: #f7fafc;
-}
-
-.workflow-steps {
-  max-width: 800px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
-.step {
-  display: flex;
-  gap: 30px;
-  margin-bottom: 40px;
-  align-items: flex-start;
+.process-step {
+  text-align: center;
+  padding: 30px;
+  background: #f8fafc;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
 }
 
-.step-number {
-  width: 40px;
-  height: 40px;
-  background: #2d3748;
-  color: white;
+.process-step:hover {
+  border-color: #3b82f6;
+  transform: translateY(-5px);
+}
+
+.step-icon {
+  width: 70px;
+  height: 70px;
+  background: #dbeafe;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  font-size: 1.125rem;
-  flex-shrink: 0;
+  margin: 0 auto 20px;
+  color: #1d4ed8;
+  font-size: 1.8rem;
 }
 
 .step-content h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: #2d3748;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 10px;
 }
 
 .step-content p {
-  color: #4a5568;
-  line-height: 1.7;
-}
-
-/* =============== Dashboard Preview =============== */
-.dashboard-preview {
-  padding: 80px 0;
-  background: white;
-}
-
-.dashboard-example {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 40px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.dashboard-tabs {
-  display: flex;
-  background: #f7fafc;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.tab {
-  flex: 1;
-  padding: 16px;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  font-weight: 600;
-  color: #718096;
-  transition: all 0.3s;
-}
-
-.tab.active {
-  color: #2d3748;
-  border-bottom-color: #2d3748;
-  background: white;
-}
-
-.dashboard-content {
-  padding: 30px;
-}
-
-.view-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.view-header h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #2d3748;
-}
-
-.view-stats {
-  display: flex;
-  gap: 20px;
-}
-
-.view-stats .stat {
-  font-size: 0.875rem;
-  color: #4a5568;
-  padding: 6px 12px;
-  background: #f7fafc;
-  border-radius: 4px;
-}
-
-/* Appointments View */
-.appointments-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 30px;
-}
-
-.appointment {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  background: #f7fafc;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-}
-
-.appointment-time {
-  min-width: 80px;
-  font-weight: 600;
-  color: #2d3748;
-}
-
-.appointment-details {
-  flex: 1;
-  margin: 0 20px;
-}
-
-.client-name {
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: #2d3748;
-}
-
-.service {
-  color: #4a5568;
-  margin-bottom: 4px;
-  font-size: 0.875rem;
-}
-
-.client-contact {
-  color: #718096;
-  font-size: 0.75rem;
-}
-
-.appointment-status {
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.appointment-status.confirmed {
-  background: #c6f6d5;
-  color: #22543d;
-}
-
-.appointment-status.pending {
-  background: #fed7d7;
-  color: #742a2a;
-}
-
-.view-actions {
-  display: flex;
-  justify-content: space-between;
-  padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
-}
-
-/* Revenue View */
-.revenue-breakdown {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 30px;
-}
-
-.breakdown-item {
-  display: flex;
-  align-items: center;
-  padding: 16px;
-  background: #f7fafc;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-}
-
-.breakdown-title {
-  flex: 1;
-  font-weight: 600;
-  color: #2d3748;
-}
-
-.breakdown-amount {
-  margin: 0 20px;
-  font-weight: 600;
-  color: #2d3748;
-}
-
-.breakdown-percentage {
-  padding: 4px 12px;
-  background: #2d3748;
-  color: white;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.payment-notes {
-  padding: 20px;
-  background: #f7fafc;
-  border-radius: 6px;
-  color: #4a5568;
-  font-size: 0.875rem;
-}
-
-/* Clients View */
-.clients-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 30px;
-}
-
-.client {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  background: #f7fafc;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-}
-
-.client-info {
-  flex: 1;
-}
-
-.client-name {
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #2d3748;
-}
-
-.client-details {
-  color: #4a5568;
-  margin-bottom: 8px;
-  font-size: 0.875rem;
-}
-
-.client-contact {
-  color: #718096;
-  font-size: 0.75rem;
-}
-
-.client-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.client-insights {
-  padding: 20px;
-  background: #f7fafc;
-  border-radius: 6px;
-  color: #4a5568;
-  font-size: 0.875rem;
-  text-align: center;
-}
-
-/* Dashboard Features */
-.dashboard-features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
-}
-
-.feature {
-  text-align: center;
-}
-
-.feature h4 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: #2d3748;
-}
-
-.feature p {
-  color: #4a5568;
+  font-size: 1rem;
+  color: #64748b;
   line-height: 1.6;
 }
 
-/* =============== Benefits Section =============== */
-.benefits {
-  padding: 80px 0;
-  background: #f7fafc;
+/* Categories Section */
+.categories-section {
+  padding: 100px 20px;
+  background: #f8fafc;
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.category-card {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0;
+}
+
+.category-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  border-color: #3b82f6;
+}
+
+.category-card img {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 20px;
+  object-fit: contain;
+}
+
+.category-card h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 15px;
+}
+
+.category-card > p {
+  font-size: 1rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.service-list {
+  list-style: none;
+  text-align: left;
+}
+
+.service-list li {
+  font-size: 0.95rem;
+  color: #475569;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.service-list li i {
+  color: #10b981;
+  font-size: 0.9rem;
+}
+
+/* Benefits Section */
+.benefits-section {
+  padding: 100px 20px;
+  background: white;
 }
 
 .benefits-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 30px;
-}
-
-.benefit-card {
-  padding: 30px;
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.benefit-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-.benefit-card h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: #2d3748;
-}
-
-.benefit-card p {
-  color: #4a5568;
-  line-height: 1.7;
-}
-
-/* =============== Success Stories =============== */
-.success {
-  padding: 80px 0;
-  background: white;
-}
-
-.success-stories {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
-.story {
-  margin-bottom: 40px;
+.benefit-card {
+  background: #f8fafc;
+  border-radius: 16px;
   padding: 30px;
-  background: #f7fafc;
-  border-radius: 8px;
-  border-left: 4px solid #2d3748;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
 }
 
-.story-content h3 {
+.benefit-card:hover {
+  border-color: #3b82f6;
+  transform: translateY(-5px);
+}
+
+.benefit-icon {
+  width: 60px;
+  height: 60px;
+  background: #dbeafe;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: #1d4ed8;
   font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: #2d3748;
 }
 
-.story-content p {
-  color: #4a5568;
-  line-height: 1.7;
+.benefit-card h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 15px;
+}
+
+.benefit-card p {
+  font-size: 1rem;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* Features Section */
+.features-section {
+  padding: 100px 0;
+  background: #f8fafc;
+}
+
+.features-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature-image {
+  padding: 20px;
+}
+
+.dashboard-preview {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.preview-header {
   margin-bottom: 20px;
 }
 
-.story-metrics {
+.preview-dots {
   display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.story-metrics .metric {
-  padding: 8px 16px;
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.dot.red { background: #ef4444; }
+.dot.yellow { background: #f59e0b; }
+.dot.green { background: #10b981; }
+
+.preview-body {
+  padding: 10px;
+}
+
+.metric-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.metric {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.metric-icon {
+  width: 40px;
+  height: 40px;
+  background: #3b82f6;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.metric-info {
+  flex: 1;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.metric-label {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.chart-placeholder {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 150px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+}
+
+.chart-bar {
+  flex: 1;
+  background: linear-gradient(to top, #3b82f6, #60a5fa);
+  border-radius: 6px 6px 0 0;
+  min-height: 10px;
+}
+
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.feature-icon {
+  width: 50px;
+  height: 50px;
+  background: #dbeafe;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1d4ed8;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.feature-text h4 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.feature-text p {
+  font-size: 1rem;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* Testimonials Section */
+.testimonials-section {
+  padding: 100px 20px;
   background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  color: #4a5568;
-}
-
-/* =============== Pricing Section =============== */
-.pricing {
-  padding: 80px 0;
-  background: #f7fafc;
-}
-
-.pricing-plans {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 30px;
-  max-width: 800px;
-  margin: 0 auto 40px;
-}
-
-.plan {
-  padding: 30px;
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
   position: relative;
 }
 
-.plan.featured {
-  border-color: #2d3748;
-  box-shadow: 0 10px 15px -3px rgba(45, 55, 72, 0.1);
+.testimonial-slider {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 50px auto;
 }
 
-.plan-badge {
+.testimonial-card {
+  background: #f8fafc;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  border: 1px solid #e2e8f0;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.quote {
+  font-size: 3.5rem;
+  color: #3b82f6;
+  opacity: 0.2;
+  line-height: 1;
+  margin-bottom: -15px;
+}
+
+.feedback {
+  font-size: 1.05rem;
+  color: #475569;
+  line-height: 1.7;
+  margin-bottom: 25px;
+  font-style: italic;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-info img {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #3b82f6;
+}
+
+.user-info h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 5px;
+}
+
+.user-info p {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 5px;
+}
+
+.rating {
+  color: #fbbf24;
+  font-size: 0.9rem;
+}
+
+.testimonial-navigation {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 40px;
+}
+
+.nav-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  background: white;
+  color: #475569;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-btn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  transform: scale(1.1);
+}
+
+/* Pricing Section */
+.pricing-section {
+  padding: 100px 20px;
+  background: #f8fafc;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.pricing-card {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  border: 2px solid #e2e8f0;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.pricing-card.popular {
+  border-color: #3b82f6;
+  transform: scale(1.05);
+  box-shadow: 0 20px 40px rgba(59, 130, 246, 0.1);
+}
+
+.popular-badge {
   position: absolute;
   top: -12px;
   left: 50%;
   transform: translateX(-50%);
-  background: #2d3748;
+  background: #3b82f6;
   color: white;
   padding: 6px 20px;
   border-radius: 20px;
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
@@ -1104,222 +1300,394 @@ export default {
 
 .plan-header h3 {
   font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #2d3748;
-}
-
-.plan-price {
-  font-size: 2.5rem;
   font-weight: 700;
-  color: #2d3748;
-  margin-bottom: 4px;
+  color: #1e293b;
+  margin-bottom: 15px;
 }
 
-.plan-price span {
+.price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 5px;
+}
+
+.amount {
+  font-size: 3rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.period {
   font-size: 1rem;
-  color: #718096;
+  color: #64748b;
 }
 
-.plan-period {
-  color: #718096;
-  font-size: 0.875rem;
-}
-
-.plan-features p {
-  color: #4a5568;
-  margin-bottom: 20px;
-  font-weight: 500;
-}
-
-.plan-features ul {
+.plan-features {
   list-style: none;
-  padding: 0;
-  margin: 0;
+  margin-bottom: 30px;
 }
 
 .plan-features li {
-  padding: 8px 0;
-  color: #4a5568;
-  border-bottom: 1px solid #e2e8f0;
+  font-size: 1rem;
+  color: #475569;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.plan-features li:last-child {
-  border-bottom: none;
+.plan-features li i {
+  color: #10b981;
 }
 
-.pricing-note {
-  text-align: center;
-  color: #718096;
-  font-size: 0.875rem;
-  max-width: 600px;
-  margin: 0 auto;
+.plan-btn {
+  width: 100%;
+  padding: 15px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 2px solid #3b82f6;
+  background: white;
+  color: #3b82f6;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.pricing-note a {
-  color: #2d3748;
-  text-decoration: underline;
-}
-
-/* =============== Final CTA =============== */
-.final-cta {
-  padding: 80px 0;
-  background: #2d3748;
+.plan-btn:hover {
+  background: #3b82f6;
   color: white;
-  text-align: center;
+  transform: translateY(-2px);
 }
 
-.cta-content {
+.plan-btn.primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.plan-btn.primary:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+/* FAQ Section */
+.faq-section {
+  padding: 100px 20px;
+  background: white;
+}
+
+.faq-grid {
   max-width: 800px;
   margin: 0 auto;
 }
 
-.cta-content h2 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 16px;
+.faq-item {
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-.cta-content > p {
-  font-size: 1.125rem;
-  color: #cbd5e0;
-  margin-bottom: 40px;
+.faq-item.active {
+  border-color: #3b82f6;
+  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.1);
+}
+
+.faq-question {
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  background: white;
+}
+
+.faq-question h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+  flex: 1;
+}
+
+.faq-question i {
+  color: #64748b;
+  transition: transform 0.3s ease;
+  font-size: 1rem;
+}
+
+.faq-item.active .faq-question i {
+  transform: rotate(180deg);
+}
+
+.faq-answer {
+  padding: 0 20px 20px;
+}
+
+.faq-answer p {
+  font-size: 1rem;
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* CTA Section */
+.cta-section {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: white;
+  padding: 100px 20px;
+  text-align: center;
+}
+
+.cta-section h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+
+.cta-section p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto 3rem;
   line-height: 1.6;
 }
 
-.cta-benefits {
+.cta-buttons {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 40px;
-  text-align: left;
-  max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.cta-benefits .benefit {
-  padding: 12px 0;
-  border-bottom: 1px solid #4a5568;
-  color: #e2e8f0;
-}
-
-.cta-benefits .benefit:last-child {
-  border-bottom: none;
-}
-
-.cta-actions {
-  display: flex;
-  gap: 16px;
+  gap: 20px;
   justify-content: center;
   margin-bottom: 40px;
+  flex-wrap: wrap;
 }
 
-.cta-contact {
-  color: #cbd5e0;
-  font-size: 0.875rem;
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px 32px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: all 0.3s ease;
 }
 
-.cta-contact strong {
+.cta-btn.primary {
+  background: #ffcc00;
+  color: #1e293b;
+}
+
+.cta-btn.primary:hover {
+  background: #ffd633;
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(255, 204, 0, 0.3);
+}
+
+.cta-btn.secondary {
+  background: rgba(255, 255, 255, 0.1);
   color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* =============== Responsive Design =============== */
+.cta-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-3px);
+}
+
+.cta-features {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  margin-top: 30px;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  opacity: 0.9;
+}
+
+.feature i {
+  color: #ffcc00;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .animated-title {
+    font-size: 2.5rem;
+  }
+  
+  .features-content {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  
+  .feature-image {
+    order: 2;
+  }
+  
+  .feature-list {
+    order: 1;
+  }
+  
+  .pricing-card.popular {
+    transform: none;
+  }
+}
+
 @media (max-width: 768px) {
   .hero {
-    padding: 60px 0;
+    min-height: 80vh;
+    padding: 60px 20px;
   }
   
-  .hero-title {
+  .animated-title {
     font-size: 2rem;
   }
   
-  .hero-subtitle {
-    font-size: 1.125rem;
+  .subtitle {
+    font-size: 0.6rem;
   }
   
-  .hero-cta {
+  .section-title {
+    font-size: 1.8rem;
+  }
+  
+  .stats-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .process-steps,
+  .categories-grid,
+  .benefits-grid,
+  .testimonial-slider,
+  .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .cta-buttons {
     flex-direction: column;
     align-items: center;
   }
   
-  .section-header h2 {
-    font-size: 2rem;
-  }
-  
-  .step {
-    flex-direction: column;
-    gap: 16px;
-  }
-  
-  .dashboard-tabs {
-    flex-direction: column;
-  }
-  
-  .view-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-  
-  .view-stats {
-    flex-wrap: wrap;
-  }
-  
-  .appointment {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .appointment-details {
-    margin: 0;
-  }
-  
-  .client {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-  
-  .client-actions {
+  .cta-btn {
     width: 100%;
-    justify-content: flex-start;
+    max-width: 300px;
   }
   
-  .pricing-plans {
-    grid-template-columns: 1fr;
-  }
-  
-  .cta-actions {
+  .cta-features {
     flex-direction: column;
-    align-items: center;
+    gap: 15px;
   }
   
-  .benefits-grid {
-    grid-template-columns: 1fr;
+  .features-content {
+    gap: 30px;
   }
   
-  .dashboard-features {
-    grid-template-columns: 1fr;
+  .metric-row {
+    flex-direction: column;
   }
 }
 
 @media (max-width: 480px) {
-  .hero-title {
-    font-size: 1.75rem;
+  .animated-title {
+    font-size: 1.8rem;
   }
   
-  .section-header h2 {
-    font-size: 1.75rem;
+  .subtitle {
+    font-size: 1rem;
   }
   
-  .btn-cta {
+  .hero-buttons {
+    flex-direction: column;
     width: 100%;
   }
   
-  .story-metrics {
+  .btn {
+    width: 100%;
+  }
+  
+  .stats-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-card h2 {
+    font-size: 2rem;
+  }
+  
+  .section-title {
+    font-size: 1.6rem;
+  }
+  
+  .cta-section h2 {
+    font-size: 2rem;
+  }
+  
+  .cta-section p {
+    font-size: 1.1rem;
+  }
+  
+  .feature-item {
     flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .feature-icon {
+    margin: 0 auto;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .hero {
+    background: white !important;
+    color: black !important;
+    min-height: auto;
+  }
+  
+  .overlay {
+    display: none;
+  }
+  
+  .btn, .cta-btn, .plan-btn, .nav-btn {
+    display: none;
+  }
+  
+  .pricing-card.popular {
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
   }
 }
 </style>

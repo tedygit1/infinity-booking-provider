@@ -27,6 +27,8 @@ import MessagesSection from "@/pages/Providers/MessagesSection.vue";
 import AnalyticsSection from "@/pages/Providers/AnalyticsSection.vue";
 import ReviewsSection from "@/pages/Providers/ReviewsSection.vue";
 import SettingsSection from "@/pages/Providers/SettingsSection.vue";
+// NEW: Import NotificationsSection
+import NotificationsSection from "@/pages/Providers/NotificationsSection.vue";
 
 // Footer pages
 import Features from "@/pages/Footer/Features.vue";
@@ -83,6 +85,8 @@ const routes = [
       { path: "analytics", name: "ProviderAnalytics", component: AnalyticsSection },
       { path: "reviews", name: "ProviderReviews", component: ReviewsSection },
       { path: "settings", name: "ProviderSettings", component: SettingsSection },
+      // NEW: Notifications route
+      { path: "notifications", name: "ProviderNotifications", component: NotificationsSection },
     ],
   },
 

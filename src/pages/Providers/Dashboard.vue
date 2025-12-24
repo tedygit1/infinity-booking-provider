@@ -1,4 +1,4 @@
-<!-- src/pages/Providers/Dashboard.vue - FIXED VERSION -->
+<!-- src/pages/Providers/Dashboard.vue - FINAL FIXED VERSION -->
 <template>
   <div class="dashboard-container">
     <!-- Mobile Header -->
@@ -6,11 +6,86 @@
       <button @click="toggleSidebar" class="hamburger-btn" aria-label="Menu">
         <i class="fa-solid fa-bars"></i>
       </button>
+
       <h1 class="mobile-title">Provider Hub</h1>
+      
+      <!-- Header Actions with Profile Dropdown -->
       <div class="header-actions">
-        <div class="user-badge" v-if="provider">
-          <i class="fa-solid fa-circle-user"></i>
-          <span class="user-name">{{ provider.fullname || 'Provider' }}</span>
+        <!-- Notifications Icon - ULTRA FIXED: Added debug mode -->
+        <div class="notification-wrapper">
+          <button 
+            @click="goToNotifications"
+            class="notification-btn"
+            aria-label="Notifications"
+            :title="`${unreadCount} unread notifications`"
+          >
+            <i class="fa-solid fa-bell"></i>
+            <!-- DEBUG: Show count next to bell for testing -->
+            <span class="debug-count" v-if="debugMode">{{ unreadCount }}</span>
+            <!-- ACTUAL BADGE -->
+            <span 
+              v-if="unreadCount > 0" 
+              class="notification-badge"
+              :class="{ 'pulse': unreadCount > 0 }"
+            >
+              {{ unreadCount > 99 ? '99+' : unreadCount }}
+            </span>
+          </button>
+        </div>
+        
+        <!-- Profile Dropdown -->
+        <div class="profile-dropdown-container">
+          <button 
+            @click="toggleProfileDropdown"
+            class="profile-dropdown-btn"
+            aria-label="Profile Menu"
+          >
+            <div class="profile-avatar">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <span class="user-name" v-if="provider">
+              {{ provider.fullname || 'Provider' }}
+            </span>
+            <i class="dropdown-arrow" :class="{ 'rotated': showProfileDropdown }">
+              ▼
+            </i>
+          </button>
+          
+          <!-- Dropdown Menu -->
+          <div 
+            v-if="showProfileDropdown"
+            class="dropdown-menu"
+            v-click-outside="closeProfileDropdown"
+          >
+            <div class="dropdown-header">
+              <div class="dropdown-avatar">
+                <i class="fa-solid fa-user-circle"></i>
+              </div>
+              <div class="dropdown-user-info">
+                <h4>{{ provider?.fullname || 'Provider' }}</h4>
+                <p>{{ provider?.email || 'provider@example.com' }}</p>
+              </div>
+            </div>
+            
+            <div class="dropdown-divider"></div>
+            
+            <button @click="goToProfile" class="dropdown-item">
+              <i class="fa-solid fa-user"></i>
+              <span>My Profile</span>
+            </button>
+            
+            <button @click="goToSettings" class="dropdown-item">
+              <i class="fa-solid fa-gear"></i>
+              <span>Settings</span>
+            </button>
+            
+            <div class="dropdown-divider"></div>
+            
+            <button @click="logout" class="dropdown-item logout-item">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>Logout</span>
+            </button>
+          </div>
         </div>
       </div>
     </header>
@@ -97,14 +172,12 @@
 
     <!-- Main Content -->
     <main class="dashboard-main">
-      <!-- Use router-view for proper routing -->
       <router-view 
         :provider="provider" 
         @profileUpdated="handleProfileUpdated"
         @logout="logout"
       />
       
-      <!-- Fallback for when no route matches -->
       <div v-if="!$route.name" class="fallback-content">
         <div class="fallback-icon">🚀</div>
         <h2>Welcome to Your Dashboard</h2>
@@ -125,24 +198,68 @@
         </div>
       </div>
     </main>
+    
+    <!-- Debug Panel (remove in production) -->
+    <div v-if="debugMode" class="debug-panel">
+      <div class="debug-title">🔧 Debug Info</div>
+      <div>Unread Count: {{ unreadCount }}</div>
+      <div>Profile Dropdown: {{ showProfileDropdown ? 'Open' : 'Closed' }}</div>
+      <div>Provider: {{ provider?.fullname || 'Not loaded' }}</div>
+      <button @click="debugMode = false" class="debug-close">Hide Debug</button>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, onBeforeUnmount } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import http from "@/api/index.js";
 
+// Click outside directive - FIXED version
+const vClickOutside = {
+  mounted(el, binding) {
+    el.clickOutsideEvent = function(event) {
+      if (!(el === event.target || el.contains(event.target))) {
+        binding.value(event);
+      }
+    };
+    setTimeout(() => {
+      document.body.addEventListener('click', el.clickOutsideEvent);
+    }, 0);
+  },
+  beforeUnmount(el) {
+    document.body.removeEventListener('click', el.clickOutsideEvent);
+  }
+};
+
 export default {
   name: 'Dashboard',
+  directives: {
+    'click-outside': vClickOutside
+  },
   setup() {
     const router = useRouter();
     const route = useRoute();
     
     const provider = ref(null);
     const sidebarOpen = ref(false);
+    const showProfileDropdown = ref(false);
+    const unreadCount = ref(0);
+    const notificationInterval = ref(null);
+    const debugMode = ref(true); // Set to false in production
 
-    // Organized menu items by category
+    // Force show badge for testing
+    onMounted(() => {
+      // Test: Force show badge with 10 notifications
+      setTimeout(() => {
+        if (debugMode.value) {
+          console.log('🔧 DEBUG: Forcing unreadCount to 10 for testing');
+          unreadCount.value = 10;
+        }
+      }, 1000);
+    });
+
+    // Menu items
     const menuItems = {
       home: { label: "Dashboard", icon: "fa-solid fa-house", route: "ProviderHome", category: "main" },
       services: { label: "My Services", icon: "fa-solid fa-briefcase", route: "ProviderServices", category: "dashboard" },
@@ -151,11 +268,12 @@ export default {
       analytics: { label: "Analytics", icon: "fa-solid fa-chart-line", route: "ProviderAnalytics", category: "dashboard" },
       messages: { label: "Messages", icon: "fa-solid fa-envelope", route: "ProviderMessages", category: "dashboard" },
       reviews: { label: "Reviews", icon: "fa-solid fa-star", route: "ProviderReviews", category: "dashboard" },
+      notifications: { label: "Notifications", icon: "fa-solid fa-bell", route: "ProviderNotifications", category: "dashboard" },
       profile: { label: "My Profile", icon: "fa-solid fa-user", route: "ProviderProfile", category: "account" },
       settings: { label: "Settings", icon: "fa-solid fa-gear", route: "ProviderSettings", category: "account" },
     };
 
-    // Computed properties for categorized menu items
+    // Computed properties
     const mainMenuItems = computed(() => 
       Object.entries(menuItems)
         .filter(([key, item]) => item.category === 'main')
@@ -174,7 +292,6 @@ export default {
         .reduce((obj, [key, item]) => ({ ...obj, [key]: item }), {})
     );
 
-    // Show dashboard submenu when on dashboard or dashboard-related pages
     const showDashboardSubmenu = computed(() => {
       return route.name === 'ProviderHome' || 
              Object.values(dashboardSubmenuItems.value).some(item => 
@@ -183,7 +300,6 @@ export default {
              );
     });
 
-    // Check if current route matches menu item
     const isActiveRoute = (menuKey) => {
       const menuRoute = menuItems[menuKey]?.route;
       if (!menuRoute) return false;
@@ -203,20 +319,131 @@ export default {
       sidebarOpen.value = false;
     };
 
+    const goToNotifications = () => {
+      console.log('🔔 Going to notifications page');
+      router.push({ name: 'ProviderNotifications' });
+    };
+
+    // Profile dropdown functions
+    const toggleProfileDropdown = (event) => {
+      event.stopPropagation();
+      showProfileDropdown.value = !showProfileDropdown.value;
+      console.log('👤 Profile dropdown toggled:', showProfileDropdown.value);
+    };
+
+    const closeProfileDropdown = (event) => {
+      const dropdown = document.querySelector('.profile-dropdown-container');
+      if (dropdown && !dropdown.contains(event.target)) {
+        showProfileDropdown.value = false;
+      }
+    };
+
+    const goToProfile = () => {
+      router.push({ name: 'ProviderProfile' });
+      showProfileDropdown.value = false;
+    };
+
+    const goToSettings = () => {
+      router.push({ name: 'ProviderSettings' });
+      showProfileDropdown.value = false;
+    };
+
     const toggleSidebar = () => {
       sidebarOpen.value = !sidebarOpen.value;
     };
 
     const logout = async () => {
+      try {
+        await http.post("/ainfinity-booking/auth/logout");
+      } catch (error) {
+        console.log("Logout API call failed", error);
+      }
+      
       localStorage.clear();
+      showProfileDropdown.value = false;
       await router.push({ name: "Login" });
     };
 
-    // Fetch provider data - WITH AUTH CHECK
+    // Get provider ID
+    const getProviderPid = () => {
+      try {
+        const loggedProvider = localStorage.getItem('loggedProvider');
+        if (!loggedProvider) return null;
+        
+        const providerData = JSON.parse(loggedProvider);
+        return providerData.pid || providerData._id || providerData.id;
+      } catch (err) {
+        console.error('Error getting provider ID:', err.message);
+        return null;
+      }
+    };
+
+    // Fetch unread notification count
+    const fetchUnreadCount = async () => {
+      try {
+        const providerPid = getProviderPid();
+        if (!providerPid) {
+          console.log('⚠️ No provider ID found');
+          unreadCount.value = 0;
+          return;
+        }
+
+        console.log('🔔 Fetching notification count for provider:', providerPid);
+
+        const endpoints = [
+          `/notifications?recipientId=${providerPid}&recipientType=provider&read=false`,
+          `/notifications?providerId=${providerPid}&read=false`,
+          `/notifications/unread/count?providerId=${providerPid}`,
+        ];
+
+        for (const url of endpoints) {
+          try {
+            console.log(`🔄 Trying endpoint: ${url}`);
+            const response = await http.get(url);
+            
+            if (response.data !== undefined && response.data !== null) {
+              let count = 0;
+              
+              if (typeof response.data === 'number') {
+                count = response.data;
+              } else if (Array.isArray(response.data)) {
+                count = response.data.length;
+              } else if (response.data.count !== undefined) {
+                count = response.data.count;
+              } else if (response.data.unreadCount !== undefined) {
+                count = response.data.unreadCount;
+              } else if (response.data.total !== undefined) {
+                count = response.data.total;
+              } else if (response.data.data && Array.isArray(response.data.data)) {
+                count = response.data.data.length;
+              }
+              
+              console.log(`✅ Count from ${url}:`, count);
+              
+              if (count > 0) {
+                unreadCount.value = count;
+                return;
+              }
+            }
+          } catch (error) {
+            if (!error.response || error.response.status !== 404) {
+              console.log(`⚠️ Endpoint ${url} failed:`, error.message);
+            }
+          }
+        }
+        
+        unreadCount.value = 0;
+        
+      } catch (error) {
+        console.error("❌ Error fetching notification count:", error);
+        unreadCount.value = 0;
+      }
+    };
+
+    // Fetch provider data
     const fetchProvider = async () => {
       const token = localStorage.getItem("provider_token");
       if (!token) {
-        console.warn('⚠️ No token found, skipping provider fetch');
         return router.push({ name: "Login" });
       }
 
@@ -229,6 +456,8 @@ export default {
         if (res.data._id) {
           localStorage.setItem("provider_id", res.data._id);
         }
+        
+        fetchUnreadCount();
       } catch (err) {
         console.error("Profile load failed:", err);
         localStorage.clear();
@@ -236,49 +465,37 @@ export default {
       }
     };
 
-    // Watch for route changes - only fetch on provider routes
+    // Watch for route changes
     watch(() => route.name, (newRoute) => {
-      console.log('📍 Route changed to:', newRoute);
-      
-      // Only fetch provider if we're on a provider route
       const isProviderRoute = newRoute?.includes('Provider') || 
                              route.path.includes('/provider');
       
       if (isProviderRoute && localStorage.getItem("provider_token")) {
-        console.log('🔄 Fetching provider data for provider route');
         fetchProvider();
       }
     });
 
-    // FIXED: Only fetch provider when actually on a provider route and logged in
     onMounted(() => {
-      console.log('🔍 Dashboard.vue mounted');
-      console.log('📱 Current route:', route.path);
-      console.log('📱 Route name:', route.name);
-      console.log('🔑 Has token?', !!localStorage.getItem("provider_token"));
-      
-      // ONLY fetch provider if:
-      // 1. We're on a provider route AND
-      // 2. User has a token
-      
       const isProviderRoute = route.path.includes('/provider') || 
                              route.name?.includes('Provider');
       const hasToken = localStorage.getItem("provider_token");
       
       if (isProviderRoute && hasToken) {
-        console.log('✅ Fetching provider data (on provider route with token)');
         fetchProvider();
+        
+        notificationInterval.value = setInterval(fetchUnreadCount, 60000);
       } else if (isProviderRoute && !hasToken) {
-        console.warn('🚫 On provider route but no token, redirecting to login');
         router.push({ name: "Login" });
-      } else {
-        console.log('ℹ️ Not on provider route, skipping provider fetch');
-        // Don't fetch provider data if we're not on a provider route
+      }
+    });
+
+    onBeforeUnmount(() => {
+      if (notificationInterval.value) {
+        clearInterval(notificationInterval.value);
       }
     });
 
     const handleProfileUpdated = () => {
-      // Only fetch provider if we have a token
       if (localStorage.getItem("provider_token")) {
         fetchProvider();
       }
@@ -287,13 +504,21 @@ export default {
     return {
       provider,
       sidebarOpen,
+      showProfileDropdown,
+      unreadCount,
+      debugMode,
       mainMenuItems,
       dashboardSubmenuItems,
       accountMenuItems,
       showDashboardSubmenu,
       isActiveRoute,
       goTo,
+      goToNotifications,
       toggleSidebar,
+      toggleProfileDropdown,
+      closeProfileDropdown,
+      goToProfile,
+      goToSettings,
       logout,
       handleProfileUpdated
     };
@@ -350,33 +575,263 @@ export default {
   letter-spacing: -0.02em;
 }
 
+/* ===== HEADER ACTIONS ===== */
 .header-actions {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.user-badge {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.8rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  backdrop-filter: blur(10px);
+/* NOTIFICATION WRAPPER - FIXED */
+.notification-wrapper {
+  position: relative;
+  display: inline-block;
 }
 
-.user-badge i {
+/* Notifications Button - ULTRA FIXED */
+.notification-btn {
+  position: relative !important;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.6rem;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  width: 44px;
+  height: 44px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.notification-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+/* DEBUG COUNT (visible next to bell) */
+.debug-count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: yellow;
+  color: black;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 4px;
+  border-radius: 4px;
+  z-index: 1002;
+}
+
+/* NOTIFICATION BADGE - ULTRA FIXED */
+.notification-badge {
+  position: absolute !important;
+  top: -8px !important;
+  right: -8px !important;
+  background: #ff5252 !important;
+  color: white !important;
+  font-size: 0.7rem !important;
+  font-weight: 700 !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 4px !important;
+  box-shadow: 0 2px 8px rgba(255, 82, 82, 0.4) !important;
+  border: 2px solid white !important;
+  z-index: 1001 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: none !important;
+  animation: badgeAppear 0.3s ease !important;
+}
+
+@keyframes badgeAppear {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.notification-badge.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(255, 82, 82, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
+  }
+}
+
+/* Profile Dropdown */
+.profile-dropdown-container {
+  position: relative;
+}
+
+.profile-dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: white;
   font-size: 1rem;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  min-width: 160px;
+}
+
+.profile-dropdown-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
 }
 
 .user-name {
-  max-width: 120px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  max-width: 100px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.dropdown-arrow {
+  font-size: 0.7rem;
+  margin-left: auto;
+  transition: transform 0.3s ease;
+}
+
+.dropdown-arrow.rotated {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 280px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  overflow: hidden;
+  animation: slideDown 0.3s ease;
+  border: 1px solid #e2e8f0;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-header {
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dropdown-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: white;
+}
+
+.dropdown-user-info h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.dropdown-user-info p {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 0.5rem 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  color: #475569;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.dropdown-item:hover {
+  background: #f8fafc;
+  color: #3b82f6;
+}
+
+.dropdown-item i {
+  width: 20px;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.dropdown-item.logout-item {
+  color: #ef4444;
+}
+
+.dropdown-item.logout-item:hover {
+  background: #fef2f2;
+  color: #dc2626;
 }
 
 /* ===== SIDEBAR ===== */
@@ -437,7 +892,6 @@ export default {
   margin: 0;
   color: #1e293b;
   letter-spacing: -0.02em;
-  padding-top: 5rem;
 }
 
 .sidebar-subtitle {
@@ -643,6 +1097,37 @@ export default {
   font-weight: 600;
 }
 
+/* DEBUG PANEL */
+.debug-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 12px;
+  z-index: 9999;
+  max-width: 200px;
+}
+
+.debug-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: yellow;
+}
+
+.debug-close {
+  margin-top: 5px;
+  background: #666;
+  color: white;
+  border: none;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 10px;
+}
+
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   .mobile-header {
@@ -653,13 +1138,40 @@ export default {
     font-size: 1.2rem;
   }
   
-  .user-badge {
+  .profile-dropdown-btn {
+    min-width: auto;
+    padding: 0.5rem;
+  }
+  
+  .user-name {
     display: none;
+  }
+  
+  .dropdown-arrow {
+    display: none;
+  }
+  
+  .notification-btn {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .notification-badge {
+    top: -6px !important;
+    right: -6px !important;
+    min-width: 18px !important;
+    height: 18px !important;
+    font-size: 0.65rem !important;
   }
   
   .dashboard-main {
     padding: 1.5rem;
     padding-top: 80px;
+  }
+  
+  .dropdown-menu {
+    width: 260px;
+    right: -10px;
   }
   
   .fallback-content {
@@ -691,6 +1203,17 @@ export default {
   
   .fallback-content p {
     font-size: 1rem;
+  }
+  
+  .dropdown-menu {
+    width: 240px;
+  }
+  
+  .debug-panel {
+    bottom: 10px;
+    right: 10px;
+    font-size: 10px;
+    padding: 8px 12px;
   }
 }
 </style>

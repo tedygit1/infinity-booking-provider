@@ -14,152 +14,10 @@
         </div>
         
         <div class="header-actions">
-          <!-- Profile Icon with Logout Dropdown -->
-          <div class="profile-container">
-            <button class="profile-btn" @click="toggleProfileMenu" 
-                    @blur="onProfileBlur"
-                    aria-label="Profile menu">
-              <i class="fa-solid fa-user-circle"></i>
-            </button>
-            
-            <!-- Profile Dropdown Menu -->
-            <transition name="fade-slide">
-              <div v-if="showProfileMenu" class="profile-dropdown" 
-                   :class="{ 'mobile-dropdown': isMobile }"
-                   @click.stop>
-                <div class="profile-header">
-                  <div class="profile-info">
-                    <div class="profile-icon">
-                      <i class="fa-solid fa-user-circle"></i>
-                    </div>
-                    <div class="profile-details">
-                      <h4>{{ provider?.fullname || 'Provider' }}</h4>
-                      <p class="profile-email">{{ provider?.email || 'provider@example.com' }}</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="profile-menu-items">
-                  <button @click="navigateTo('/provider/profile')" class="profile-menu-item">
-                    <i class="fa-solid fa-user"></i>
-                    <span>My Profile</span>
-                  </button>
-                  <button @click="navigateTo('/provider/settings')" class="profile-menu-item">
-                    <i class="fa-solid fa-gear"></i>
-                    <span>Settings</span>
-                  </button>
-                  <div class="menu-divider"></div>
-                  <!-- Logout Option -->
-                  <button @click="handleLogout" class="profile-menu-item logout">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                    <span>Logout</span>
-                  </button>
-                </div>
-              </div>
-            </transition>
-            
-            <!-- Mobile overlay -->
-            <div v-if="showProfileMenu && isMobile" class="profile-overlay" @click="closeProfileMenu"></div>
-          </div>
-          
-          <!-- Notification Bell -->
-          <div class="notification-container">
-            <button class="notification-btn" @click="toggleNotifications" 
-                    @blur="onNotificationBlur"
-                    aria-label="Notifications">
-              <i class="fa-solid fa-bell"></i>
-              <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount }}</span>
-            </button>
-            
-            <!-- Notifications Dropdown -->
-            <transition name="fade-slide">
-              <div v-if="showNotifications" class="notifications-dropdown" 
-                   :class="{ 'mobile-dropdown': isMobile }"
-                   @click.stop>
-                <div class="notifications-header">
-                  <h4>Notifications</h4>
-                  <div class="notifications-actions">
-                    <button v-if="unreadCount > 0" @click="markAllAsRead" class="btn-mark-all">
-                      <i class="fa-solid fa-check-double"></i> Mark all read
-                    </button>
-                    <button @click="refreshNotifications" class="btn-refresh" :disabled="loadingNotifications">
-                      <i class="fa-solid fa-rotate" :class="{ 'fa-spin': loadingNotifications }"></i>
-                    </button>
-                  </div>
-                </div>
-                
-                <!-- Notifications List -->
-                <div class="notifications-list" ref="notificationsList" v-if="notifications.length > 0">
-                  <div v-for="notification in notifications" 
-                       :key="notification._id || notification.id" 
-                       class="notification-item"
-                       :class="{ 'unread': !notification.read, 'clickable': notification.action || getActionFromType(notification.type) }"
-                       @click="handleNotificationClick(notification)">
-                    <div class="notification-icon" :class="getNotificationIcon(notification.type)">
-                      <i :class="getNotificationIconClass(notification.type)"></i>
-                    </div>
-                    <div class="notification-content">
-                      <div class="notification-title">
-                        {{ notification.title || getDefaultTitle(notification.type) }}
-                      </div>
-                      <div class="notification-message">
-                        {{ notification.message || notification.content }}
-                      </div>
-                      <div class="notification-meta">
-                        <span class="notification-time">{{ formatNotificationTime(notification.createdAt) }}</span>
-                        <span v-if="notification.type" class="notification-type">{{ notification.type }}</span>
-                      </div>
-                    </div>
-                    <div class="notification-actions">
-                      <button v-if="!notification.read" 
-                              @click.stop="markAsRead(notification._id || notification.id)"
-                              class="btn-action mark-read"
-                              aria-label="Mark as read">
-                        <i class="fa-solid fa-circle"></i>
-                      </button>
-                      <button @click.stop="deleteNotification(notification._id || notification.id)"
-                              class="btn-action delete"
-                              aria-label="Delete notification">
-                        <i class="fa-solid fa-times"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Empty State -->
-                <div v-else class="notifications-empty">
-                  <i class="fa-solid fa-bell-slash"></i>
-                  <p>No notifications yet</p>
-                </div>
-                
-                <!-- View All Link -->
-                <div class="notifications-footer">
-                  <button @click="viewAllNotifications" class="btn-view-all">
-                    View all notifications <i class="fa-solid fa-arrow-right"></i>
-                  </button>
-                </div>
-                
-                <!-- Mobile close button -->
-                <button v-if="isMobile" @click="closeNotifications" class="btn-close-mobile">
-                  <i class="fa-solid fa-times"></i> Close
-                </button>
-              </div>
-            </transition>
-            
-            <!-- Mobile overlay -->
-            <div v-if="showNotifications && isMobile" class="notifications-overlay" @click="closeNotifications"></div>
-          </div>
-          
           <!-- Refresh Button -->
           <button class="btn btn-primary" @click="refreshData" :disabled="loading">
             <i class="fa-solid fa-rotate" :class="{ 'fa-spin': loading }"></i>
             {{ loading ? 'Refreshing...' : 'Refresh' }}
-          </button>
-          
-          <!-- Debug Reviews Button (temporary) -->
-          <button class="btn btn-secondary" @click="diagnoseReviews" 
-                  style="background: #f97316; color: white; margin-left: 8px;">
-            <i class="fa-solid fa-bug"></i> Debug Reviews
           </button>
         </div>
       </div>
@@ -232,32 +90,30 @@
           </div>
         </div>
 
-        <!-- FIXED REVIEWS CARD - ONLY SHOWS REVIEWS FOR EXISTING SERVICES -->
+        <!-- REVIEWS CARD - SHOWS EXACT REVIEWS FOR THIS PROVIDER -->
         <div class="metric-card purple" @click="navigateTo('/provider/reviews')">
           <div class="metric-icon">
             <i class="fa-solid fa-star"></i>
           </div>
           <div class="metric-content">
-            <h3>{{ validReviewsCount }}</h3>
+            <h3>{{ exactReviewsCount }}</h3>
             <p class="metric-title">Reviews</p>
-            <div v-if="validReviewsCount > 0" class="metric-rating">
+            <div v-if="exactReviewsCount > 0" class="metric-rating">
               <div class="stars">
                 <i v-for="n in 5" :key="n" 
-                   :class="getStarClass(n, avgRating)"
+                   :class="getStarClass(n, exactAvgRating)"
                    class="fa-star"></i>
               </div>
-              <span class="rating-text">{{ avgRating.toFixed(1) }}/5</span>
+              <span class="rating-text">{{ exactAvgRating.toFixed(1) }}/5</span>
             </div>
             <div v-else class="metric-status">
               <i class="fa-solid fa-star-half-stroke"></i>
               No reviews yet
             </div>
-            <!-- Debug info (temporary) -->
-            <div v-if="reviewDebugInfo" class="metric-detail debug-info">
-              <small style="color: #ef4444; font-size: 0.7rem;">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                {{ reviewDebugInfo }}
-              </small>
+            <!-- Review status info -->
+            <div v-if="exactReviewsCount > 0" class="metric-status">
+              <i class="fa-solid fa-check-circle"></i>
+              {{ exactReviewsCount }} review(s) for your account
             </div>
           </div>
         </div>
@@ -405,176 +261,8 @@
         </div>
       </div>
     </div>
-
-    <!-- Notification Detail Modal -->
-    <div v-if="showNotificationDetail" class="notification-detail-modal">
-      <div class="modal-overlay" @click="closeNotificationDetail"></div>
-      <div class="modal-content" :class="{ 'mobile-modal': isMobile }">
-        <div class="modal-header">
-          <div class="modal-title">
-            <div class="notification-icon-large" :class="getNotificationIcon(selectedNotification?.type)">
-              <i :class="getNotificationIconClass(selectedNotification?.type)"></i>
-            </div>
-            <div>
-              <h3>{{ selectedNotification?.title || getDefaultTitle(selectedNotification?.type) }}</h3>
-              <div class="modal-subtitle">
-                <span class="notification-time">{{ formatNotificationTime(selectedNotification?.createdAt) }}</span>
-                <span v-if="selectedNotification?.type" class="notification-type-tag">{{ selectedNotification.type }}</span>
-              </div>
-            </div>
-          </div>
-          <button @click="closeNotificationDetail" class="modal-close">
-            <i class="fa-solid fa-times"></i>
-          </button>
-        </div>
-        
-        <div class="modal-body">
-          <div class="notification-detail-content">
-            <div class="notification-message-detail">
-              <p>{{ selectedNotification?.message || selectedNotification?.content }}</p>
-            </div>
-            
-            <!-- Dynamic Content Based on Notification Type -->
-            <div class="notification-details">
-              <div v-if="selectedNotification?.type === 'review'" class="review-details">
-                <div class="detail-section">
-                  <h4><i class="fa-solid fa-star"></i> Review Details</h4>
-                  <div class="detail-item">
-                    <span class="detail-label">Rating:</span>
-                    <div class="rating-stars">
-                      <i v-for="n in 5" :key="n" 
-                         :class="getStarClass(n, selectedNotification?.data?.rating || 0)"
-                         class="fa-star"></i>
-                    </div>
-                    <span class="rating-value">{{ selectedNotification?.data?.rating || 0 }}/5</span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="detail-label">Customer:</span>
-                    <span class="detail-value">{{ selectedNotification?.data?.customerName || 'Unknown Customer' }}</span>
-                  </div>
-                  <div class="detail-item">
-                    <span class="detail-label">Service:</span>
-                    <span class="detail-value">{{ selectedNotification?.data?.serviceName || 'Unknown Service' }}</span>
-                  </div>
-                  <div v-if="selectedNotification?.data?.comment" class="detail-item full-width">
-                    <span class="detail-label">Comment:</span>
-                    <p class="detail-text">{{ selectedNotification.data.comment }}</p>
-                  </div>
-                  <button @click="navigateTo(`/provider/reviews?review=${selectedNotification?.data?.reviewId}`)" 
-                          class="btn btn-primary">
-                    <i class="fa-solid fa-eye"></i> View Full Review
-                  </button>
-                </div>
-              </div>
-              
-              <div v-else-if="selectedNotification?.type === 'booking'" class="booking-details">
-                <div class="detail-section">
-                  <h4><i class="fa-solid fa-calendar-check"></i> Booking Details</h4>
-                  <div class="detail-grid">
-                    <div class="detail-item">
-                      <span class="detail-label">Booking ID:</span>
-                      <span class="detail-value">{{ selectedNotification?.data?.bookingId || 'N/A' }}</span>
-                    </div>
-                    <div class="detail-item">
-                      <span class="detail-label">Status:</span>
-                      <span class="status-badge" :class="getStatusClass(selectedNotification?.data?.status)">
-                        {{ selectedNotification?.data?.status || 'Unknown' }}
-                      </span>
-                    </div>
-                    <div class="detail-item">
-                      <span class="detail-label">Date:</span>
-                      <span class="detail-value">{{ formatDate(selectedNotification?.data?.date) }}</span>
-                    </div>
-                    <div class="detail-item">
-                      <span class="detail-label">Time:</span>
-                      <span class="detail-value">{{ selectedNotification?.data?.time || 'N/A' }}</span>
-                    </div>
-                    <div class="detail-item">
-                      <span class="detail-label">Customer:</span>
-                      <span class="detail-value">{{ selectedNotification?.data?.customerName || 'Unknown' }}</span>
-                    </div>
-                    <div class="detail-item">
-                      <span class="detail-label">Service:</span>
-                      <span class="detail-value">{{ selectedNotification?.data?.serviceName || 'Unknown Service' }}</span>
-                    </div>
-                    <div class="detail-item">
-                      <span class="detail-label">Amount:</span>
-                      <span class="detail-value">${{ formatCurrency(selectedNotification?.data?.amount || 0) }}</span>
-                    </div>
-                  </div>
-                  <button @click="navigateTo(`/provider/bookings?booking=${selectedNotification?.data?.bookingId}`)" 
-                          class="btn btn-primary">
-                    <i class="fa-solid fa-calendar-day"></i> View Booking
-                  </button>
-                </div>
-              </div>
-              
-              <div v-else-if="selectedNotification?.type === 'payment'" class="payment-details">
-                <div class="detail-section">
-                  <h4><i class="fa-solid fa-credit-card"></i> Payment Details</h4>
-                  <div class="detail-grid">
-                    <div class="detail-item">
-                      <span class="detail-label">Payment ID:</span>
-                      <span class="detail-value">{{ selectedNotification?.data?.paymentId || 'N/A' }}</span>
-                    </div>
-                    <div class="detail-item">
-                      <span class="detail-label">Amount:</span>
-                      <span class="detail-value">${{ formatCurrency(selectedNotification?.data?.amount || 0) }}</span>
-                    </div>
-                    <div class="detail-item">
-                      <span class="detail-label">Status:</span>
-                      <span class="status-badge" :class="getPaymentStatusClass(selectedNotification?.data?.status)">
-                        {{ selectedNotification?.data?.status || 'Unknown' }}
-                      </span>
-                    </div>
-                    <div class="detail-item">
-                      <span class="detail-label">Date:</span>
-                      <span class="detail-value">{{ formatDate(selectedNotification?.data?.date) }}</span>
-                    </div>
-                    <div class="detail-item">
-                      <span class="detail-label">Method:</span>
-                      <span class="detail-value">{{ selectedNotification?.data?.method || 'N/A' }}</span>
-                    </div>
-                    <div class="detail-item">
-                      <span class="detail-label">Customer:</span>
-                      <span class="detail-value">{{ selectedNotification?.data?.customerName || 'Unknown' }}</span>
-                    </div>
-                  </div>
-                  <button @click="navigateTo('/provider/revenue')" class="btn btn-primary">
-                    <i class="fa-solid fa-chart-line"></i> View Revenue Dashboard
-                  </button>
-                </div>
-              </div>
-              
-              <div v-else class="general-details">
-                <div class="detail-section">
-                  <h4><i class="fa-solid fa-info-circle"></i> Details</h4>
-                  <div class="detail-item full-width">
-                    <span class="detail-label">Full Message:</span>
-                    <p class="detail-text">{{ selectedNotification?.message || selectedNotification?.content }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="modal-footer">
-          <button @click="markNotificationAsReadAndClose" class="btn btn-secondary">
-            <i class="fa-solid fa-check-circle"></i> Mark as Read
-          </button>
-          <button @click="deleteNotificationAndClose" class="btn btn-danger">
-            <i class="fa-solid fa-trash"></i> Delete
-          </button>
-          <button v-if="selectedNotification?.action" @click="performNotificationAction" class="btn btn-primary">
-            <i class="fa-solid fa-external-link-alt"></i> Take Action
-          </button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
-
 
 <script>
 import { ref, onMounted, computed, watch, onBeforeUnmount } from "vue";
@@ -603,9 +291,7 @@ export default {
     // Real data from API
     const bookings = ref([]);
     const services = ref([]);
-    const serviceReviews = ref([]);
-    const providerReviews = ref([]);
-    const validReviews = ref([]);
+    const exactReviews = ref([]);
     
     // Dashboard metrics
     const dashboardMetrics = ref({
@@ -613,8 +299,8 @@ export default {
       bookingGrowth: 0,
       totalServices: 0,
       activeServices: 0,
-      totalReviews: 0,
-      avgRating: 0,
+      exactReviewsCount: 0,
+      exactAvgRating: 0,
       totalRevenue: 0,
       revenueGrowth: 0,
       todayBookings: 0,
@@ -630,226 +316,6 @@ export default {
       avgResponseTime: '0h',
       avgBookingValue: 0
     });
-    
-    // Notification state
-    const showNotifications = ref(false);
-    const notifications = ref([]);
-    const loadingNotifications = ref(false);
-    const notificationError = ref("");
-    const isMobile = ref(window.innerWidth <= 768);
-    
-    // Profile menu state
-    const showProfileMenu = ref(false);
-    
-    // Notification detail modal state
-    const showNotificationDetail = ref(false);
-    const selectedNotification = ref(null);
-    
-    // Simple toast replacement
-    const showToast = (message, type = 'info') => {
-      // Create a simple toast element
-      const toast = document.createElement('div');
-      toast.className = `simple-toast ${type}`;
-      toast.textContent = message;
-      toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#3b82f6'};
-        color: white;
-        padding: 12px 20px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 9999;
-        animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
-        max-width: 300px;
-      `;
-      
-      // Add animation styles
-      const style = document.createElement('style');
-      style.textContent = `
-        @keyframes slideIn {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes fadeOut {
-          from { opacity: 1; }
-          to { opacity: 0; }
-        }
-      `;
-      document.head.appendChild(style);
-      
-      document.body.appendChild(toast);
-      
-      // Remove after 3 seconds
-      setTimeout(() => {
-        if (toast.parentNode) {
-          toast.style.animation = 'fadeOut 0.3s ease';
-          setTimeout(() => {
-            if (toast.parentNode) document.body.removeChild(toast);
-          }, 300);
-        }
-      }, 3000);
-    };
-    
-    // ========== LOGOUT FUNCTIONALITY ==========
-    
-    const handleLogout = async () => {
-      try {
-        const token = localStorage.getItem("provider_token");
-        if (!token) {
-          console.warn("No token found, clearing local storage only");
-          clearLocalStorage();
-          showToast("Logged out locally", "info");
-          return;
-        }
-
-        // Add token to request headers
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        };
-
-        console.log("🔐 Attempting logout...");
-        const response = await http.post("/ainfinity-booking/auth/logout", null, config);
-        
-        if (response.status === 200) {
-          console.log("✅ Logout successful");
-          showToast("Logged out successfully!", "success");
-        }
-      } catch (error) {
-        console.warn("⚠️ Logout API failed, clearing local storage:", error.message);
-        showToast("Logged out locally", "info");
-      } finally {
-        clearLocalStorage();
-        router.push("/provider/login");
-      }
-    };
-
-    const clearLocalStorage = () => {
-      localStorage.removeItem("provider_token");
-      localStorage.removeItem("loggedProvider");
-      localStorage.removeItem("provider_data");
-      localStorage.removeItem("refresh_token");
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("token");
-      
-      // Clear any provider-related data
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith("provider_") || key.includes("auth") || key.includes("token")) {
-          localStorage.removeItem(key);
-        }
-      });
-    };
-    
-    // ========== PROFILE MENU FUNCTIONS ==========
-    
-    const toggleProfileMenu = () => {
-      showProfileMenu.value = !showProfileMenu.value;
-      if (showProfileMenu.value) {
-        showNotifications.value = false; // Close notifications if open
-      }
-    };
-
-    const closeProfileMenu = () => {
-      showProfileMenu.value = false;
-    };
-
-    const onProfileBlur = (event) => {
-      if (isMobile.value) return;
-      
-      setTimeout(() => {
-        if (!event.relatedTarget || !event.relatedTarget.closest('.profile-container')) {
-          showProfileMenu.value = false;
-        }
-      }, 100);
-    };
-    
-    // ========== NOTIFICATION DETAIL FUNCTIONS ==========
-    
-    const openNotificationDetail = (notification) => {
-      selectedNotification.value = notification;
-      showNotificationDetail.value = true;
-      showNotifications.value = false; // Close notifications dropdown
-      
-      // Mark as read when opening detail
-      if (!notification.read) {
-        markAsRead(notification._id || notification.id);
-      }
-    };
-
-    const closeNotificationDetail = () => {
-      showNotificationDetail.value = false;
-      selectedNotification.value = null;
-    };
-
-    const markNotificationAsReadAndClose = async () => {
-      if (selectedNotification.value) {
-        await markAsRead(selectedNotification.value._id || selectedNotification.value.id);
-        showToast("Notification marked as read", "success");
-      }
-      closeNotificationDetail();
-    };
-
-    const deleteNotificationAndClose = async () => {
-      if (selectedNotification.value) {
-        await deleteNotification(selectedNotification.value._id || selectedNotification.value.id);
-        showToast("Notification deleted", "success");
-      }
-      closeNotificationDetail();
-    };
-
-    const performNotificationAction = () => {
-      if (selectedNotification.value?.action) {
-        router.push(selectedNotification.value.action);
-      } else {
-        const action = getActionFromType(selectedNotification.value?.type);
-        if (action) {
-          router.push(action);
-        }
-      }
-      closeNotificationDetail();
-    };
-
-    const formatDate = (dateString) => {
-      if (!dateString) return 'N/A';
-      try {
-        return new Date(dateString).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric'
-        });
-      } catch (error) {
-        return dateString;
-      }
-    };
-
-    const getStatusClass = (status) => {
-      if (!status) return '';
-      const statusLower = status.toLowerCase();
-      if (statusLower.includes('complete') || statusLower.includes('done')) return 'completed';
-      if (statusLower.includes('confirm') || statusLower.includes('accept')) return 'confirmed';
-      if (statusLower.includes('pending') || statusLower.includes('wait')) return 'pending';
-      if (statusLower.includes('cancel') || statusLower.includes('reject')) return 'cancelled';
-      return '';
-    };
-
-    const getPaymentStatusClass = (status) => {
-      if (!status) return '';
-      const statusLower = status.toLowerCase();
-      if (statusLower.includes('complete') || statusLower.includes('success')) return 'success';
-      if (statusLower.includes('pending') || statusLower.includes('processing')) return 'warning';
-      if (statusLower.includes('failed') || statusLower.includes('declined')) return 'danger';
-      return '';
-    };
-    
-    // ========== NOTIFICATION CLICK HANDLER ==========
-    
-    const handleNotificationClick = (notification) => {
-      // Instead of immediately navigating, open the detail modal
-      openNotificationDetail(notification);
-    };
     
     // ========== LOAD REAL DATA FUNCTIONS ==========
     
@@ -873,15 +339,14 @@ export default {
       // Reset data
       bookings.value = [];
       services.value = [];
-      serviceReviews.value = [];
-      providerReviews.value = [];
-      validReviews.value = [];
+      exactReviews.value = [];
       
       // Reset metrics
       Object.keys(dashboardMetrics.value).forEach(key => {
         dashboardMetrics.value[key] = 0;
       });
       dashboardMetrics.value.avgResponseTime = '0h';
+      dashboardMetrics.value.exactAvgRating = 0;
 
       try {
         console.log("🚀 Loading REAL dashboard data for provider:", providerPid);
@@ -892,8 +357,8 @@ export default {
         // Load bookings from API
         await loadBookingsData(providerPid);
         
-        // Load reviews (with service validation)
-        await loadReviewsData(providerPid);
+        // Load EXACT reviews for this provider account
+        await loadExactReviewsData(providerPid);
         
         // Calculate all metrics from whatever real data we got
         calculateAllMetrics();
@@ -903,7 +368,7 @@ export default {
         console.log("=== REAL DATA LOAD COMPLETE ===");
         console.log("Services:", services.value.length);
         console.log("Bookings:", bookings.value.length);
-        console.log("Valid Reviews:", validReviews.value.length);
+        console.log("Exact Reviews for this account:", exactReviews.value.length);
         
       } catch (error) {
         console.error("❌ Dashboard load error:", error);
@@ -974,150 +439,243 @@ export default {
       }
     };
     
-    const loadReviewsData = async (providerPid) => {
+    const loadExactReviewsData = async (providerPid) => {
       try {
-        console.log("📤 Attempting to load reviews for provider:", providerPid);
+        console.log("⭐ Loading EXACT reviews for provider account:", providerPid);
+        reviewDebugInfo.value = "Loading reviews...";
         
-        const endpoints = [
-          `/reviews/provider/${providerPid}`,
-          `/reviews?providerId=${providerPid}`,
-          `/provider/${providerPid}/reviews`,
-          `/reviews`
-        ];
+        const providerPidStr = providerPid.toString();
         
-        for (const url of endpoints) {
-          try {
-            console.log(`🔄 Trying endpoint: ${url}`);
-            const response = await http.get(url);
+        // First, let's see what the /reviews endpoint actually returns
+        console.log("🔍 Fetching all reviews to inspect structure...");
+        
+        try {
+          const response = await http.get('/reviews');
+          console.log("📊 Full reviews response:", response);
+          
+          if (response.data) {
+            let allReviews = [];
             
-            if (response.data) {
-              let reviews = [];
+            // Handle different response formats
+            if (Array.isArray(response.data)) {
+              allReviews = response.data;
+              console.log(`📊 Found ${allReviews.length} total reviews in /reviews endpoint`);
+            } else if (response.data.data && Array.isArray(response.data.data)) {
+              allReviews = response.data.data;
+              console.log(`📊 Found ${allReviews.length} total reviews in response.data.data`);
+            } else if (response.data.reviews && Array.isArray(response.data.reviews)) {
+              allReviews = response.data.reviews;
+              console.log(`📊 Found ${allReviews.length} total reviews in response.data.reviews`);
+            } else if (response.data.results && Array.isArray(response.data.results)) {
+              allReviews = response.data.results;
+              console.log(`📊 Found ${allReviews.length} total reviews in response.data.results`);
+            }
+            
+            // Log first review structure to understand the data
+            if (allReviews.length > 0) {
+              console.log("📝 Sample review structure:", JSON.stringify(allReviews[0], null, 2));
               
-              if (Array.isArray(response.data)) {
-                reviews = response.data;
-              } else if (response.data.reviews && Array.isArray(response.data.reviews)) {
-                reviews = response.data.reviews;
-              } else if (response.data.data && Array.isArray(response.data.data)) {
-                reviews = response.data.data;
-              }
-              
-              console.log(`📊 Found ${reviews.length} reviews from ${url}`);
-              
-              if (url === '/reviews' && reviews.length > 0) {
-                reviews = reviews.filter(review => {
-                  return review.providerId === providerPid || 
-                         review.provider?._id === providerPid ||
-                         review.provider?.pid === providerPid ||
-                         review.provider === providerPid;
+              // Find all possible provider ID fields in the reviews
+              const providerIdFields = new Set();
+              allReviews.forEach((review, index) => {
+                Object.keys(review).forEach(key => {
+                  if (key.toLowerCase().includes('provider')) {
+                    providerIdFields.add(key);
+                  }
                 });
-                console.log(`📊 Filtered to ${reviews.length} reviews for this provider`);
-              }
+              });
               
-              if (reviews.length > 0) {
-                providerReviews.value = reviews;
-                console.log("✅ Successfully loaded reviews:", reviews.length);
+              console.log("🔍 Possible provider ID fields found:", Array.from(providerIdFields));
+              
+              // Now filter for this provider using ALL possible provider ID fields
+              const filteredReviews = allReviews.filter(review => {
+                // Check all possible provider ID fields
+                const possibleProviderFields = [
+                  'providerId', 'providerID', 'providerid',
+                  'provider._id', 'provider.id', 'provider.pid',
+                  'providerId', 'providerID', 'provider',
+                  'serviceProviderId', 'serviceProvider',
+                  'provider_id', 'provider_id'
+                ];
+                
+                for (const field of possibleProviderFields) {
+                  try {
+                    // Handle nested fields (e.g., provider._id)
+                    if (field.includes('.')) {
+                      const parts = field.split('.');
+                      let value = review;
+                      for (const part of parts) {
+                        if (value && value[part] !== undefined) {
+                          value = value[part];
+                        } else {
+                          value = null;
+                          break;
+                        }
+                      }
+                      
+                      if (value && value.toString() === providerPidStr) {
+                        console.log(`✅ Found match in field: ${field}`, value);
+                        return true;
+                      }
+                    } 
+                    // Handle direct fields
+                    else if (review[field] && review[field].toString() === providerPidStr) {
+                      console.log(`✅ Found match in field: ${field}`, review[field]);
+                      return true;
+                    }
+                  } catch (error) {
+                    // Skip errors for this field
+                  }
+                }
+                
+                return false;
+              });
+              
+              if (filteredReviews.length > 0) {
+                exactReviews.value = filteredReviews;
+                console.log(`✅ Found ${filteredReviews.length} reviews for provider ${providerPid}`);
+                reviewDebugInfo.value = `Found ${filteredReviews.length} reviews`;
+                return;
+              } else {
+                console.log(`❌ No reviews found for provider ${providerPid} after checking all fields`);
+                
+                // Let's check if reviews might be linked via service IDs
+                if (services.value.length > 0) {
+                  console.log("🔄 Checking reviews via service IDs...");
+                  
+                  // Get all service IDs for this provider
+                  const serviceIds = services.value
+                    .map(s => s._id || s.id)
+                    .filter(id => id)
+                    .map(id => id.toString());
+                  
+                  console.log("📋 Provider's service IDs:", serviceIds);
+                  
+                  // Check if any reviews have these service IDs
+                  const serviceReviews = allReviews.filter(review => {
+                    // Check service ID fields
+                    const serviceIdFields = [
+                      'serviceId', 'serviceID', 'serviceid',
+                      'service._id', 'service.id',
+                      'service', 'service_id'
+                    ];
+                    
+                    for (const field of serviceIdFields) {
+                      try {
+                        if (field.includes('.')) {
+                          const parts = field.split('.');
+                          let value = review;
+                          for (const part of parts) {
+                            if (value && value[part] !== undefined) {
+                              value = value[part];
+                            } else {
+                              value = null;
+                              break;
+                            }
+                          }
+                          
+                          if (value && serviceIds.includes(value.toString())) {
+                            console.log(`✅ Found review via service ID: ${field} = ${value}`);
+                            return true;
+                          }
+                        } else if (review[field] && serviceIds.includes(review[field].toString())) {
+                          console.log(`✅ Found review via service ID: ${field} = ${review[field]}`);
+                          return true;
+                        }
+                      } catch (error) {
+                        // Skip errors
+                      }
+                    }
+                    return false;
+                  });
+                  
+                  if (serviceReviews.length > 0) {
+                    exactReviews.value = serviceReviews;
+                    console.log(`✅ Found ${serviceReviews.length} reviews via service IDs`);
+                    reviewDebugInfo.value = `Found ${serviceReviews.length} reviews via services`;
+                    return;
+                  }
+                }
+                
+                // Show all reviews to debug (first 3)
+                console.log("🔍 First 3 reviews in system:", allReviews.slice(0, 3));
+              }
+            } else {
+              console.log("ℹ️ No reviews found in the system at all");
+              reviewDebugInfo.value = "No reviews in system";
+            }
+          }
+        } catch (error) {
+          console.log(`⚠️ Failed to fetch /reviews:`, error.message);
+          reviewDebugInfo.value = "Error fetching reviews";
+        }
+        
+        // Try booking-based approach as fallback
+        console.log("🔄 Checking bookings for review references...");
+        if (bookings.value.length > 0) {
+          const reviewsFromBookings = [];
+          
+          bookings.value.forEach(booking => {
+            // Check if booking has review data
+            if (booking.rating !== undefined || booking.review !== undefined) {
+              const reviewData = {
+                _id: booking._id || booking.id || `booking-${Date.now()}`,
+                rating: booking.rating || 0,
+                comment: booking.review || booking.comment || '',
+                createdAt: booking.updatedAt || booking.createdAt || new Date().toISOString(),
+                providerId: providerPid,
+                customerId: booking.customerId || booking.userId || 'unknown',
+                customerName: booking.customerName || booking.userName || 'Customer',
+                serviceId: booking.serviceId,
+                serviceName: booking.serviceName || 'Service'
+              };
+              reviewsFromBookings.push(reviewData);
+            }
+          });
+          
+          if (reviewsFromBookings.length > 0) {
+            exactReviews.value = reviewsFromBookings;
+            console.log(`✅ Found ${reviewsFromBookings.length} reviews from booking data`);
+            reviewDebugInfo.value = `Found ${reviewsFromBookings.length} reviews from bookings`;
+            return;
+          }
+        }
+        
+        console.log(`📊 Final: ${exactReviews.value.length} exact reviews loaded`);
+        
+        if (exactReviews.value.length === 0) {
+          reviewDebugInfo.value = "No reviews found for your account yet.";
+          console.log("ℹ️ No reviews found after trying all methods");
+          
+          // Try one more thing: check if there's a different endpoint
+          console.log("🔄 Trying alternative review endpoints...");
+          const alternativeEndpoints = [
+            `/review`,
+            `/api/review`,
+            `/feedback`,
+            `/api/feedback`,
+            `/ratings`,
+            `/api/ratings`
+          ];
+          
+          for (const endpoint of alternativeEndpoints) {
+            try {
+              console.log(`🔍 Trying: ${endpoint}`);
+              const response = await http.get(endpoint);
+              if (response.data) {
+                console.log(`📊 Response from ${endpoint}:`, response.data);
                 break;
               }
+            } catch (error) {
+              // Ignore errors, just try next endpoint
             }
-          } catch (error) {
-            console.log(`⚠️ Endpoint ${url} failed:`, error.message);
           }
         }
-        
-        // Load service-specific reviews as fallback
-        console.log("🔄 Attempting to load service reviews as fallback");
-        if (services.value.length > 0) {
-          serviceReviews.value = [];
-          const serviceReviewsPromises = [];
-          
-          const servicesToCheck = services.value.slice(0, 5);
-          
-          for (const service of servicesToCheck) {
-            if (service._id) {
-              try {
-                const promise = http.get(`/reviews/service/${service._id}`).then(response => {
-                  if (response.data && Array.isArray(response.data)) {
-                    return response.data;
-                  }
-                  return [];
-                }).catch(() => []);
-                
-                serviceReviewsPromises.push(promise);
-              } catch (error) {
-                console.log(`⚠️ Could not load reviews for service ${service._id}`);
-              }
-            }
-          }
-          
-          try {
-            const serviceReviewsArrays = await Promise.all(serviceReviewsPromises);
-            serviceReviews.value = serviceReviewsArrays.flat();
-            console.log(`📊 Loaded ${serviceReviews.value.length} service reviews`);
-            
-            if (serviceReviews.value.length > 0 && providerReviews.value.length === 0) {
-              reviewDebugInfo.value = `Found ${serviceReviews.value.length} service reviews`;
-            }
-          } catch (error) {
-            console.log("⚠️ Failed to load service reviews:", error);
-          }
-        }
-        
-        console.log("📊 Total reviews loaded:", {
-          providerReviews: providerReviews.value.length,
-          serviceReviews: serviceReviews.value.length
-        });
         
       } catch (error) {
-        console.error("❌ Critical error loading reviews:", error);
-        providerReviews.value = [];
-        serviceReviews.value = [];
+        console.error("❌ Critical error loading exact reviews:", error);
         reviewDebugInfo.value = "Error loading reviews: " + error.message;
-      }
-    };
-    
-    const filterValidReviews = () => {
-      console.log("🔍 Filtering reviews for existing services...");
-      
-      const existingServiceIds = new Set();
-      services.value.forEach(service => {
-        if (service._id) existingServiceIds.add(service._id.toString());
-        if (service.id) existingServiceIds.add(service.id.toString());
-      });
-      
-      console.log(`📋 Existing service IDs: ${Array.from(existingServiceIds)}`);
-      
-      const allReviews = [...providerReviews.value, ...serviceReviews.value];
-      
-      validReviews.value = allReviews.filter(review => {
-        if (!review.serviceId && !review.service) return true;
-        
-        let serviceId = review.serviceId || review.service?._id || review.service?.id || review.service;
-        if (!serviceId) return false;
-        
-        const serviceExists = existingServiceIds.has(serviceId.toString());
-        
-        if (!serviceExists) {
-          console.log(`⚠️ Excluding review for deleted service: ${serviceId}`);
-        }
-        
-        return serviceExists;
-      });
-      
-      // Remove duplicates
-      validReviews.value = validReviews.value.filter((review, index, self) =>
-        index === self.findIndex(r => 
-          (r._id === review._id) || 
-          (r.id === review.id) ||
-          (r._id && review.id && r._id === review.id) ||
-          (r.id && review._id && r.id === review._id)
-        )
-      );
-      
-      console.log(`✅ Valid reviews after filtering: ${validReviews.value.length} (out of ${allReviews.length} total)`);
-      
-      if (allReviews.length > 0 && validReviews.value.length < allReviews.length) {
-        const excluded = allReviews.length - validReviews.value.length;
-        reviewDebugInfo.value = `${excluded} review(s) excluded for deleted services`;
+        exactReviews.value = [];
       }
     };
     
@@ -1146,8 +704,7 @@ export default {
         dashboardMetrics.value.newCustomers = 0;
       }
       
-      filterValidReviews();
-      calculateReviewMetrics();
+      calculateExactReviewMetrics();
       calculateRevenueMetrics();
       calculatePerformanceMetrics();
     };
@@ -1253,16 +810,37 @@ export default {
       ).length;
     };
     
-    const calculateReviewMetrics = () => {
-      console.log("⭐ Calculating review metrics from valid reviews...");
+    const calculateExactReviewMetrics = () => {
+      console.log("⭐ Calculating EXACT review metrics for this account...");
+      console.log("Exact reviews array length:", exactReviews.value.length);
       
-      dashboardMetrics.value.totalReviews = validReviews.value.length;
+      dashboardMetrics.value.exactReviewsCount = exactReviews.value.length;
       
-      if (validReviews.value.length > 0) {
-        const validRatings = validReviews.value.filter(review => {
+      if (exactReviews.value.length > 0) {
+        // Log sample review for debugging
+        if (exactReviews.value[0]) {
+          console.log("📝 First review details:", {
+            id: exactReviews.value[0]._id || exactReviews.value[0].id,
+            rating: exactReviews.value[0].rating,
+            comment: exactReviews.value[0].comment?.substring(0, 50) + '...',
+            providerId: exactReviews.value[0].providerId,
+            serviceId: exactReviews.value[0].serviceId
+          });
+        }
+        
+        // Filter only valid ratings (0-5)
+        const validRatings = exactReviews.value.filter(review => {
           const rating = parseFloat(review.rating);
-          return !isNaN(rating) && rating >= 0 && rating <= 5;
+          const isValid = !isNaN(rating) && rating >= 0 && rating <= 5;
+          
+          if (!isValid && review.rating !== undefined) {
+            console.log(`⚠️ Invalid rating found:`, review.rating, "in review:", review._id || review.id);
+          }
+          
+          return isValid;
         });
+        
+        console.log(`📊 Valid ratings: ${validRatings.length} out of ${exactReviews.value.length}`);
         
         if (validRatings.length > 0) {
           const totalRating = validRatings.reduce((sum, review) => {
@@ -1270,24 +848,18 @@ export default {
             return sum + rating;
           }, 0);
           
-          dashboardMetrics.value.avgRating = totalRating / validRatings.length;
-          console.log(`📊 Average rating calculated: ${dashboardMetrics.value.avgRating} from ${validRatings.length} valid reviews`);
-          
-          if (validRatings.length < validReviews.value.length) {
-            reviewDebugInfo.value = `${validRatings.length} valid ratings found (some had invalid ratings)`;
-          }
+          dashboardMetrics.value.exactAvgRating = totalRating / validRatings.length;
+          console.log(`📊 Exact average rating: ${dashboardMetrics.value.exactAvgRating.toFixed(1)} from ${validRatings.length} valid reviews`);
         } else {
-          dashboardMetrics.value.avgRating = 0;
-          reviewDebugInfo.value = "No valid ratings found in reviews";
+          dashboardMetrics.value.exactAvgRating = 0;
+          console.log("ℹ️ No valid ratings found in exact reviews");
         }
       } else {
-        dashboardMetrics.value.avgRating = 0;
-        if (providerReviews.value.length > 0 || serviceReviews.value.length > 0) {
-          reviewDebugInfo.value = "No reviews for currently active services";
-        } else {
-          reviewDebugInfo.value = "No reviews found for this provider";
-        }
+        dashboardMetrics.value.exactAvgRating = 0;
+        console.log("ℹ️ No reviews found for this provider account");
       }
+      
+      console.log(`📊 Exact Review Metrics: Count=${dashboardMetrics.value.exactReviewsCount}, Avg=${dashboardMetrics.value.exactAvgRating.toFixed(1)}`);
     };
     
     const calculateCustomerMetrics = () => {
@@ -1359,143 +931,6 @@ export default {
       console.log("📈 Performance Metrics calculated");
     };
     
-    // ========== NOTIFICATIONS FUNCTIONS ==========
-    
-    const fetchNotifications = async () => {
-      try {
-        loadingNotifications.value = true;
-        notificationError.value = "";
-        
-        const providerPid = getProviderPid();
-        if (!providerPid) {
-          console.log("⚠️ No provider ID for notifications");
-          notifications.value = [];
-          return;
-        }
-        
-        console.log("🔔 Fetching notifications for provider:", providerPid);
-        
-        const endpoints = [
-          `/api/notifications?recipientId=${providerPid}&recipientType=provider`,
-          `/api/notifications?providerId=${providerPid}`,
-          `/api/notifications`,
-          `/notifications?providerId=${providerPid}`,
-          `/notifications/provider/${providerPid}`
-        ];
-        
-        for (const url of endpoints) {
-          try {
-            console.log(`🔄 Trying notifications endpoint: ${url}`);
-            const response = await http.get(url);
-            
-            if (response.data) {
-              let loadedNotifications = [];
-              
-              if (Array.isArray(response.data)) {
-                loadedNotifications = response.data;
-              } else if (response.data.notifications && Array.isArray(response.data.notifications)) {
-                loadedNotifications = response.data.notifications;
-              } else if (response.data.data && Array.isArray(response.data.data)) {
-                loadedNotifications = response.data.data;
-              } else if (response.data.results && Array.isArray(response.data.results)) {
-                loadedNotifications = response.data.results;
-              }
-              
-              console.log(`📨 Found ${loadedNotifications.length} notifications from ${url}`);
-              
-              if (url === '/api/notifications' || url === '/notifications') {
-                loadedNotifications = loadedNotifications.filter(notification => {
-                  return notification.recipientId === providerPid || 
-                         notification.providerId === providerPid ||
-                         notification.recipient?._id === providerPid ||
-                         notification.provider?._id === providerPid ||
-                         (notification.recipientType === 'provider' && 
-                          (notification.recipientId === providerPid || 
-                           notification.recipient?._id === providerPid));
-                });
-                console.log(`📨 Filtered to ${loadedNotifications.length} notifications for this provider`);
-              }
-              
-              if (loadedNotifications.length > 0) {
-                notifications.value = loadedNotifications;
-                console.log(`✅ Successfully loaded ${notifications.value.length} real notifications`);
-                return;
-              }
-            }
-          } catch (error) {
-            console.log(`⚠️ Notifications endpoint ${url} failed:`, error.message);
-          }
-        }
-        
-        console.log("ℹ️ No notifications found or all endpoints failed");
-        notifications.value = [];
-        
-      } catch (error) {
-        console.error("❌ Error fetching notifications:", error);
-        notificationError.value = "Failed to load notifications";
-        notifications.value = [];
-      } finally {
-        loadingNotifications.value = false;
-      }
-    };
-    
-    const markAsRead = async (notificationId) => {
-      try {
-        const notification = notifications.value.find(n => (n._id === notificationId || n.id === notificationId));
-        if (notification && !notification.read) {
-          try {
-            await http.patch(`/api/notifications/${notificationId}/read`);
-            console.log(`✅ Marked notification ${notificationId} as read via API`);
-          } catch (apiError) {
-            console.log(`⚠️ API call failed, marking locally only:`, apiError.message);
-          }
-          
-          notification.read = true;
-        }
-      } catch (error) {
-        console.error("❌ Error marking notification as read:", error);
-      }
-    };
-    
-    const markAllAsRead = async () => {
-      try {
-        const providerPid = getProviderPid();
-        if (providerPid) {
-          try {
-            await http.patch(`/api/notifications/mark-all-read`, {
-              recipientId: providerPid,
-              recipientType: 'provider'
-            });
-            console.log(`✅ Marked all notifications as read via API`);
-          } catch (apiError) {
-            console.log(`⚠️ API call failed, marking locally only:`, apiError.message);
-          }
-        }
-        
-        notifications.value.forEach(n => n.read = true);
-        showToast("All notifications marked as read", "success");
-      } catch (error) {
-        console.error("❌ Error marking all notifications as read:", error);
-        showToast("Failed to mark all as read", "error");
-      }
-    };
-    
-    const deleteNotification = async (notificationId) => {
-      try {
-        try {
-          await http.delete(`/api/notifications/${notificationId}`);
-          console.log(`✅ Deleted notification ${notificationId} via API`);
-        } catch (apiError) {
-          console.log(`⚠️ API call failed, deleting locally only:`, apiError.message);
-        }
-        
-        const index = notifications.value.findIndex(n => (n._id === notificationId || n.id === notificationId));
-        if (index > -1) notifications.value.splice(index, 1);
-      } catch (error) {
-        console.error("❌ Error deleting notification:", error);
-      }
-    };
-    
     // ========== COMPUTED PROPERTIES ==========
     
     const currentDate = computed(() => new Date().toLocaleDateString('en-US', {
@@ -1510,8 +945,8 @@ export default {
     const bookingGrowth = computed(() => dashboardMetrics.value.bookingGrowth);
     const totalServices = computed(() => dashboardMetrics.value.totalServices);
     const activeServices = computed(() => dashboardMetrics.value.activeServices);
-    const validReviewsCount = computed(() => dashboardMetrics.value.totalReviews);
-    const avgRating = computed(() => dashboardMetrics.value.avgRating);
+    const exactReviewsCount = computed(() => dashboardMetrics.value.exactReviewsCount);
+    const exactAvgRating = computed(() => dashboardMetrics.value.exactAvgRating);
     const totalRevenue = computed(() => dashboardMetrics.value.totalRevenue);
     const revenueGrowth = computed(() => dashboardMetrics.value.revenueGrowth);
     const todayBookings = computed(() => dashboardMetrics.value.todayBookings);
@@ -1589,10 +1024,6 @@ export default {
       }
     ]);
     
-    const unreadCount = computed(() => {
-      return notifications.value.filter(n => !n.read).length;
-    });
-    
     // ========== HELPER FUNCTIONS ==========
     
     const getTrendClass = (value) => {
@@ -1656,136 +1087,16 @@ export default {
 
     const refreshData = () => loadDashboardData();
     const navigateTo = (path) => router.push(path);
-    
-    const getActionFromType = (type) => {
-      const actionMap = {
-        booking: '/provider/bookings',
-        review: '/provider/reviews',
-        payment: '/provider/revenue',
-        message: '/provider/messages',
-        system: '/provider/settings',
-        info: '/provider/dashboard',
-        reminder: '/provider/bookings',
-        cancellation: '/provider/bookings'
-      };
-      return actionMap[type] || '/provider/dashboard';
-    };
-
-    const getNotificationIconClass = (type) => {
-      const iconClassMap = {
-        booking: 'fa-solid fa-calendar-check',
-        review: 'fa-solid fa-star',
-        reminder: 'fa-solid fa-clock',
-        system: 'fa-solid fa-info-circle',
-        payment: 'fa-solid fa-credit-card',
-        cancellation: 'fa-solid fa-times-circle',
-        message: 'fa-solid fa-message',
-        info: 'fa-solid fa-bell'
-      };
-      return iconClassMap[type] || 'fa-solid fa-bell';
-    };
-
-    const getNotificationIcon = (type) => {
-      const iconMap = {
-        booking: 'icon-booking',
-        review: 'icon-review',
-        reminder: 'icon-reminder',
-        system: 'icon-system',
-        payment: 'icon-payment',
-        cancellation: 'icon-cancellation',
-        message: 'icon-message'
-      };
-      return iconMap[type] || 'icon-info';
-    };
-
-    const getDefaultTitle = (type) => {
-      const titleMap = {
-        booking: 'New Booking',
-        review: 'New Review',
-        reminder: 'Reminder',
-        system: 'System Update',
-        payment: 'Payment Update',
-        cancellation: 'Booking Cancelled',
-        message: 'New Message'
-      };
-      return titleMap[type] || 'Notification';
-    };
-
-    const formatNotificationTime = (timestamp) => {
-      if (!timestamp) return 'Just now';
-      
-      const date = new Date(timestamp);
-      const now = new Date();
-      const diffMs = now - date;
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
-      
-      if (diffMins < 1) return 'Just now';
-      if (diffMins < 60) return `${diffMins} min${diffMins === 1 ? '' : 's'} ago`;
-      if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
-      if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
-      
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    };
-
-    const toggleNotifications = () => {
-      showNotifications.value = !showNotifications.value;
-      if (showNotifications.value && notifications.value.length === 0) {
-        fetchNotifications();
-      }
-      if (showNotifications.value) {
-        showProfileMenu.value = false; // Close profile menu if open
-      }
-    };
-
-    const closeNotifications = () => {
-      showNotifications.value = false;
-    };
-
-    const onNotificationBlur = (event) => {
-      if (isMobile.value) return;
-      
-      setTimeout(() => {
-        if (!event.relatedTarget || !event.relatedTarget.closest('.notification-container')) {
-          showNotifications.value = false;
-        }
-      }, 100);
-    };
-
-    const refreshNotifications = () => fetchNotifications();
-    const viewAllNotifications = () => navigateTo('/provider/notifications');
-
-    const diagnoseReviews = () => {
-      console.log("=== REVIEW DIAGNOSIS ===");
-      console.log("Services loaded:", services.value.length);
-      console.log("Provider reviews:", providerReviews.value.length);
-      console.log("Service reviews:", serviceReviews.value.length);
-      console.log("Valid reviews:", validReviews.value.length);
-      console.log("Current review metrics:", {
-        total: dashboardMetrics.value.totalReviews,
-        avgRating: dashboardMetrics.value.avgRating
-      });
-      console.log("=========================");
-    };
 
     // Lifecycle
     onMounted(() => {
       console.log('🏠 HomeDashboard mounted');
-      
-      window.addEventListener('resize', () => {
-        isMobile.value = window.innerWidth <= 768;
-      });
       
       setTimeout(() => {
         if (shouldLoadData()) {
           loadDashboardData();
         }
       }, 100);
-    });
-
-    onBeforeUnmount(() => {
-      window.removeEventListener('resize', () => {});
     });
 
     watch(() => props.provider, (newProvider) => {
@@ -1804,28 +1115,13 @@ export default {
       currentDate,
       lastUpdated,
       
-      // Notification State
-      showNotifications,
-      notifications,
-      loadingNotifications,
-      notificationError,
-      unreadCount,
-      isMobile,
-      
-      // Profile Menu State
-      showProfileMenu,
-      
-      // Notification Detail State
-      showNotificationDetail,
-      selectedNotification,
-      
       // Computed Metrics
       totalBookings,
       bookingGrowth,
       totalServices,
       activeServices,
-      validReviewsCount,
-      avgRating,
+      exactReviewsCount,
+      exactAvgRating,
       totalRevenue,
       revenueGrowth,
       todayBookings,
@@ -1853,41 +1149,6 @@ export default {
       getTrendClass,
       getTrendIcon,
       getStarClass,
-      
-      // Profile Menu Methods
-      toggleProfileMenu,
-      closeProfileMenu,
-      onProfileBlur,
-      handleLogout,
-      
-      // Notification Methods
-      toggleNotifications,
-      closeNotifications,
-      onNotificationBlur,
-      markAsRead,
-      markAllAsRead,
-      deleteNotification,
-      handleNotificationClick,
-      refreshNotifications,
-      viewAllNotifications,
-      getNotificationIcon,
-      getNotificationIconClass,
-      getDefaultTitle,
-      formatNotificationTime,
-      getActionFromType,
-      
-      // Notification Detail Methods
-      openNotificationDetail,
-      closeNotificationDetail,
-      markNotificationAsReadAndClose,
-      deleteNotificationAndClose,
-      performNotificationAction,
-      formatDate,
-      getStatusClass,
-      getPaymentStatusClass,
-      
-      // Diagnostic
-      diagnoseReviews
     };
   }
 };
@@ -1896,56 +1157,6 @@ export default {
 <style scoped>
 /* All CSS styles remain exactly as in the previous version - no changes needed */
 /* The CSS is already comprehensive and includes all necessary styles */
-
-/* Simple toast styles */
-.simple-toast {
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  font-weight: 500;
-  animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
-}
-
-.simple-toast.success {
-  background: #10b981;
-  color: white;
-}
-
-.simple-toast.error {
-  background: #ef4444;
-  color: white;
-}
-
-.simple-toast.warning {
-  background: #f59e0b;
-  color: white;
-}
-
-.simple-toast.info {
-  background: #3b82f6;
-  color: white;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
-}
-
-/* All CSS styles remain exactly the same as in the previous version */
-/* They are already optimized for responsive design and compact cards */
 
 /* ===== MAIN DASHBOARD STYLES ===== */
 .home-dashboard {
@@ -2124,41 +1335,6 @@ export default {
   border-top: 1px solid #f1f5f9;
   font-size: 0.75rem;
   width: 100%;
-}
-
-.breakdown-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 0;
-}
-
-.breakdown-label {
-  color: #64748b;
-}
-
-.breakdown-count {
-  color: #1e293b;
-  font-weight: 600;
-}
-
-.metric-progress {
-  width: 100%;
-  margin-top: 6px;
-}
-
-.progress-bar {
-  height: 6px;
-  background: #e2e8f0;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #0ea5e9, #0284c7);
-  border-radius: 3px;
-  transition: width 1s ease;
 }
 
 /* Quick Stats Grid */
@@ -2495,51 +1671,6 @@ export default {
   gap: 6px;
 }
 
-/* Notification styles */
-.notification-container {
-  position: relative;
-}
-
-.notification-btn {
-  position: relative;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  width: 42px;
-  height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  color: white;
-  font-size: 1.1rem;
-  backdrop-filter: blur(10px);
-}
-
-.notification-btn:hover {
-  background: white;
-  color: #5b6388;
-}
-
-.notification-badge {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  background: #ef4444;
-  color: white;
-  border-radius: 50%;
-  min-width: 18px;
-  height: 18px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 4px;
-  border: 2px solid #5b6388;
-}
-
 .btn {
   display: inline-flex;
   align-items: center;
@@ -2568,16 +1699,6 @@ export default {
 .btn-primary:disabled {
   opacity: 0.7;
   cursor: not-allowed;
-}
-
-.btn-secondary {
-  background: #f97316;
-  color: white;
-  border: none;
-}
-
-.btn-secondary:hover {
-  background: #ea580c;
 }
 
 /* Loading and Error States */
@@ -2753,11 +1874,6 @@ export default {
   
   .header-actions {
     gap: 8px;
-  }
-  
-  .notification-btn {
-    width: 38px;
-    height: 38px;
   }
   
   .btn {
