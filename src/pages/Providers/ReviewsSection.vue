@@ -313,7 +313,16 @@
                     <img :src="getAvatar(review)" :alt="review.userName" @error="handleImageError">
                   </div>
                   <div class="reviewer-info">
-                    <div class="reviewer-name">{{ review.userName || 'Anonymous Customer' }}</div>
+                    <!-- FIXED: Show actual reviewer details -->
+                    <div class="reviewer-name">{{ review.userName || 'Customer' }}</div>
+                    <div class="reviewer-contact" v-if="review.customerDetails">
+                      <span class="reviewer-email" v-if="review.customerDetails.email">
+                        <i class="fa-solid fa-envelope"></i> {{ review.customerDetails.email }}
+                      </span>
+                      <span class="reviewer-phone" v-if="review.customerDetails.phonenumber">
+                        <i class="fa-solid fa-phone"></i> {{ review.customerDetails.phonenumber }}
+                      </span>
+                    </div>
                     <div class="review-meta">
                       <span class="review-date">
                         <i class="fa-solid fa-calendar"></i> {{ formatDate(review.date) }}
@@ -335,6 +344,46 @@
                 <!-- Review Content -->
                 <div class="review-content">
                   <div class="review-text">{{ review.text }}</div>
+                  
+                  <!-- Customer Details Box (Collapsible) -->
+                  <div v-if="review.customerDetails" class="customer-details-box">
+                    <div class="customer-details-header" @click="toggleCustomerDetails(review.id)">
+                      <i class="fa-solid fa-user-circle"></i>
+                      <span>Customer Details</span>
+                      <i class="fa-solid" :class="expandedCustomer === review.id ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                    </div>
+                    
+                    <div v-if="expandedCustomer === review.id" class="customer-details-content">
+                      <div class="customer-info-grid">
+                        <div class="customer-info-item">
+                          <span class="label">Full Name:</span>
+                          <span class="value">{{ review.customerDetails.fullname || 'Not available' }}</span>
+                        </div>
+                        <div class="customer-info-item">
+                          <span class="label">Email:</span>
+                          <span class="value">{{ review.customerDetails.email || 'Not available' }}</span>
+                        </div>
+                        <div class="customer-info-item" v-if="review.customerDetails.phonenumber">
+                          <span class="label">Phone:</span>
+                          <span class="value">{{ review.customerDetails.phonenumber }}</span>
+                        </div>
+                        <div class="customer-info-item" v-if="review.customerDetails.address">
+                          <span class="label">Address:</span>
+                          <span class="value">{{ review.customerDetails.address }}</span>
+                        </div>
+                        <div class="customer-info-item" v-if="review.customerDetails.cid">
+                          <span class="label">Customer ID:</span>
+                          <span class="value customer-id">{{ review.customerDetails.cid }}</span>
+                        </div>
+                        <div class="customer-info-item" v-if="review.customerDetails.status">
+                          <span class="label">Status:</span>
+                          <span class="value status-badge" :class="review.customerDetails.status">
+                            {{ review.customerDetails.status }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Review Actions -->
@@ -453,6 +502,16 @@
               <img :src="getAvatar(selectedReview)" :alt="selectedReview.userName">
               <div>
                 <div class="name">{{ selectedReview.userName }}</div>
+                <div class="customer-details-small" v-if="selectedReview.customerDetails">
+                  <div class="detail">
+                    <i class="fa-solid fa-user"></i>
+                    {{ selectedReview.customerDetails.fullname }}
+                  </div>
+                  <div class="detail">
+                    <i class="fa-solid fa-envelope"></i>
+                    {{ selectedReview.customerDetails.email }}
+                  </div>
+                </div>
                 <div class="rating">
                   <i v-for="n in 5" :key="n" 
                      :class="n <= selectedReview.rating ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
@@ -500,17 +559,16 @@
 import { ref, onMounted, computed, watch } from "vue";
 import http from "@/api/index.js";
 
-// ========== YOUR ORIGINAL DATA FETCHING LOGIC ==========
-// State
+// ========== STATE ==========
 const reviews = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const services = ref([]);
 const providerId = ref(null);
 const debugMode = ref(false);
-const defaultAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=default";
+const expandedCustomer = ref(null); // NEW: For toggling customer details
 
-// ========== NEW ENHANCED FILTER STATE ==========
+// Filter State
 const filterRating = ref(0);
 const filterService = ref(null);
 const filterStatus = ref(null);
@@ -543,7 +601,7 @@ const dateRangeLabels = {
   custom: 'Custom Range'
 };
 
-// ========== ENHANCED COMPUTED PROPERTIES ==========
+// ========== COMPUTED PROPERTIES ==========
 const totalReviews = computed(() => reviews.value.length);
 
 const averageRating = computed(() => {
@@ -669,7 +727,10 @@ const filteredReviews = computed(() => {
       review.text.toLowerCase().includes(query) ||
       review.userName.toLowerCase().includes(query) ||
       review.serviceName.toLowerCase().includes(query) ||
-      (review.reply && review.reply.toLowerCase().includes(query))
+      (review.reply && review.reply.toLowerCase().includes(query)) ||
+      (review.customerDetails && 
+        (review.customerDetails.fullname?.toLowerCase().includes(query) ||
+         review.customerDetails.email?.toLowerCase().includes(query)))
     );
   }
 
@@ -718,7 +779,7 @@ const showEllipsis = computed(() => {
   return totalPages.value > 5 && currentPage.value < totalPages.value - 2;
 });
 
-// ========== YOUR ORIGINAL FETCHING FUNCTIONS ==========
+// ========== FETCHING FUNCTIONS ==========
 const getProviderId = () => {
   try {
     const providerJson = localStorage.getItem("loggedProvider");
@@ -770,6 +831,28 @@ const fetchServices = async () => {
   }
 };
 
+// NEW: Function to fetch customer details
+const fetchCustomerDetails = async (customerId) => {
+  try {
+    console.log(`👤 Fetching customer details for ID: ${customerId}`);
+    const response = await http.get(`/customers/${customerId}`);
+    
+    if (response.data) {
+      const customer = response.data;
+      console.log(`✅ Found customer:`, {
+        fullname: customer.fullname,
+        email: customer.email,
+        phonenumber: customer.phonenumber
+      });
+      return customer;
+    }
+  } catch (err) {
+    console.log(`ℹ️ Could not fetch customer details for ${customerId}:`, err.message);
+    return null;
+  }
+  return null;
+};
+
 const fetchServiceReviews = async (service) => {
   const serviceId = service.serviceId || service._id || service.id;
   if (!serviceId) {
@@ -793,44 +876,92 @@ const fetchServiceReviews = async (service) => {
     } else if (data && Array.isArray(data.data)) {
       serviceReviews = data.data;
     } else if (data && data.reviews && typeof data.reviews === 'object') {
-      // If reviews is an object, convert to array
       serviceReviews = Object.values(data.reviews);
     }
     
     console.log(`📝 Found ${serviceReviews.length} reviews for "${service.title}"`);
     
-    // Transform reviews to consistent format
-    return serviceReviews.map((review, index) => ({
-      id: review.id || review._id || `review-${serviceId}-${index}`,
-      serviceId: serviceId,
-      serviceName: service.title || service.serviceName || 'Service',
-      userName: review.customerName || 
-               review.user?.name || 
-               review.reviewerName || 
-               review.customer?.name ||
-               'Anonymous Customer',
-      rating: review.rating || review.stars || 0,
-      text: review.review || 
-            review.message || 
-            review.comment || 
-            review.content || 
-            review.feedback ||
-            'No review text',
-      date: review.date || 
-            review.createdAt || 
-            review.updatedAt || 
-            review.timestamp ||
-            new Date().toISOString(),
-      avatar: review.avatar || 
-              review.user?.avatar ||
-              review.customer?.avatar,
-      reply: review.reply || review.response || '',
-      replyDate: review.replyDate || review.updatedAt,
-      source: 'service'
-    }));
+    // Transform reviews to consistent format WITH CUSTOMER DETAILS
+    const transformedReviews = [];
+    
+    for (const review of serviceReviews) {
+      // Extract customer ID from review
+      const customerId = review.customerId || 
+                        review.user?._id || 
+                        review.user?.id ||
+                        review.customer?._id ||
+                        review.customer?.cid;
+      
+      let customerDetails = null;
+      
+      // Try to get customer details if we have customer ID
+      if (customerId) {
+        customerDetails = await fetchCustomerDetails(customerId);
+      }
+      
+      // If no customer details from API, use what's in the review
+      if (!customerDetails && review.customer) {
+        customerDetails = {
+          fullname: review.customer.fullname || review.customer.name,
+          email: review.customer.email,
+          phonenumber: review.customer.phonenumber,
+          address: review.customer.address,
+          cid: review.customer.cid,
+          status: review.customer.status,
+          profilePhoto: review.customer.profilePhoto
+        };
+      }
+      
+      // Determine reviewer name
+      let userName = 'Customer';
+      if (customerDetails?.fullname) {
+        userName = customerDetails.fullname;
+      } else if (review.customerName) {
+        userName = review.customerName;
+      } else if (review.user?.name) {
+        userName = review.user.name;
+      }
+      
+      // Create transformed review
+      const transformedReview = {
+        id: review.id || review._id || `review-${serviceId}-${Date.now()}`,
+        serviceId: serviceId,
+        serviceName: service.title || service.serviceName || 'Service',
+        userName: userName,
+        rating: review.rating || review.stars || 0,
+        text: review.review || 
+              review.message || 
+              review.comment || 
+              review.content || 
+              review.feedback ||
+              'No review text',
+        date: review.date || 
+              review.createdAt || 
+              review.updatedAt || 
+              review.timestamp ||
+              new Date().toISOString(),
+        avatar: customerDetails?.profilePhoto || 
+                review.avatar || 
+                review.user?.avatar ||
+                review.customer?.avatar,
+        reply: review.reply || review.response || '',
+        replyDate: review.replyDate || review.updatedAt,
+        customerDetails: customerDetails,
+        source: 'service'
+      };
+      
+      console.log(`👤 Review by: ${userName} (Rating: ${transformedReview.rating}★)`);
+      if (customerDetails) {
+        console.log(`   📧 Email: ${customerDetails.email}`);
+        console.log(`   📞 Phone: ${customerDetails.phonenumber}`);
+      }
+      
+      transformedReviews.push(transformedReview);
+    }
+    
+    return transformedReviews;
     
   } catch (err) {
-    // Don't throw error, just log and return empty array
     console.log(`ℹ️ No reviews found for service ${serviceId}:`, err.message);
     return [];
   }
@@ -880,7 +1011,7 @@ const fetchReviews = async () => {
     
     console.log(`🔄 Checking ${services.value.length} services for reviews...`);
     
-    // 3. Fetch reviews for each service
+    // 3. Fetch reviews for each service WITH CUSTOMER DETAILS
     const allReviews = await fetchAllServiceReviews();
     
     // 4. Remove duplicates (by ID)
@@ -910,15 +1041,22 @@ const fetchReviews = async () => {
     console.log(`✅ Reviews found: ${reviews.value.length}`);
     console.log(`✅ Services with reviews: ${availableServices.value.length}`);
     
+    // Log customer details found
+    const reviewsWithCustomerDetails = reviews.value.filter(r => r.customerDetails);
+    console.log(`✅ Reviews with customer details: ${reviewsWithCustomerDetails.length}`);
+    
     if (reviews.value.length > 0) {
-      console.log("\n📋 Reviews found:");
+      console.log("\n📋 Reviews found with customer details:");
       reviews.value.forEach((review, index) => {
         console.log(`\n${index + 1}. ${review.serviceName}`);
         console.log(`   Rating: ${review.rating}★`);
         console.log(`   Customer: ${review.userName}`);
+        if (review.customerDetails) {
+          console.log(`   Email: ${review.customerDetails.email}`);
+          console.log(`   Phone: ${review.customerDetails.phonenumber}`);
+        }
         console.log(`   Review: "${review.text.substring(0, 50)}${review.text.length > 50 ? '...' : ''}"`);
         console.log(`   Date: ${formatDate(review.date)}`);
-        console.log(`   Service ID: ${review.serviceId}`);
       });
     } else {
       console.log("\n📭 No reviews found for any services");
@@ -942,7 +1080,7 @@ const fetchReviews = async () => {
   }
 };
 
-// ========== ENHANCED HELPER METHODS ==========
+// ========== HELPER METHODS ==========
 const sortReviewsList = (reviewsList) => {
   const sorted = [...reviewsList];
   
@@ -1017,7 +1155,13 @@ const getServiceName = (serviceId) => {
 };
 
 const getAvatar = (review) => {
+  // Use customer's profile photo if available
+  if (review.customerDetails?.profilePhoto) {
+    return review.customerDetails.profilePhoto;
+  }
   if (review.avatar) return review.avatar;
+  
+  // Generate avatar based on customer name
   const seed = review.userName || review.id || Math.random().toString(36).substring(7);
   return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
 };
@@ -1047,6 +1191,11 @@ const formatDate = (dateString) => {
 const handleImageError = (event) => {
   const seed = Math.random().toString(36).substring(7);
   event.target.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+};
+
+// NEW: Toggle customer details
+const toggleCustomerDetails = (reviewId) => {
+  expandedCustomer.value = expandedCustomer.value === reviewId ? null : reviewId;
 };
 
 // Pagination Methods
@@ -2002,6 +2151,28 @@ onMounted(() => {
   font-size: 1.05rem;
 }
 
+/* NEW: Customer contact info */
+.reviewer-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.reviewer-email,
+.reviewer-phone {
+  color: #64748b;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.reviewer-email i,
+.reviewer-phone i {
+  font-size: 0.7rem;
+}
+
 .review-meta {
   display: flex;
   flex-direction: column;
@@ -2057,6 +2228,96 @@ onMounted(() => {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* NEW: Customer Details Box */
+.customer-details-box {
+  margin-top: 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.customer-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.customer-details-header:hover {
+  background: #e2e8f0;
+}
+
+.customer-details-header i:first-child {
+  color: #3b82f6;
+  margin-right: 0.5rem;
+}
+
+.customer-details-header i:last-child {
+  transition: transform 0.3s ease;
+}
+
+.customer-details-content {
+  padding: 1rem;
+  background: white;
+}
+
+.customer-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.customer-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.customer-info-item .label {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.customer-info-item .value {
+  font-size: 0.9rem;
+  color: #334155;
+  font-weight: 600;
+}
+
+.customer-id {
+  font-family: 'Courier New', monospace;
+  background: #f1f5f9;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge.active {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-badge.inactive {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
 .review-actions {
@@ -2424,6 +2685,26 @@ onMounted(() => {
   margin-bottom: 0.25rem;
 }
 
+/* NEW: Customer details in modal */
+.customer-details-small {
+  margin-bottom: 0.5rem;
+}
+
+.customer-details-small .detail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+}
+
+.customer-details-small .detail i {
+  font-size: 0.75rem;
+  width: 16px;
+  text-align: center;
+}
+
 .reviewer .rating {
   display: flex;
   gap: 0.15rem;
@@ -2644,6 +2925,10 @@ onMounted(() => {
     width: 100%;
     text-align: center;
     margin-top: 0.5rem;
+  }
+  
+  .customer-info-grid {
+    grid-template-columns: 1fr;
   }
 }
 

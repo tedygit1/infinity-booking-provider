@@ -1,37 +1,6 @@
-<!-- src/pages/Providers/NotificationsSection.vue - FINAL WORKING VERSION -->
+<!-- src/pages/Providers/NotificationsSection.vue - COMPLETE FIX -->
 <template>
   <div class="notifications-page">
-    <!-- Toast Notifications -->
-    <div class="toast-container" v-if="showToast">
-      <div class="toast" :class="toastType" @click="showToast = false">
-        <div class="toast-icon">
-          <i :class="getToastIcon(toastType)"></i>
-        </div>
-        <div class="toast-content">
-          <p class="toast-message">{{ toastMessage }}</p>
-        </div>
-        <button class="toast-close" @click.stop="showToast = false">
-          <i class="fa-solid fa-times"></i>
-        </button>
-      </div>
-    </div>
-
-    <!-- Debug Panel (Remove in production) -->
-    <div v-if="isDevelopment" class="debug-panel">
-      <button @click="testApiEndpoints" class="btn btn-debug">
-        <i class="fa-solid fa-bug"></i>
-        Test API
-      </button>
-      <button @click="showApiConfig" class="btn btn-debug">
-        <i class="fa-solid fa-gear"></i>
-        Show Config
-      </button>
-      <button @click="forceMarkAllRead" class="btn btn-debug">
-        <i class="fa-solid fa-check-double"></i>
-        Force Mark All
-      </button>
-    </div>
-
     <!-- Page Header -->
     <div class="page-header">
       <div class="header-left">
@@ -224,17 +193,98 @@
                   </p>
                 </div>
 
-                <!-- Notification Data -->
-                <div v-if="notification.data && Object.keys(notification.data).length > 0" class="detail-section">
-                  <h5><i class="fa-solid fa-table"></i> Additional Information</h5>
-                  <div class="detail-grid">
-                    <div 
-                      v-for="(value, key) in notification.data" 
-                      :key="key"
-                      class="detail-item"
-                    >
-                      <span class="detail-label">{{ formatKey(key) }}:</span>
-                      <span class="detail-value">{{ value }}</span>
+                <!-- Booking Details Section - FIXED TO SHOW BOOKER NOT PROVIDER -->
+                <div v-if="notification.data && Object.keys(notification.data).length > 0" 
+                     class="detail-section">
+                  <h5><i class="fa-solid fa-calendar-check"></i> Booking Details</h5>
+                  
+                  <!-- Try to fetch real booking details if available -->
+                  <div v-if="bookingDetails[notification._id]" class="real-booking-details">
+                    <!-- Booker/Customer Details -->
+                    <div v-if="bookingDetails[notification._id].booker" class="detail-group">
+                      <h6><i class="fa-solid fa-user"></i> Customer Details</h6>
+                      <div class="detail-item">
+                        <span class="detail-label">Name:</span>
+                        <span class="detail-value">
+                          {{ bookingDetails[notification._id].booker.fullname || 'N/A' }}
+                        </span>
+                      </div>
+                      <div class="detail-item" v-if="bookingDetails[notification._id].booker.email">
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value">
+                          {{ bookingDetails[notification._id].booker.email }}
+                        </span>
+                      </div>
+                      <div class="detail-item" v-if="bookingDetails[notification._id].booker.phonenumber">
+                        <span class="detail-label">Phone:</span>
+                        <span class="detail-value">
+                          {{ bookingDetails[notification._id].booker.phonenumber }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Service Details -->
+                    <div v-if="bookingDetails[notification._id].service" class="detail-group">
+                      <h6><i class="fa-solid fa-gear"></i> Service Details</h6>
+                      <div class="detail-item">
+                        <span class="detail-label">Service:</span>
+                        <span class="detail-value">
+                          {{ bookingDetails[notification._id].service.title || 'N/A' }}
+                        </span>
+                      </div>
+                      <div class="detail-item">
+                        <span class="detail-label">Category:</span>
+                        <span class="detail-value">
+                          {{ bookingDetails[notification._id].service.categoryName || 'N/A' }}
+                        </span>
+                      </div>
+                      <div class="detail-item">
+                        <span class="detail-label">Price:</span>
+                        <span class="detail-value detail-value-amount">
+                          {{ formatAmount(bookingDetails[notification._id].service.bookingPrice || 
+                                         bookingDetails[notification._id].service.totalPrice) }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Booking Information -->
+                    <div class="detail-group">
+                      <h6><i class="fa-solid fa-receipt"></i> Booking Information</h6>
+                      <div class="detail-item" v-if="bookingDetails[notification._id].bookingId">
+                        <span class="detail-label">Booking ID:</span>
+                        <span class="detail-value detail-value-id">
+                          {{ bookingDetails[notification._id].bookingId }}
+                        </span>
+                      </div>
+                      <div class="detail-item" v-if="bookingDetails[notification._id].bookingDate">
+                        <span class="detail-label">Booking Date:</span>
+                        <span class="detail-value">
+                          {{ formatBookingDate(bookingDetails[notification._id].bookingDate) }}
+                        </span>
+                      </div>
+                      <div class="detail-item" v-if="bookingDetails[notification._id].status">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value" :class="`status-${bookingDetails[notification._id].status}`">
+                          {{ bookingDetails[notification._id].status }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Fallback: Show notification data if no booking details -->
+                  <div v-else class="notification-data-fallback">
+                    <div class="detail-grid">
+                      <!-- Filter out provider fields -->
+                      <template v-for="(value, key) in notification.data">
+                        <div 
+                          v-if="!['userId', 'userEmail', 'userName', 'providerId', 'providerName', 'providerEmail'].includes(key)"
+                          :key="key" 
+                          class="detail-item"
+                        >
+                          <span class="detail-label">{{ formatKey(key) }}:</span>
+                          <span class="detail-value">{{ value }}</span>
+                        </div>
+                      </template>
                     </div>
                   </div>
                 </div>
@@ -263,7 +313,7 @@
                     class="btn btn-action-secondary"
                   >
                     <i class="fa-solid fa-external-link-alt"></i>
-                    View Details
+                    View Booking
                   </button>
                   <button 
                     @click.stop="deleteNotification(notification)"
@@ -295,24 +345,21 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import http from '@/api/index.js'
 
 const router = useRouter()
-const isDevelopment = process.env.NODE_ENV === 'development'
 
 // State
 const notifications = ref([])
+const bookingDetails = ref({}) // Store fetched booking details
 const loading = ref(false)
 const expandedNotificationId = ref(null)
 const activeFilter = ref('all')
 const showFilter = ref(false)
 const currentPage = ref(1)
 const hasMore = ref(true)
-const showToast = ref(false)
-const toastMessage = ref('')
-const toastType = ref('info')
 
 // Filter types
 const notificationTypes = ref([
@@ -322,8 +369,7 @@ const notificationTypes = ref([
   { value: 'message', label: 'Messages', icon: 'fa-solid fa-comment' },
   { value: 'system', label: 'System', icon: 'fa-solid fa-info-circle' },
   { value: 'reminder', label: 'Reminders', icon: 'fa-solid fa-clock' },
-  { value: 'cancellation', label: 'Cancellations', icon: 'fa-solid fa-times-circle' },
-  { value: 'maintenance', label: 'Maintenance', icon: 'fa-solid fa-screwdriver-wrench' }
+  { value: 'cancellation', label: 'Cancellations', icon: 'fa-solid fa-times-circle' }
 ])
 
 const filterLabels = {
@@ -335,71 +381,7 @@ const filterLabels = {
   message: 'Messages',
   system: 'System',
   reminder: 'Reminders',
-  cancellation: 'Cancellations',
-  maintenance: 'Maintenance'
-}
-
-// Toast notification
-const notify = (message, type = 'info') => {
-  toastMessage.value = message
-  toastType.value = type
-  showToast.value = true
-  
-  setTimeout(() => {
-    showToast.value = false
-  }, 3000)
-}
-
-const getToastIcon = (type) => {
-  const icons = {
-    info: 'fa-solid fa-info-circle',
-    success: 'fa-solid fa-check-circle',
-    error: 'fa-solid fa-exclamation-circle',
-    warning: 'fa-solid fa-triangle-exclamation'
-  }
-  return icons[type] || 'fa-solid fa-info-circle'
-}
-
-// Debug functions
-const testApiEndpoints = async () => {
-  console.log('🧪 Testing API Endpoints...')
-  
-  const providerId = getProviderId()
-  if (!providerId) {
-    notify('No provider ID found', 'error')
-    return
-  }
-  
-  // Test GET notifications
-  try {
-    console.log('Testing GET /notifications')
-    const response = await http.get('/notifications', {
-      params: { recipientId: providerId, limit: 1 }
-    })
-    console.log('✅ GET /notifications success:', response.config.url)
-  } catch (error) {
-    console.log('❌ GET /notifications failed:', error.message)
-  }
-}
-
-const showApiConfig = () => {
-  console.log('🔧 API Configuration:')
-  console.log('http.defaults.baseURL:', http.defaults?.baseURL)
-  console.log('http.defaults.headers:', http.defaults?.headers)
-  
-  // Show what URL will be called
-  const providerId = getProviderId()
-  const testUrl = http.defaults?.baseURL ? 
-    `${http.defaults.baseURL}/notifications` : 
-    '/notifications'
-  console.log('Example URL:', testUrl)
-}
-
-const forceMarkAllRead = () => {
-  console.log('⚠️ Force marking all as read locally')
-  notifications.value.forEach(n => n.read = true)
-  updateNotificationCounts()
-  notify('All notifications marked as read (locally)', 'warning')
+  cancellation: 'Cancellations'
 }
 
 // Computed
@@ -427,33 +409,6 @@ const filteredNotifications = computed(() => {
   })
 })
 
-// Helper methods
-const getNotificationClasses = (notification) => {
-  const classes = {
-    'unread': !notification.read,
-    'expanded': expandedNotificationId.value === (notification._id || notification.id),
-    'has-priority': notification.priority === 'high' || notification.priority === 'urgent'
-  }
-  
-  const type = notification.type || 'info'
-  classes[`type-${type}`] = true
-  
-  if (notification.priority) {
-    classes[`priority-${notification.priority}`] = true
-  }
-  
-  return classes
-}
-
-const truncateMessage = (message) => {
-  if (!message) return ''
-  return message.length > 100 ? message.substring(0, 100) + '...' : message
-}
-
-const formatKey = (key) => {
-  return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).replace(/_/g, ' ')
-}
-
 // Main methods
 const fetchNotifications = async (page = 1, showLoading = true) => {
   try {
@@ -461,47 +416,36 @@ const fetchNotifications = async (page = 1, showLoading = true) => {
     
     const providerId = getProviderId()
     if (!providerId) {
-      notify('Please log in to view notifications', 'error')
+      console.error('No provider ID found')
       return
     }
     
     console.log(`📡 Fetching notifications for provider: ${providerId}`)
     
-    // Try with direct axios call first to debug
     let response
     try {
-      // Using your http client (which may have baseURL configured)
+      // Fetch notifications from API
       response = await http.get('/notifications', {
         params: {
           recipientId: providerId,
           recipientType: 'provider',
           page: page,
           limit: 20,
-          sort: '-createdAt'
+          sort: '-createdAt',
+          read: activeFilter.value === 'unread' ? false : undefined
         }
       })
       
-      console.log('✅ API Response received')
-      console.log('Full URL called:', response.config.url)
-      console.log('Response status:', response.status)
-      
     } catch (fetchError) {
-      console.error('❌ Initial fetch error:', fetchError)
-      
-      // If fetch fails, try to load from localStorage
+      console.error('❌ Fetch error:', fetchError)
       loadFromLocalStorage()
-      
-      // Show sample data for testing
       if (notifications.value.length === 0) {
         showSampleData()
       }
-      
       throw fetchError
     }
     
     if (response && response.data) {
-      console.log('📋 Response data structure:', response.data)
-      
       let notificationsData = []
       
       // Handle different response formats
@@ -533,181 +477,195 @@ const fetchNotifications = async (page = 1, showLoading = true) => {
       saveToLocalStorage()
       updateNotificationCounts()
       
-      if (page === 1 && notificationsData.length > 0) {
-        notify(`Loaded ${notificationsData.length} notifications`, 'success')
-      }
+      // Fetch booking details for booking notifications
+      await fetchBookingDetailsForNotifications(normalized)
     }
   } catch (error) {
-    console.error('❌ Error in fetchNotifications:', error)
-    
+    console.error('❌ Error fetching notifications:', error)
     if (page === 1) {
       loadFromLocalStorage()
-      
-      if (notifications.value.length === 0) {
-        showSampleData()
-        notify('Showing sample notifications. API connection failed.', 'warning')
-      } else {
-        notify('Showing cached notifications', 'info')
-      }
     }
   } finally {
     if (showLoading) loading.value = false
   }
 }
 
+// NEW: Fetch booking details for booking notifications
+const fetchBookingDetailsForNotifications = async (notificationsList) => {
+  try {
+    for (const notification of notificationsList) {
+      if (notification.type === 'booking' && notification.data && notification.data.bookingId) {
+        try {
+          console.log(`🔍 Fetching booking details for: ${notification.data.bookingId}`)
+          
+          // Try to fetch booking details
+          const bookingResponse = await http.get(`/bookings/${notification.data.bookingId}`)
+          
+          if (bookingResponse.data) {
+            bookingDetails.value[notification._id || notification.id] = {
+              ...bookingResponse.data,
+              // Ensure we have the right data structure
+              booker: bookingResponse.data.customer || bookingResponse.data.booker || notification.data,
+              service: bookingResponse.data.service || {},
+              bookingId: notification.data.bookingId,
+              bookingDate: notification.data.bookingDate || bookingResponse.data.createdAt,
+              status: bookingResponse.data.status || 'pending'
+            }
+          }
+        } catch (bookingError) {
+          console.log(`⚠️ Could not fetch booking details for ${notification.data.bookingId}:`, bookingError.message)
+        }
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error fetching booking details:', error)
+  }
+}
+
+// Fetch booking details when notification is expanded
+const fetchBookingDetails = async (notification) => {
+  if (notification.type !== 'booking' || !notification.data || !notification.data.bookingId) {
+    return
+  }
+
+  const notificationId = notification._id || notification.id
+  
+  // Skip if already fetched
+  if (bookingDetails.value[notificationId]) {
+    return
+  }
+
+  try {
+    console.log(`🔍 Fetching booking details for: ${notification.data.bookingId}`)
+    
+    const response = await http.get(`/bookings/${notification.data.bookingId}`)
+    
+    if (response.data) {
+      bookingDetails.value[notificationId] = {
+        ...response.data,
+        booker: response.data.customer || response.data.booker || notification.data,
+        service: response.data.service || {},
+        bookingId: notification.data.bookingId,
+        bookingDate: notification.data.bookingDate || response.data.createdAt,
+        status: response.data.status || 'pending'
+      }
+    }
+  } catch (error) {
+    console.error(`❌ Error fetching booking details:`, error)
+  }
+}
+
 const getProviderId = () => {
   try {
     const loggedProvider = localStorage.getItem('loggedProvider')
-    if (!loggedProvider) {
-      console.warn('No logged provider found in localStorage')
-      return null
-    }
+    if (!loggedProvider) return null
     
     const provider = JSON.parse(loggedProvider)
-    console.log('👤 Provider data from localStorage:', provider)
     
     // Try different ID fields
-    const providerId = provider.pid || provider._id || provider.id || provider.userId
-    if (!providerId) {
-      console.warn('No valid provider ID found in:', provider)
-    }
-    
-    return providerId
+    return provider.pid || provider._id || provider.id
   } catch (err) {
     console.error('Error getting provider ID:', err)
     return null
   }
 }
 
-// FIXED: Mark as Read - Direct API call with error handling
+// FIXED: Mark as Read - Using PUT method
 const markAsRead = async (notification) => {
   try {
     const notificationId = notification._id || notification.id
-    if (!notificationId) {
-      notify('Invalid notification ID', 'error')
-      return
-    }
+    if (!notificationId) return
     
-    console.log(`📝 Attempting to mark notification ${notificationId} as read`)
+    console.log(`📝 Marking notification ${notificationId} as read`)
     
     // Update locally first for instant feedback
     const index = notifications.value.findIndex(n => 
       (n._id === notificationId || n.id === notificationId)
     )
     
-    if (index === -1) {
-      notify('Notification not found', 'error')
-      return
-    }
+    if (index === -1) return
     
-    // Store old read state
     const wasRead = notifications.value[index].read
     
-    // Update locally
+    // Update locally IMMEDIATELY
     notifications.value[index].read = true
+    updateNotificationCounts()
     
-    // Try API call
+    // Try API call - USE PUT not PATCH
     try {
-      console.log(`🔄 Calling API: /notifications/${notificationId}/read`)
-      await http.patch(`/notifications/${notificationId}/read`, {})
-      console.log('✅ API call successful')
+      console.log(`🔄 PUT /notifications/${notificationId}/read`)
+      await http.put(`/notifications/${notificationId}/read`, {})
+      console.log('✅ Notification marked as read')
       
-      // Update counts and notify
-      updateNotificationCounts()
-      notify('Notification marked as read', 'success')
-      
-      // Save to localStorage
       saveToLocalStorage()
       
     } catch (apiError) {
-      console.error('❌ API call failed:', apiError.message)
+      console.error('❌ PUT /read failed:', apiError.message)
       
-      // Revert local change if API fails
-      notifications.value[index].read = wasRead
-      
-      // Try alternative endpoint
+      // Try alternative: Update the entire notification
       try {
-        console.log('🔄 Trying alternative: PUT method')
-        await http.put(`/notifications/${notificationId}`, { read: true })
-        notifications.value[index].read = true
-        updateNotificationCounts()
+        console.log('🔄 Trying alternative: PUT /notifications/{id}')
+        await http.put(`/notifications/${notificationId}`, { 
+          read: true
+        })
+        console.log('✅ Alternative method successful')
         saveToLocalStorage()
-        notify('Notification updated (alternative method)', 'success')
       } catch (altError) {
-        console.error('❌ Alternative method also failed:', altError.message)
-        notify('Failed to update on server. Updated locally only.', 'warning')
+        console.error('❌ Alternative method failed:', altError.message)
+        // Revert local change if all API calls fail
+        notifications.value[index].read = wasRead
+        updateNotificationCounts()
       }
     }
     
   } catch (error) {
     console.error('❌ Error in markAsRead:', error)
-    notify('Error marking as read', 'error')
   }
 }
 
 // FIXED: Mark All as Read
 const markAllAsRead = async () => {
-  if (unreadCount.value === 0) {
-    notify('No unread notifications', 'info')
-    return
-  }
+  if (unreadCount.value === 0) return
   
   try {
     const providerId = getProviderId()
-    if (!providerId) {
-      notify('Please log in first', 'error')
-      return
-    }
+    if (!providerId) return
     
-    console.log(`📝 Marking all notifications as read for provider: ${providerId}`)
+    console.log(`📝 Marking all notifications as read`)
     
     // Update locally first
     const oldStates = notifications.value.map(n => n.read)
     notifications.value.forEach(n => n.read = true)
+    updateNotificationCounts()
     
-    // Try API call
+    // Try API call - USE PUT not PATCH
     try {
-      console.log('🔄 Calling API: /notifications/mark-all-read')
-      await http.patch('/notifications/mark-all-read', {
+      console.log('🔄 PUT /notifications/all/read')
+      await http.put('/notifications/all/read', {
         recipientId: providerId,
         recipientType: 'provider'
       })
-      console.log('✅ API call successful')
-      
-      updateNotificationCounts()
+      console.log('✅ All notifications marked as read')
       saveToLocalStorage()
-      notify(`Marked ${unreadCount.value} notifications as read`, 'success')
       
     } catch (apiError) {
-      console.error('❌ API call failed:', apiError.message)
+      console.error('❌ PUT /all/read failed:', apiError.message)
       
       // Try alternative: Mark each individually
       try {
-        console.log('🔄 Trying to mark each notification individually')
+        console.log('🔄 Marking each individually')
         
         const unreadNotifications = notifications.value.filter(n => !oldStates[notifications.value.indexOf(n)])
-        let successCount = 0
         
         for (const notification of unreadNotifications) {
           try {
-            await http.patch(`/notifications/${notification._id || notification.id}/read`, {})
-            successCount++
+            await http.put(`/notifications/${notification._id || notification.id}/read`, {})
           } catch (err) {
             console.log(`Failed to mark ${notification._id}:`, err.message)
           }
         }
         
-        if (successCount > 0) {
-          updateNotificationCounts()
-          saveToLocalStorage()
-          notify(`Marked ${successCount} notifications as read`, 'success')
-        } else {
-          // Revert all changes if all API calls fail
-          notifications.value.forEach((n, index) => {
-            n.read = oldStates[index]
-          })
-          notify('Failed to mark any notifications as read', 'error')
-        }
+        saveToLocalStorage()
         
       } catch (batchError) {
         console.error('❌ Batch marking failed:', batchError.message)
@@ -716,14 +674,12 @@ const markAllAsRead = async () => {
         notifications.value.forEach((n, index) => {
           n.read = oldStates[index]
         })
-        
-        notify('Failed to mark notifications as read', 'error')
+        updateNotificationCounts()
       }
     }
     
   } catch (error) {
     console.error('❌ Error in markAllAsRead:', error)
-    notify('Error marking all as read', 'error')
   }
 }
 
@@ -744,33 +700,29 @@ const markAsUnread = async (notification) => {
     
     const wasRead = notifications.value[index].read
     notifications.value[index].read = false
+    updateNotificationCounts()
     
-    // Try API call
+    // Try API call - USE PUT not PATCH
     try {
-      await http.patch(`/notifications/${notificationId}/unread`, {})
-      updateNotificationCounts()
+      await http.put(`/notifications/${notificationId}/unread`, {})
       saveToLocalStorage()
-      notify('Notification marked as unread', 'info')
     } catch (apiError) {
-      console.error('API call failed:', apiError.message)
+      console.error('PUT /unread failed:', apiError.message)
       
       // Try alternative
       try {
         await http.put(`/notifications/${notificationId}`, { read: false })
-        updateNotificationCounts()
         saveToLocalStorage()
-        notify('Notification updated (alternative method)', 'info')
       } catch (altError) {
-        console.error('Alternative method failed:', altError.message)
+        console.error('Alternative failed:', altError.message)
         // Revert local change
         notifications.value[index].read = wasRead
-        notify('Failed to update on server', 'warning')
+        updateNotificationCounts()
       }
     }
     
   } catch (error) {
     console.error('Error marking as unread:', error)
-    notify('Error marking as unread', 'error')
   }
 }
 
@@ -789,10 +741,6 @@ const deleteNotification = async (notification) => {
     }
     
     // Remove from array first
-    const deletedNotification = notifications.value.find(n => 
-      n._id === notificationId || n.id === notificationId
-    )
-    
     notifications.value = notifications.value.filter(n => 
       n._id !== notificationId && n.id !== notificationId
     )
@@ -802,18 +750,20 @@ const deleteNotification = async (notification) => {
       if (notificationId) {
         await http.delete(`/notifications/${notificationId}`)
       }
-      notify('Notification deleted', 'success')
     } catch (apiError) {
       console.error('API delete failed:', apiError.message)
-      notify('Deleted locally (server delete failed)', 'warning')
     }
     
     updateNotificationCounts()
     saveToLocalStorage()
     
+    // Remove booking details if exists
+    if (bookingDetails.value[notificationId]) {
+      delete bookingDetails.value[notificationId]
+    }
+    
   } catch (error) {
     console.error('Error deleting notification:', error)
-    notify('Error deleting notification', 'error')
   }
 }
 
@@ -829,8 +779,7 @@ const normalizeNotifications = (notificationsData) => {
     createdAt: notification.createdAt || notification.timestamp || new Date().toISOString(),
     data: notification.data || notification.metadata || {},
     priority: notification.priority || 'normal',
-    action: notification.action || notification.link,
-    icon: notification.icon
+    action: notification.action || notification.link
   }))
 }
 
@@ -838,16 +787,21 @@ const updateNotificationCounts = () => {
   const unread = notifications.value.filter(n => !n.read).length
   const total = notifications.value.length
   
+  // Update localStorage for Dashboard
   localStorage.setItem('notification_count', JSON.stringify({
     unread: unread,
     total: total,
     lastUpdated: new Date().toISOString()
   }))
   
-  // Update badge if function exists
-  if (window.updateNotificationBadge) {
-    window.updateNotificationBadge(unread)
-  }
+  localStorage.setItem('unread_notification_count', unread.toString())
+  
+  // Dispatch event for real-time updates
+  window.dispatchEvent(new CustomEvent('notification-count-changed', {
+    detail: { unread, total }
+  }))
+  
+  console.log(`📢 Emitted notification count: ${unread} unread`)
 }
 
 const loadFromLocalStorage = () => {
@@ -880,28 +834,13 @@ const showSampleData = () => {
     {
       _id: 'sample1',
       title: 'New Booking Request',
-      message: 'John Doe wants to book your service for tomorrow at 2 PM',
+      message: 'niga bro wants to book your service',
       type: 'booking',
       read: false,
       createdAt: new Date().toISOString(),
       data: {
-        customerName: 'John Doe',
-        service: 'Web Development',
-        date: 'Tomorrow, 2:00 PM',
-        price: '$500'
-      }
-    },
-    {
-      _id: 'sample2',
-      title: 'Payment Received',
-      message: 'Payment of $250 has been processed successfully',
-      type: 'payment',
-      read: true,
-      createdAt: new Date(Date.now() - 3600000).toISOString(),
-      data: {
-        amount: '$250',
-        project: 'E-commerce Website',
-        status: 'Completed'
+        bookingId: 'sample_booking_123',
+        bookingDate: new Date().toISOString()
       }
     }
   ]
@@ -914,14 +853,13 @@ const showSampleData = () => {
 // UI methods
 const refreshNotifications = () => {
   fetchNotifications(1)
-  notify('Refreshing notifications...', 'info')
 }
 
 const loadMore = () => {
   fetchNotifications(currentPage.value + 1, false)
 }
 
-const toggleNotificationDetail = (notification) => {
+const toggleNotificationDetail = async (notification) => {
   const notificationId = notification._id || notification.id
   
   if (expandedNotificationId.value === notificationId) {
@@ -932,6 +870,11 @@ const toggleNotificationDetail = (notification) => {
     // Auto mark as read when opened
     if (!notification.read) {
       markAsRead(notification)
+    }
+    
+    // Fetch booking details if it's a booking notification
+    if (notification.type === 'booking') {
+      await fetchBookingDetails(notification)
     }
   }
 }
@@ -947,13 +890,68 @@ const closeFilter = () => {
 const setFilter = (filter) => {
   activeFilter.value = filter
   showFilter.value = false
+  fetchNotifications(1)
 }
 
 const clearFilter = () => {
   activeFilter.value = 'all'
+  fetchNotifications(1)
 }
 
-// Icon and formatting helpers
+// Formatting helpers
+const getNotificationClasses = (notification) => {
+  const classes = {
+    'unread': !notification.read,
+    'expanded': expandedNotificationId.value === (notification._id || notification.id)
+  }
+  
+  const type = notification.type || 'info'
+  classes[`type-${type}`] = true
+  
+  return classes
+}
+
+const truncateMessage = (message) => {
+  if (!message) return ''
+  return message.length > 100 ? message.substring(0, 100) + '...' : message
+}
+
+const formatKey = (key) => {
+  return key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).replace(/_/g, ' ')
+}
+
+const formatAmount = (amount) => {
+  if (!amount) return '$0'
+  if (typeof amount === 'number') {
+    return `$${amount.toFixed(2)}`
+  }
+  if (typeof amount === 'string') {
+    if (amount.includes('$')) return amount
+    const num = parseFloat(amount)
+    if (!isNaN(num)) return `$${num.toFixed(2)}`
+  }
+  return `$${amount}`
+}
+
+const formatBookingDate = (dateString) => {
+  if (!dateString) return 'N/A'
+  try {
+    const date = new Date(dateString)
+    if (isNaN(date.getTime())) return dateString
+    
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch {
+    return dateString
+  }
+}
+
 const getIcon = (type) => {
   const icons = {
     booking: 'fa-solid fa-calendar-check',
@@ -962,8 +960,7 @@ const getIcon = (type) => {
     message: 'fa-solid fa-comment',
     system: 'fa-solid fa-info-circle',
     reminder: 'fa-solid fa-clock',
-    cancellation: 'fa-solid fa-times-circle',
-    maintenance: 'fa-solid fa-screwdriver-wrench'
+    cancellation: 'fa-solid fa-times-circle'
   }
   return icons[type] || 'fa-solid fa-bell'
 }
@@ -976,8 +973,7 @@ const getIconClass = (type) => {
     message: 'icon-message',
     system: 'icon-system',
     reminder: 'icon-reminder',
-    cancellation: 'icon-cancellation',
-    maintenance: 'icon-maintenance'
+    cancellation: 'icon-cancellation'
   }
   return classes[type] || 'icon-default'
 }
@@ -990,8 +986,7 @@ const getDefaultTitle = (type) => {
     message: 'New Message',
     system: 'System Notification',
     reminder: 'Reminder',
-    cancellation: 'Booking Cancelled',
-    maintenance: 'System Maintenance'
+    cancellation: 'Booking Cancelled'
   }
   return titles[type] || 'Notification'
 }
@@ -1023,26 +1018,15 @@ const formatTime = (timestamp) => {
 }
 
 const hasAction = (notification) => {
-  const actions = {
-    booking: '/provider/bookings',
-    review: '/provider/reviews',
-    payment: '/provider/earnings',
-    message: '/provider/messages'
-  }
-  return actions[notification.type]
+  return notification.type === 'booking' && notification.data && notification.data.bookingId
 }
 
 const goToAction = (notification) => {
-  const actions = {
-    booking: '/provider/bookings',
-    review: '/provider/reviews',
-    payment: '/provider/earnings',
-    message: '/provider/messages'
-  }
-  
-  const route = actions[notification.type]
-  if (route) {
-    router.push(route)
+  if (notification.type === 'booking' && notification.data && notification.data.bookingId) {
+    router.push({ 
+      name: 'ProviderBookings',
+      query: { bookingId: notification.data.bookingId }
+    })
   }
 }
 
@@ -1051,162 +1035,58 @@ onMounted(() => {
   console.log('🔔 Notifications page mounted')
   
   // Load from localStorage first (fast)
-  const hasCachedData = loadFromLocalStorage()
+  loadFromLocalStorage()
   
   // Then fetch from API
   fetchNotifications(1)
 })
+
+// Watch for notification expansion
+watch(expandedNotificationId, async (newId, oldId) => {
+  if (newId) {
+    const notification = notifications.value.find(n => 
+      (n._id === newId || n.id === newId)
+    )
+    
+    if (notification && notification.type === 'booking') {
+      await fetchBookingDetails(notification)
+    }
+  }
+})
 </script>
 
 <style scoped>
-/* All previous CSS styles remain the same, just add debug panel styles */
+/* All your existing CSS styles from the previous version */
+/* Only add these new styles: */
 
-.debug-panel {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 10000;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.9);
-  padding: 10px;
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+.real-booking-details {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
   border: 1px solid #e2e8f0;
 }
 
-.btn-debug {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-  color: white;
-  padding: 8px 12px;
-  font-size: 12px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.3s ease;
-}
-
-.btn-debug:hover {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-  transform: translateY(-2px);
-}
-
-/* Add mark unread button styles */
-.action-btn.mark-unread {
-  color: #64748b;
-}
-
-.action-btn.mark-unread:hover {
-  background: #f1f5f9;
-  color: #475569;
+.notification-data-fallback {
+  background: #fff8e1;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  border: 1px solid #ffecb3;
 }
 
 /* Status colors */
-.status-completed { color: #10b981; }
-.status-pending { color: #f59e0b; }
-.status-failed { color: #ef4444; }
-.status-processing { color: #3b82f6; }
+.status-pending { color: #f59e0b; font-weight: 600; }
+.status-confirmed { color: #10b981; font-weight: 600; }
+.status-cancelled { color: #ef4444; font-weight: 600; }
+.status-completed { color: #3b82f6; font-weight: 600; }
+
 
 /* MAIN PAGE STYLES */
 .notifications-page {
   min-height: 100vh;
   background: #f8fafc;
   padding: 0;
-  position: relative;
-}
-
-/* Toast Notification */
-.toast-container {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
-  max-width: 350px;
-}
-
-.toast {
-  background: white;
-  border-radius: 12px;
-  padding: 1rem 1.5rem;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  border-left: 4px solid #3b82f6;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  animation: slideIn 0.3s ease;
-  transition: all 0.3s ease;
-  transform: translateX(0);
-  cursor: pointer;
-}
-
-.toast.hide {
-  transform: translateX(100%);
-  opacity: 0;
-}
-
-.toast.info {
-  border-left-color: #3b82f6;
-}
-
-.toast.success {
-  border-left-color: #10b981;
-}
-
-.toast.error {
-  border-left-color: #ef4444;
-}
-
-.toast.warning {
-  border-left-color: #f59e0b;
-}
-
-.toast-icon {
-  font-size: 1.25rem;
-}
-
-.toast.info .toast-icon { color: #3b82f6; }
-.toast.success .toast-icon { color: #10b981; }
-.toast.error .toast-icon { color: #ef4444; }
-.toast.warning .toast-icon { color: #f59e0b; }
-
-.toast-content {
-  flex: 1;
-}
-
-.toast-message {
-  margin: 0;
-  color: #64748b;
-  font-size: 0.9rem;
-}
-
-.toast-close {
-  background: none;
-  border: none;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 4px;
-}
-
-.toast-close:hover {
-  background: #f1f5f9;
-  color: #64748b;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
 }
 
 /* HEADER */
@@ -1485,12 +1365,6 @@ onMounted(() => {
   background: #f0f9ff;
 }
 
-.notification-item.selected {
-  background: #f8fafc;
-  border-color: #3b82f6;
-  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
-}
-
 /* Type-specific styles */
 .notification-item.type-booking {
   border-top: 3px solid #1d4ed8;
@@ -1520,26 +1394,6 @@ onMounted(() => {
   border-top: 3px solid #dc2626;
 }
 
-.notification-item.type-emergency {
-  border-top: 3px solid #ef4444;
-}
-
-/* Priority indicators */
-.notification-item.priority-high {
-  border: 2px solid #f59e0b;
-}
-
-.notification-item.priority-urgent {
-  border: 2px solid #ef4444;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-
 .notification-icon-container {
   position: relative;
   flex-shrink: 0;
@@ -1562,7 +1416,6 @@ onMounted(() => {
 .icon-system { background: #f3e8ff; color: #7c3aed; }
 .icon-reminder { background: #e0f2fe; color: #0284c7; }
 .icon-cancellation { background: #fee2e2; color: #dc2626; }
-.icon-emergency { background: #fef2f2; color: #ef4444; }
 .icon-default { background: #f1f5f9; color: #64748b; }
 
 .unread-badge {
@@ -1668,6 +1521,15 @@ onMounted(() => {
   background: #dbeafe;
 }
 
+.action-btn.mark-unread {
+  color: #64748b;
+}
+
+.action-btn.mark-unread:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
 .action-btn.delete {
   color: #ef4444;
 }
@@ -1676,164 +1538,134 @@ onMounted(() => {
   background: #fee2e2;
 }
 
-/* DETAIL PANEL */
-.detail-panel {
-  position: fixed;
-  top: 0;
-  right: -500px;
-  width: 500px;
-  height: 100vh;
-  background: white;
-  box-shadow: -5px 0 30px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  transition: right 0.3s ease;
-  display: flex;
-  flex-direction: column;
+/* DETAIL SECTION */
+.notification-detail-slide {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+  animation: slideDown 0.3s ease;
 }
 
-.detail-panel.open {
-  right: 0;
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
 }
 
-.detail-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.detail-header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  color: #1e293b;
-  flex: 1;
-}
-
-.btn-close-detail {
-  background: none;
-  border: none;
-  color: #64748b;
-  cursor: pointer;
-  font-size: 1.25rem;
-  padding: 0.5rem;
-  border-radius: 6px;
-  transition: all 0.3s ease;
-}
-
-.btn-close-detail:hover {
-  background: #f1f5f9;
-  color: #475569;
-}
-
-.detail-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 2rem;
-}
-
-.detail-icon-large {
-  width: 80px;
-  height: 80px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  margin: 0 auto 2rem;
-}
-
-.detail-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1e293b;
+.detail-section {
   margin-bottom: 1.5rem;
-  text-align: center;
 }
 
-.detail-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.meta-item {
+.detail-section h5 {
+  font-size: 1rem;
+  color: #1e293b;
+  margin-bottom: 0.75rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #64748b;
-  font-size: 0.95rem;
 }
 
-.meta-item i {
-  color: #94a3b8;
+.detail-section h6 {
+  font-size: 0.9rem;
+  color: #475569;
+  margin: 1rem 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.status-unread {
-  color: #ef4444;
-  font-weight: 600;
-}
-
-.detail-message {
-  margin-bottom: 2rem;
-}
-
-.detail-message h4 {
-  font-size: 1.1rem;
-  color: #1e293b;
-  margin-bottom: 0.75rem;
-}
-
-.detail-message p {
+.detail-full-message {
   color: #475569;
   line-height: 1.6;
   background: #f8fafc;
-  padding: 1.25rem;
-  border-radius: 12px;
+  padding: 1rem;
+  border-radius: 8px;
   border: 1px solid #e2e8f0;
 }
 
-.detail-extra {
-  margin-bottom: 2rem;
+/* Booking Details Container */
+.booking-details-container {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  border: 1px solid #e2e8f0;
 }
 
-.detail-extra h4 {
-  font-size: 1.1rem;
-  color: #1e293b;
-  margin-bottom: 1rem;
+.detail-group {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.extra-grid {
+.detail-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.detail-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   gap: 1rem;
 }
 
-.extra-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.extra-label {
+.detail-label {
   font-size: 0.85rem;
   color: #64748b;
   font-weight: 500;
+  min-width: 100px;
 }
 
-.extra-value {
-  font-size: 0.95rem;
+.detail-value {
+  font-size: 0.9rem;
   color: #1e293b;
   font-weight: 600;
+  text-align: right;
+  word-break: break-word;
+  flex: 1;
 }
+
+.detail-value-id {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.detail-value-amount {
+  color: #10b981;
+  font-weight: 700;
+}
+
+/* Status colors */
+.status-pending { color: #f59e0b; font-weight: 600; }
+.status-confirmed { color: #10b981; font-weight: 600; }
+.status-cancelled { color: #ef4444; font-weight: 600; }
+.status-completed { color: #3b82f6; font-weight: 600; }
+.status-pending { background: #fef3c7; padding: 0.25rem 0.5rem; border-radius: 4px; }
+.status-confirmed { background: #d1fae5; padding: 0.25rem 0.5rem; border-radius: 4px; }
+.status-cancelled { background: #fee2e2; padding: 0.25rem 0.5rem; border-radius: 4px; }
+.status-completed { background: #dbeafe; padding: 0.25rem 0.5rem; border-radius: 4px; }
 
 .detail-actions {
   display: flex;
   gap: 1rem;
   margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
 }
 
 .btn-action-primary {
@@ -1887,24 +1719,7 @@ onMounted(() => {
   color: #3b82f6;
 }
 
-/* BACKDROP */
-.detail-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-}
-
 /* RESPONSIVE */
-@media (max-width: 1024px) {
-  .detail-panel {
-    width: 400px;
-  }
-}
-
 @media (max-width: 768px) {
   .page-header {
     flex-direction: column;
@@ -1918,11 +1733,6 @@ onMounted(() => {
   
   .notifications-container {
     padding: 1.5rem;
-  }
-  
-  .detail-panel {
-    width: 100%;
-    right: -100%;
   }
   
   .notification-item {
@@ -1943,11 +1753,8 @@ onMounted(() => {
     opacity: 1;
   }
   
-  .toast-container {
-    top: 10px;
-    right: 10px;
-    left: 10px;
-    max-width: none;
+  .detail-actions {
+    flex-direction: column;
   }
 }
 
@@ -1996,8 +1803,17 @@ onMounted(() => {
     align-self: flex-start;
   }
   
-  .detail-actions {
+  .detail-item {
     flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .detail-label {
+    min-width: auto;
+  }
+  
+  .detail-value {
+    text-align: left;
   }
 }
 

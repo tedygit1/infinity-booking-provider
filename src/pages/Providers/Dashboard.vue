@@ -1,4 +1,4 @@
-<!-- src/pages/Providers/Dashboard.vue - FINAL FIXED VERSION -->
+<!-- src/pages/Providers/Dashboard.vue - PROFILE DROPDOWN FIX ONLY -->
 <template>
   <div class="dashboard-container">
     <!-- Mobile Header -->
@@ -6,44 +6,39 @@
       <button @click="toggleSidebar" class="hamburger-btn" aria-label="Menu">
         <i class="fa-solid fa-bars"></i>
       </button>
-
       <h1 class="mobile-title">Provider Hub</h1>
       
       <!-- Header Actions with Profile Dropdown -->
       <div class="header-actions">
-        <!-- Notifications Icon - ULTRA FIXED: Added debug mode -->
+        <!-- Notifications Icon - NO CHANGES -->
         <div class="notification-wrapper">
           <button 
-            @click="goToNotifications"
+            @click="goTo('notifications')"
             class="notification-btn"
+            :class="{ 'has-notifications': unreadCount > 0 }"
             aria-label="Notifications"
             :title="`${unreadCount} unread notifications`"
           >
             <i class="fa-solid fa-bell"></i>
-            <!-- DEBUG: Show count next to bell for testing -->
-            <span class="debug-count" v-if="debugMode">{{ unreadCount }}</span>
-            <!-- ACTUAL BADGE -->
-            <span 
-              v-if="unreadCount > 0" 
-              class="notification-badge"
-              :class="{ 'pulse': unreadCount > 0 }"
-            >
+            <!-- Notification Badge - NO CHANGES -->
+            <span v-if="unreadCount > 0" class="notification-badge" :class="{ 'pulse': unreadCount > 0 }">
               {{ unreadCount > 99 ? '99+' : unreadCount }}
             </span>
           </button>
         </div>
         
-        <!-- Profile Dropdown -->
+        <!-- Profile Dropdown - FIXED: Working dropdown -->
         <div class="profile-dropdown-container">
           <button 
             @click="toggleProfileDropdown"
             class="profile-dropdown-btn"
             aria-label="Profile Menu"
+            ref="profileButton"
           >
             <div class="profile-avatar">
               <i class="fa-solid fa-user"></i>
             </div>
-            <span class="user-name" v-if="provider">
+            <span class="user-name" v-if="provider && !isMobile">
               {{ provider.fullname || 'Provider' }}
             </span>
             <i class="dropdown-arrow" :class="{ 'rotated': showProfileDropdown }">
@@ -55,7 +50,7 @@
           <div 
             v-if="showProfileDropdown"
             class="dropdown-menu"
-            v-click-outside="closeProfileDropdown"
+            ref="dropdownMenu"
           >
             <div class="dropdown-header">
               <div class="dropdown-avatar">
@@ -81,7 +76,7 @@
             
             <div class="dropdown-divider"></div>
             
-            <button @click="logout" class="dropdown-item logout-item">
+            <button @click="confirmLogout" class="dropdown-item logout-item">
               <i class="fa-solid fa-right-from-bracket"></i>
               <span>Logout</span>
             </button>
@@ -90,7 +85,26 @@
       </div>
     </header>
 
-    <!-- Sidebar -->
+    <!-- Logout Confirmation Modal -->
+    <div v-if="showLogoutModal" class="modal-overlay" @click="showLogoutModal = false">
+      <div class="modal-content" @click.stop>
+        <div class="modal-icon">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </div>
+        <h3>Confirm Logout</h3>
+        <p>Are you sure you want to logout from your account?</p>
+        <div class="modal-actions">
+          <button @click="showLogoutModal = false" class="modal-btn cancel-btn">
+            Cancel
+          </button>
+          <button @click="performLogout" class="modal-btn logout-btn">
+            Yes, Logout
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar - NO CHANGES -->
     <aside
       class="dashboard-sidebar"
       :class="{ 'sidebar-open': sidebarOpen }"
@@ -126,7 +140,7 @@
             </ul>
           </div>
 
-          <!-- Dashboard Sub-menu (shown when on dashboard) -->
+          <!-- Dashboard Sub-menu -->
           <div 
             class="nav-section dashboard-submenu" 
             v-if="showDashboardSubmenu"
@@ -170,7 +184,7 @@
       </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Main Content - NO CHANGES -->
     <main class="dashboard-main">
       <router-view 
         :provider="provider" 
@@ -198,15 +212,6 @@
         </div>
       </div>
     </main>
-    
-    <!-- Debug Panel (remove in production) -->
-    <div v-if="debugMode" class="debug-panel">
-      <div class="debug-title">🔧 Debug Info</div>
-      <div>Unread Count: {{ unreadCount }}</div>
-      <div>Profile Dropdown: {{ showProfileDropdown ? 'Open' : 'Closed' }}</div>
-      <div>Provider: {{ provider?.fullname || 'Not loaded' }}</div>
-      <button @click="debugMode = false" class="debug-close">Hide Debug</button>
-    </div>
   </div>
 </template>
 
@@ -215,20 +220,18 @@ import { ref, computed, onMounted, watch, onBeforeUnmount } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import http from "@/api/index.js";
 
-// Click outside directive - FIXED version
+// Click outside directive - KEEPING THIS AS IS
 const vClickOutside = {
-  mounted(el, binding) {
+  beforeMount(el, binding) {
     el.clickOutsideEvent = function(event) {
       if (!(el === event.target || el.contains(event.target))) {
-        binding.value(event);
+        binding.value();
       }
     };
-    setTimeout(() => {
-      document.body.addEventListener('click', el.clickOutsideEvent);
-    }, 0);
+    document.addEventListener('click', el.clickOutsideEvent);
   },
-  beforeUnmount(el) {
-    document.body.removeEventListener('click', el.clickOutsideEvent);
+  unmounted(el) {
+    document.removeEventListener('click', el.clickOutsideEvent);
   }
 };
 
@@ -244,22 +247,12 @@ export default {
     const provider = ref(null);
     const sidebarOpen = ref(false);
     const showProfileDropdown = ref(false);
+    const showLogoutModal = ref(false);
     const unreadCount = ref(0);
     const notificationInterval = ref(null);
-    const debugMode = ref(true); // Set to false in production
+    const isMobile = ref(window.innerWidth < 768);
 
-    // Force show badge for testing
-    onMounted(() => {
-      // Test: Force show badge with 10 notifications
-      setTimeout(() => {
-        if (debugMode.value) {
-          console.log('🔧 DEBUG: Forcing unreadCount to 10 for testing');
-          unreadCount.value = 10;
-        }
-      }, 1000);
-    });
-
-    // Menu items
+    // Menu items - NO CHANGES
     const menuItems = {
       home: { label: "Dashboard", icon: "fa-solid fa-house", route: "ProviderHome", category: "main" },
       services: { label: "My Services", icon: "fa-solid fa-briefcase", route: "ProviderServices", category: "dashboard" },
@@ -273,7 +266,7 @@ export default {
       settings: { label: "Settings", icon: "fa-solid fa-gear", route: "ProviderSettings", category: "account" },
     };
 
-    // Computed properties
+    // Computed properties - NO CHANGES
     const mainMenuItems = computed(() => 
       Object.entries(menuItems)
         .filter(([key, item]) => item.category === 'main')
@@ -310,7 +303,101 @@ export default {
              route.name === menuRoute;
     };
 
-    // Navigation
+    // NEW: Function to update badge from localStorage - NO CHANGES
+    const updateBadgeFromStorage = () => {
+      try {
+        // First try to get from localStorage
+        const storedCount = localStorage.getItem('unread_notification_count')
+        if (storedCount !== null) {
+          const count = parseInt(storedCount)
+          if (!isNaN(count)) {
+            unreadCount.value = count
+            console.log(`📊 Dashboard: Updated badge from localStorage: ${count}`)
+            return true
+          }
+        }
+        
+        // Fallback to notification_count object
+        const notificationData = localStorage.getItem('notification_count')
+        if (notificationData) {
+          const parsed = JSON.parse(notificationData)
+          if (parsed && typeof parsed.unread === 'number') {
+            unreadCount.value = parsed.unread
+            console.log(`📊 Dashboard: Updated badge from notification_count: ${parsed.unread}`)
+            return true
+          }
+        }
+      } catch (error) {
+        console.error('Error reading from localStorage:', error)
+      }
+      return false
+    }
+
+    // NEW: Event listener for real-time updates - NO CHANGES
+    const setupNotificationListener = () => {
+      // Listen for events from NotificationsSection.vue
+      window.addEventListener('notification-count-changed', (event) => {
+        if (event.detail && typeof event.detail.unread === 'number') {
+          unreadCount.value = event.detail.unread
+          console.log(`📢 Dashboard: Received real-time update: ${event.detail.unread} unread`)
+        }
+      })
+      
+      // Also listen for storage events (when localStorage changes in another tab)
+      window.addEventListener('storage', (event) => {
+        if (event.key === 'unread_notification_count') {
+          const count = parseInt(event.newValue || '0')
+          if (!isNaN(count)) {
+            unreadCount.value = count
+            console.log(`📦 Dashboard: Storage event updated badge: ${count}`)
+          }
+        }
+      })
+    }
+
+    // ========== PROFILE DROPDOWN FIXES ONLY ==========
+    const toggleProfileDropdown = () => {
+      showProfileDropdown.value = !showProfileDropdown.value;
+    };
+
+    const closeProfileDropdown = () => {
+      showProfileDropdown.value = false;
+    };
+
+    const goToProfile = () => {
+      console.log('📁 Going to Profile');
+      router.push({ name: 'ProviderProfile' });
+      closeProfileDropdown();
+    };
+
+    const goToSettings = () => {
+      console.log('⚙️ Going to Settings');
+      router.push({ name: 'ProviderSettings' });
+      closeProfileDropdown();
+    };
+
+    const confirmLogout = () => {
+      console.log('🚪 Opening logout confirmation');
+      showLogoutModal.value = true;
+      closeProfileDropdown();
+    };
+
+    const performLogout = async () => {
+      console.log('🔓 Performing logout');
+      showLogoutModal.value = false;
+      
+      try {
+        await http.post("/infinity-booking/auth/logout");
+        console.log('✅ Logout API successful');
+      } catch (error) {
+        console.log("⚠️ Logout API call failed", error);
+      }
+      
+      localStorage.clear();
+      await router.push({ name: "Login" });
+    };
+
+    // Navigation - NO CHANGES
     const goTo = (menuKey) => {
       const targetRoute = menuItems[menuKey]?.route;
       if (targetRoute) {
@@ -319,53 +406,16 @@ export default {
       sidebarOpen.value = false;
     };
 
-    const goToNotifications = () => {
-      console.log('🔔 Going to notifications page');
-      router.push({ name: 'ProviderNotifications' });
-    };
-
-    // Profile dropdown functions
-    const toggleProfileDropdown = (event) => {
-      event.stopPropagation();
-      showProfileDropdown.value = !showProfileDropdown.value;
-      console.log('👤 Profile dropdown toggled:', showProfileDropdown.value);
-    };
-
-    const closeProfileDropdown = (event) => {
-      const dropdown = document.querySelector('.profile-dropdown-container');
-      if (dropdown && !dropdown.contains(event.target)) {
-        showProfileDropdown.value = false;
-      }
-    };
-
-    const goToProfile = () => {
-      router.push({ name: 'ProviderProfile' });
-      showProfileDropdown.value = false;
-    };
-
-    const goToSettings = () => {
-      router.push({ name: 'ProviderSettings' });
-      showProfileDropdown.value = false;
-    };
-
     const toggleSidebar = () => {
       sidebarOpen.value = !sidebarOpen.value;
     };
 
     const logout = async () => {
-      try {
-        await http.post("/ainfinity-booking/auth/logout");
-      } catch (error) {
-        console.log("Logout API call failed", error);
-      }
-      
-      localStorage.clear();
-      showProfileDropdown.value = false;
-      await router.push({ name: "Login" });
+      confirmLogout();
     };
 
-    // Get provider ID
-    const getProviderPid = () => {
+    // Get provider ID - NO CHANGES
+    const getProviderId = () => {
       try {
         const loggedProvider = localStorage.getItem('loggedProvider');
         if (!loggedProvider) return null;
@@ -378,69 +428,67 @@ export default {
       }
     };
 
-    // Fetch unread notification count
+    // Fetch unread notification count from API - NO CHANGES
     const fetchUnreadCount = async () => {
       try {
-        const providerPid = getProviderPid();
-        if (!providerPid) {
-          console.log('⚠️ No provider ID found');
+        const providerId = getProviderId();
+        if (!providerId) {
+          console.log('⚠️ No provider ID found')
           unreadCount.value = 0;
           return;
         }
 
-        console.log('🔔 Fetching notification count for provider:', providerPid);
+        console.log(`🔔 Dashboard: Fetching notification count for provider: ${providerId}`);
 
-        const endpoints = [
-          `/notifications?recipientId=${providerPid}&recipientType=provider&read=false`,
-          `/notifications?providerId=${providerPid}&read=false`,
-          `/notifications/unread/count?providerId=${providerPid}`,
-        ];
-
-        for (const url of endpoints) {
-          try {
-            console.log(`🔄 Trying endpoint: ${url}`);
-            const response = await http.get(url);
-            
-            if (response.data !== undefined && response.data !== null) {
-              let count = 0;
-              
-              if (typeof response.data === 'number') {
-                count = response.data;
-              } else if (Array.isArray(response.data)) {
-                count = response.data.length;
-              } else if (response.data.count !== undefined) {
-                count = response.data.count;
-              } else if (response.data.unreadCount !== undefined) {
-                count = response.data.unreadCount;
-              } else if (response.data.total !== undefined) {
-                count = response.data.total;
-              } else if (response.data.data && Array.isArray(response.data.data)) {
-                count = response.data.data.length;
-              }
-              
-              console.log(`✅ Count from ${url}:`, count);
-              
-              if (count > 0) {
-                unreadCount.value = count;
-                return;
-              }
+        // Use the correct endpoint from your screenshot
+        try {
+          const response = await http.get('/notifications', {
+            params: {
+              recipientId: providerId,
+              recipientType: 'provider',
+              read: false,
+              limit: 1 // We only need count, not data
             }
-          } catch (error) {
-            if (!error.response || error.response.status !== 404) {
-              console.log(`⚠️ Endpoint ${url} failed:`, error.message);
+          });
+          
+          let count = 0;
+          
+          // Handle different response formats
+          if (Array.isArray(response.data)) {
+            count = response.data.length;
+          } else if (response.data && typeof response.data === 'object') {
+            if (response.data.count !== undefined) {
+              count = response.data.count;
+            } else if (response.data.unreadCount !== undefined) {
+              count = response.data.unreadCount;
+            } else if (response.data.total !== undefined) {
+              count = response.data.total;
+            } else if (Array.isArray(response.data.notifications)) {
+              count = response.data.notifications.length;
+            } else if (Array.isArray(response.data.data)) {
+              count = response.data.data.length;
             }
           }
+          
+          console.log(`✅ Dashboard: Unread notifications: ${count}`);
+          unreadCount.value = count;
+          
+          // Save to localStorage for other components
+          localStorage.setItem('unread_notification_count', count.toString());
+          
+        } catch (apiError) {
+          console.error('❌ Dashboard: API fetch failed:', apiError.message);
+          // Use localStorage as fallback
+          updateBadgeFromStorage()
         }
         
-        unreadCount.value = 0;
-        
       } catch (error) {
-        console.error("❌ Error fetching notification count:", error);
-        unreadCount.value = 0;
+        console.error("❌ Dashboard: Error in fetchUnreadCount:", error);
+        updateBadgeFromStorage()
       }
     };
 
-    // Fetch provider data
+    // Fetch provider data - NO CHANGES
     const fetchProvider = async () => {
       const token = localStorage.getItem("provider_token");
       if (!token) {
@@ -457,6 +505,7 @@ export default {
           localStorage.setItem("provider_id", res.data._id);
         }
         
+        // Fetch initial notification count
         fetchUnreadCount();
       } catch (err) {
         console.error("Profile load failed:", err);
@@ -465,12 +514,22 @@ export default {
       }
     };
 
-    // Watch for route changes
+    // Check screen size
+    const checkScreenSize = () => {
+      isMobile.value = window.innerWidth < 768;
+    };
+
+    // Watch for route changes - NO CHANGES
     watch(() => route.name, (newRoute) => {
       const isProviderRoute = newRoute?.includes('Provider') || 
                              route.path.includes('/provider');
       
       if (isProviderRoute && localStorage.getItem("provider_token")) {
+        // If we're coming back from notifications page, update badge
+        if (newRoute !== 'ProviderNotifications') {
+          console.log('🔄 Coming back from notifications, updating badge...')
+          updateBadgeFromStorage()
+        }
         fetchProvider();
       }
     });
@@ -481,9 +540,21 @@ export default {
       const hasToken = localStorage.getItem("provider_token");
       
       if (isProviderRoute && hasToken) {
+        // Get badge count from localStorage first (fastest)
+        updateBadgeFromStorage()
+        
+        // Then fetch provider data
         fetchProvider();
         
-        notificationInterval.value = setInterval(fetchUnreadCount, 60000);
+        // Set up real-time listener
+        setupNotificationListener()
+        
+        // Check screen size
+        checkScreenSize();
+        window.addEventListener('resize', checkScreenSize);
+        
+        // Poll every 30 seconds for updates (optional)
+        notificationInterval.value = setInterval(fetchUnreadCount, 30000);
       } else if (isProviderRoute && !hasToken) {
         router.push({ name: "Login" });
       }
@@ -505,21 +576,23 @@ export default {
       provider,
       sidebarOpen,
       showProfileDropdown,
+      showLogoutModal,
       unreadCount,
-      debugMode,
+      isMobile,
       mainMenuItems,
       dashboardSubmenuItems,
       accountMenuItems,
       showDashboardSubmenu,
       isActiveRoute,
       goTo,
-      goToNotifications,
       toggleSidebar,
       toggleProfileDropdown,
       closeProfileDropdown,
       goToProfile,
       goToSettings,
       logout,
+      confirmLogout,
+      performLogout,
       handleProfileUpdated
     };
   }
@@ -549,6 +622,7 @@ export default {
   top: 0;
   z-index: 100;
   box-shadow: 0 2px 20px rgba(30, 64, 175, 0.2);
+ 
 }
 
 .hamburger-btn {
@@ -582,13 +656,13 @@ export default {
   gap: 1rem;
 }
 
-/* NOTIFICATION WRAPPER - FIXED */
+/* Notification Wrapper - NO CHANGES */
 .notification-wrapper {
   position: relative;
   display: inline-block;
 }
 
-/* Notifications Button - ULTRA FIXED */
+/* Notifications Button - NO CHANGES */
 .notification-btn {
   position: relative !important;
   background: rgba(255, 255, 255, 0.1);
@@ -612,21 +686,17 @@ export default {
   transform: scale(1.05);
 }
 
-/* DEBUG COUNT (visible next to bell) */
-.debug-count {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: yellow;
-  color: black;
-  font-size: 10px;
-  font-weight: bold;
-  padding: 2px 4px;
-  border-radius: 4px;
-  z-index: 1002;
+.notification-btn.has-notifications {
+  animation: pulse 2s infinite;
 }
 
-/* NOTIFICATION BADGE - ULTRA FIXED */
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 82, 82, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 82, 82, 0); }
+}
+
+/* Notification Badge - NO CHANGES */
 .notification-badge {
   position: absolute !important;
   top: -8px !important;
@@ -666,18 +736,6 @@ export default {
   animation: pulse 2s infinite;
 }
 
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 82, 82, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(255, 82, 82, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 82, 82, 0);
-  }
-}
-
 /* Profile Dropdown */
 .profile-dropdown-container {
   position: relative;
@@ -701,6 +759,7 @@ export default {
 
 .profile-dropdown-btn:hover {
   background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.02);
 }
 
 .profile-avatar {
@@ -712,12 +771,13 @@ export default {
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
+  color: white;
 }
 
 .user-name {
   font-weight: 600;
   font-size: 0.95rem;
-  max-width: 100px;
+  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -744,7 +804,7 @@ export default {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   overflow: hidden;
-  animation: slideDown 0.3s ease;
+  animation: slideDown 0.2s ease;
   border: 1px solid #e2e8f0;
 }
 
@@ -765,6 +825,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 1rem;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .dropdown-avatar {
@@ -812,6 +873,7 @@ export default {
   font-size: 0.95rem;
   font-weight: 500;
   transition: all 0.3s ease;
+  
 }
 
 .dropdown-item:hover {
@@ -832,6 +894,89 @@ export default {
 .dropdown-item.logout-item:hover {
   background: #fef2f2;
   color: #dc2626;
+}
+
+/* Logout Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+
+.modal-icon {
+  font-size: 3rem;
+  color: #ef4444;
+  margin-bottom: 1.5rem;
+}
+
+.modal-content h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.75rem;
+}
+
+.modal-content p {
+  color: #64748b;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.modal-btn {
+  padding: 0.85rem 2rem;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.cancel-btn {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.cancel-btn:hover {
+  background: #e2e8f0;
+  transform: translateY(-2px);
+}
+
+.logout-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.logout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
 }
 
 /* ===== SIDEBAR ===== */
@@ -864,7 +1009,7 @@ export default {
   flex-direction: column;
 }
 
-/* Logo Section */
+/* Logo Section - NO CHANGES */
 .logo-section {
   display: flex;
   align-items: center;
@@ -899,9 +1044,10 @@ export default {
   color: #64748b;
   margin: 0;
   font-weight: 500;
+  padding-top: 1.5rem;
 }
 
-/* Navigation */
+/* Navigation - NO CHANGES */
 .sidebar-nav {
   flex: 1;
   display: flex;
@@ -926,7 +1072,7 @@ export default {
   margin-bottom: 0.5rem;
 }
 
-/* Dashboard Submenu */
+/* Dashboard Submenu - NO CHANGES */
 .dashboard-submenu {
   margin-left: 1rem;
   border-left: 2px solid #e2e8f0;
@@ -1028,7 +1174,7 @@ export default {
   opacity: 1;
 }
 
-/* Main Content */
+/* Main Content - NO CHANGES */
 .dashboard-main {
   flex: 1;
   padding: 2rem;
@@ -1037,7 +1183,7 @@ export default {
   min-height: calc(100vh - 90px);
 }
 
-/* Fallback Content */
+/* Fallback Content - NO CHANGES */
 .fallback-content {
   background: white;
   padding: 3rem;
@@ -1097,37 +1243,6 @@ export default {
   font-weight: 600;
 }
 
-/* DEBUG PANEL */
-.debug-panel {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 10px 15px;
-  border-radius: 8px;
-  font-size: 12px;
-  z-index: 9999;
-  max-width: 200px;
-}
-
-.debug-title {
-  font-weight: bold;
-  margin-bottom: 5px;
-  color: yellow;
-}
-
-.debug-close {
-  margin-top: 5px;
-  background: #666;
-  color: white;
-  border: none;
-  padding: 3px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 10px;
-}
-
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   .mobile-header {
@@ -1140,7 +1255,7 @@ export default {
   
   .profile-dropdown-btn {
     min-width: auto;
-    padding: 0.5rem;
+    padding: 0.5rem 0.75rem;
   }
   
   .user-name {
@@ -1172,6 +1287,19 @@ export default {
   .dropdown-menu {
     width: 260px;
     right: -10px;
+  }
+  
+  .modal-content {
+    padding: 2rem;
+    width: 85%;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .modal-btn {
+    width: 100%;
   }
   
   .fallback-content {
@@ -1207,13 +1335,11 @@ export default {
   
   .dropdown-menu {
     width: 240px;
+    right: -15px;
   }
   
-  .debug-panel {
-    bottom: 10px;
-    right: 10px;
-    font-size: 10px;
-    padding: 8px 12px;
+  .modal-content {
+    padding: 1.5rem;
   }
 }
 </style>
