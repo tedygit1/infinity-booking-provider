@@ -1,206 +1,243 @@
-<!-- src/pages/Providers/TimeSlots.vue -->
 <template>
-  <div class="time-slots-container">
-    <!-- Loading State -->
-    <div v-if="loading" class="loading-state">
-      <i class="fa-solid fa-spinner fa-spin"></i>
-      <p>Loading time slots...</p>
+  <div class="ultimate-scheduler">
+    <!-- Loading -->
+    <div v-if="loading" class="loading">
+      <i class="fas fa-spinner fa-spin"></i> Loading schedule...
     </div>
-    <!-- Loading Bookings State -->
-    <div v-if="loadingBookings" class="loading-state">
-      <i class="fa-solid fa-spinner fa-spin"></i>
-      <p>Checking booked appointments...</p>
-    </div>
-    <!-- Error Message -->
-    <div v-if="errorMessage" class="error-message">
-      <i class="fa-solid fa-circle-exclamation"></i>
-      <span>{{ errorMessage }}</span>
-      <button class="close-error" @click="errorMessage = ''">
-        <i class="fa-solid fa-xmark"></i>
+
+    <!-- Messages -->
+    <div v-if="error" class="message error">
+      <i class="fas fa-exclamation-triangle"></i> {{ error }}
+      <button class="close-error" @click="error = ''">
+        <i class="fas fa-times"></i>
       </button>
     </div>
-    <!-- Success Message -->
-    <div v-if="successMessage" class="success-message">
-      <i class="fa-solid fa-circle-check"></i>
-      <span>{{ successMessage }}</span>
-      <button class="close-success" @click="successMessage = ''">
-        <i class="fa-solid fa-xmark"></i>
+   
+    <div v-if="success" class="message success">
+      <i class="fas fa-check-circle"></i> {{ success }}
+      <button class="close-success" @click="success = ''">
+        <i class="fas fa-times"></i>
       </button>
     </div>
-    <!-- Service Status Alert -->
-    <div v-if="serviceStatus === 'draft'" class="draft-alert">
-      <i class="fa-solid fa-clock"></i>
+
+    <!-- Service Status Alert - FIXED: Changed existingSlotId to hasExistingSlot -->
+    <div v-if="!hasExistingSlot" class="draft-alert">
+      <i class="fas fa-clock"></i>
       <div class="alert-content">
-        <strong>Draft Service</strong>
-        <p>Add time slots to activate and publish this service</p>
+        <strong>here are your schedules </strong>
+        <p>you can edit your schedules any time you want a change,add,delete of schedules</p>
       </div>
     </div>
 
-    <!-- Time Slots Management -->
-    <div class="time-slots-content" v-if="!loading">
-      <!-- 7-Day Schedule -->
-      <div class="weekly-schedule-section">
-        <div class="schedule-header">
-          <h4>Weekly Schedule</h4>
-          <div class="date-range">
-            {{ currentDateRange }}
-          </div>
+    <!-- Main Content -->
+    <div v-if="!loading" class="scheduler-container">
+      <!-- Always visible Calendar -->
+      <div class="calendar-wrapper">
+        <!-- Month Navigation -->
+        <div class="month-nav">
+          <button @click="prevMonth" class="nav-btn">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div class="month-year">{{ currentMonthYear }}</div>
+          <button @click="nextMonth" class="nav-btn">
+            <i class="fas fa-chevron-right"></i>
+          </button>
         </div>
-        <p class="section-description">
-          Set your available time slots for each day. Changes are saved when you click "Update Time Slots".
-        </p>
-        <div class="days-grid">
-          <div
-            v-for="day in generatedDays"
-            :key="day.date"
-            class="day-card"
-            :class="{ 
-              'working-day': isWorkingAtDay(day.date), 
-              'day-off': !isWorkingAtDay(day.date),
-              'today': day.isToday 
-            }"
-          >
-            <div class="day-header">
-              <label class="day-toggle">
-                <input
-                  type="checkbox"
-                  :checked="isWorkingAtDay(day.date)"
-                  @change="toggleWorkingDay(day.date, $event.target.checked)"
-                />
-                <span class="day-label">{{ day.dayName }}</span>
-              </label>
-              <div class="day-labels">
-                <span v-if="!isWorkingAtDay(day.date)" class="off-label">Day Off</span>
-                <span v-if="day.isToday" class="today-label">Today</span>
+
+        <!-- Scrollable Calendar Grid -->
+        <div class="calendar-scroll">
+          <div class="calendar-grid">
+            <!-- Week Days -->
+            <div class="weekdays">
+              <div v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']" :key="day">
+                {{ day }}
               </div>
             </div>
-            <!-- ONLY SHOW EDITABLE SLOTS IF WORKING DAY -->
-            <div v-if="isWorkingAtDay(day.date)" class="time-slots-list">
+
+            <!-- Days - Scrollable -->
+            <div class="days-grid">
+              <!-- Empty Days -->
+              <div v-for="n in firstDayOffset" :key="'empty-' + n" class="day empty"></div>
+              
+              <!-- Actual Days - Only future/current days -->
               <div
-                v-for="(timeSlot, slotIndex) in dailySchedules[day.date]"
-                :key="slotIndex"
-                class="time-slot-item"
-                :class="{ 
-                  'has-error': timeSlot.hasError,
-                  'booked-slot': timeSlot.isBooked,
-                  'available-slot': !timeSlot.isBooked && timeSlot.isAvailable,
-                  'unavailable-slot': !timeSlot.isBooked && !timeSlot.isAvailable
+                v-for="day in daysInMonth"
+                :key="day"
+                class="day"
+                :class="{
+                  'today': isToday(day),
+                  'selected': isSelected(day),
+                  'working': isWorkingDay(day),
+                  'past': isPastDay(day)
                 }"
+                @click="!isPastDay(day) && selectDay(day)"
               >
-                <!-- COMPACT SINGLE LINE LAYOUT -->
+                <div class="day-number">{{ day }}</div>
+                <div v-if="isPastDay(day)" class="past-overlay">
+                  <i class="fas fa-lock"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected Days Schedule (Horizontal Scroll) -->
+      <div v-if="selectedDaysData.length > 0" class="selected-days-wrapper">
+        <div class="selected-header">
+          <h3>Selected Days Schedule</h3>
+          <div class="selected-count">{{ selectedDaysData.length }} day{{ selectedDaysData.length > 1 ? 's' : '' }} selected</div>
+        </div>
+
+        <!-- Horizontal Scroll for Days -->
+        <div class="days-horizontal-scroll">
+          <div v-for="dayData in selectedDaysData" :key="dayData.dateKey" class="day-card">
+            <!-- Day Header with Toggle on Left -->
+            <div class="day-card-header">
+              <!-- Small Rectangle Toggle on Left -->
+              <div 
+                class="day-toggle-left"
+                @click="toggleDayOff(dayData.dateKey)"
+                :title="dayData.working ? 'Working Day - Click to set as Day Off' : 'Day Off - Click to set as Working Day'"
+              >
+                <div class="toggle-rectangle" :class="{ 'working': dayData.working, 'off': !dayData.working }">
+                  <i v-if="dayData.working" class="fas fa-check"></i>
+                  <i v-else class="fas fa-minus"></i>
+                </div>
+              </div>
+              
+              <div class="day-date-info">
+                <div class="day-date">{{ dayData.formattedDateShort }}</div>
+                <div class="day-week">{{ dayData.dayOfWeek }}</div>
+              </div>
+            </div>
+
+            <!-- Time Slots -->
+            <div v-if="dayData.working" class="time-slots-list">
+              <div v-for="(slot, index) in dayData.slots" :key="index" class="time-slot-line">
+                <!-- COMPACT SINGLE LINE LAYOUT - FROM WORKING CODE -->
                 <div class="slot-compact-line">
                   <!-- TIME RANGE - MORE SPACE -->
                   <div class="time-range-compact">
-                    <i class="fa-solid fa-clock slot-icon"></i>
-                    <span v-if="timeSlot.isBooked" class="booked-time-text">
-                      {{ formatTime12(timeSlot.startTime) }}–{{ formatTime12(timeSlot.endTime) }}
+                    <i class="fas fa-clock slot-icon" :class="{
+                      'booked-slot-icon': slot.isBooked,
+                      'available-slot-icon': !slot.isBooked && slot.isActive,
+                      'unavailable-slot-icon': !slot.isBooked && !slot.isActive
+                    }"></i>
+                    
+                    <!-- For booked slots -->
+                    <span v-if="slot.isBooked" class="booked-time-text">
+                      {{ formatTo12Hour(slot.startTime) }} – {{ formatTo12Hour(slot.endTime) }}
                     </span>
+                    
+                    <!-- For editable slots -->
                     <span v-else class="edit-time-range">
                       <div class="time-input-wrapper">
                         <input
-                          :value="formatTime(timeSlot.startTime)"
-                          @input="updateTimeSlot(timeSlot, 'startTime', $event.target.value)"
                           type="time"
+                          :value="formatTime(slot.startTime)"
+                          @input="updateTimeSlot(dayData.dateKey, index, 'startTime', $event.target.value)"
                           class="time-input"
-                          @change="validateTimeSlot(timeSlot)"
+                          @change="validateTimeSlot(dayData.dateKey, index)"
                         />
                       </div>
                       <span class="time-separator">–</span>
                       <div class="time-input-wrapper">
                         <input
-                          :value="formatTime(timeSlot.endTime)"
-                          @input="updateTimeSlot(timeSlot, 'endTime', $event.target.value)"
                           type="time"
+                          :value="formatTime(slot.endTime)"
+                          @input="updateTimeSlot(dayData.dateKey, index, 'endTime', $event.target.value)"
                           class="time-input"
-                          @change="validateTimeSlot(timeSlot)"
+                          @change="validateTimeSlot(dayData.dateKey, index)"
                         />
                       </div>
                     </span>
                   </div>
 
-                  <!-- STATUS INDICATOR - LESS SPACE -->
+                  <!-- STATUS INDICATOR - FROM WORKING CODE -->
                   <div class="status-indicator-compact">
                     <!-- BOOKED -->
-                    <div v-if="timeSlot.isBooked" class="booked-indicator">
+                    <div v-if="slot.isBooked" class="booked-indicator">
                       <span class="status-dot booked-dot" title="BOOKED"></span>
-                      <span v-if="getBookingForSlot(day.date, timeSlot.startTime, timeSlot.endTime)" 
-                            class="customer-compact">
-                        <i class="fa-solid fa-user"></i>
-                      </span>
                     </div>
                     
-                    <!-- AVAILABLE/UNAVAILABLE TOGGLE SWITCH - SMALLER -->
+                    <!-- AVAILABLE/UNAVAILABLE TOGGLE SWITCH - FROM WORKING CODE -->
                     <div v-else class="toggle-container">
-                      <label class="toggle-switch-small" :title="timeSlot.isAvailable ? 'Available - Click to make unavailable' : 'Unavailable - Click to make available'">
+                      <label class="toggle-switch-small" 
+                             :title="slot.isActive ? 'Available - Click to make unavailable' : 'Unavailable - Click to make available'">
                         <input
                           type="checkbox"
-                          :checked="timeSlot.isAvailable"
-                          @change="toggleSlotAvailability(timeSlot)"
+                          :checked="slot.isActive"
+                          @change="toggleSlotActive(dayData.dateKey, index)"
                         />
                         <span class="toggle-slider-small"></span>
                       </label>
                     </div>
                   </div>
 
-                  <!-- ERROR & REMOVE - SMALLER -->
+                  <!-- ERROR & REMOVE - FROM WORKING CODE -->
                   <div class="actions-compact">
-                    <div v-if="timeSlot.hasError" class="error-indicator" :title="timeSlot.errorMessage">
-                      <i class="fa-solid fa-exclamation-triangle"></i>
+                    <div v-if="slot.hasError" class="error-indicator" :title="slot.errorMessage">
+                      <i class="fas fa-exclamation-triangle"></i>
                     </div>
                     <button
                       class="remove-btn-compact"
-                      @click="removeTimeSlot(day.date, slotIndex)"
-                      :disabled="dailySchedules[day.date].length === 1 || timeSlot.isBooked"
-                      :title="timeSlot.isBooked ? 'Cannot remove booked slot' : 'Remove time slot'"
+                      @click="removeSlot(dayData.dateKey, index)"
+                      :disabled="dayData.slots.length === 1 || slot.isBooked"
+                      :title="slot.isBooked ? 'Cannot remove booked slot' : 'Remove time slot'"
                     >
-                      <i class="fa-solid fa-times"></i>
+                      <i class="fas fa-times"></i>
                     </button>
                   </div>
                 </div>
               </div>
-              
-              <!-- ADD SLOT BUTTON -->
-              <button 
-                class="btn-add-slot-compact" 
-                @click="addTimeSlot(day.date)"
-                :disabled="loadingBookings"
-              >
-                <i class="fa-solid fa-plus"></i> Add Time Slot
+
+              <!-- Add Slot Button -->
+              <button @click="addSlotToDay(dayData.dateKey)" class="add-slot-btn">
+                <i class="fas fa-plus"></i> Add Time Slot
               </button>
             </div>
-            <!-- DAY OFF MESSAGE -->
-            <div v-else class="day-off-message">
-              <i class="fa-solid fa-moon"></i>
-              <span>No time slots - Day off</span>
+
+            <!-- Day Off Message -->
+            <div v-else class="day-off-card">
+              <i class="fas fa-moon"></i>
+              <span>Day Off</span>
+              <button @click="toggleDayOff(dayData.dateKey)" class="make-working-btn">
+                Set Working
+              </button>
             </div>
           </div>
         </div>
+
+        <!-- Save Button -->
+        <div class="save-section">
+          <button 
+            @click="saveAllChanges" 
+            class="save-btn"
+            :disabled="!hasChanges || saving"
+          >
+            <i v-if="saving" class="fas fa-spinner fa-spin"></i>
+            <i v-else class="fas fa-save"></i>
+            {{ saving ? 'Saving...' : 'Save Schedule' }}
+          </button>
+          <button 
+    @click="testBackendDirect" 
+    class="test-btn"
+    style="margin-left: 10px; background: #f59e0b;"
+  >
+    <i class="fas fa-vial"></i>
+    Test Backend
+  </button>
+        </div>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="action-buttons">
-        <button class="btn btn-secondary" @click="handleCancel">
-          <i class="fa-solid fa-arrow-left"></i> Cancel
-        </button>
-        <div class="primary-actions">
-          <button
-            class="btn btn-primary"
-            @click="saveTimeSlots"
-            :disabled="saving"
-          >
-            <i v-if="saving" class="fa-solid fa-spinner fa-spin"></i>
-            <i v-else class="fa-solid fa-save"></i>
-            <span class="btn-text">{{ saving ? 'Saving...' : 'Update Time Slots' }}</span>
-          </button>
-          <button
-            class="btn btn-info"
-            @click="fetchBookedSlots"
-            :disabled="loadingBookings"
-          >
-            <i v-if="loadingBookings" class="fa-solid fa-spinner fa-spin"></i>
-            <i v-else class="fa-solid fa-rotate"></i>
-            <span class="btn-text">{{ loadingBookings ? 'Refreshing...' : 'Refresh Bookings' }}</span>
-          </button>
+      <!-- No Selection Message -->
+      <div v-else class="no-selection">
+        <div class="empty-message">
+          <i class="fas fa-calendar-alt"></i>
+          <h3>No Days Selected</h3>
+          <p>Click on future dates in the calendar to schedule</p>
+          <p class="past-note"><i class="fas fa-info-circle"></i> Past dates are locked</p>
         </div>
       </div>
     </div>
@@ -211,335 +248,644 @@
 import http from '@/api/index.js';
 
 export default {
-  name: 'TimeSlots',
+  name: 'UltimateScheduler',
   props: {
-    service: {
-      type: Object,
-      required: true
-    },
     serviceId: {
       type: String,
       required: true
+    },
+    service: {
+      type: Object,
+      default: () => ({})
     }
   },
   data() {
     return {
       loading: false,
       saving: false,
-      errorMessage: '',
-      successMessage: '',
-      loadingBookings: false,
-      slotConfig: {
-        slotLabel: 'Weekly Schedule',
-        isActive: true
-      },
-      generatedDays: [],
-      dailySchedules: {},
-      existingSlots: [],
-      existingSlotId: null,
+      error: '',
+      success: '',
+      
+      currentDate: new Date(),
+      scheduleData: {},
+      selectedDaysData: [],
+      hasChanges: false,
+      
+      mainSlotId: null,
+      allSlots: [],
       bookedSlots: [],
+      loadingBookings: false,
       
-      // Store day templates loaded from backend
+      // Template system from old code
       dayTemplates: {},
-      
-      // Default 4 slots
       defaultTimeSlots: [
-        { startTime: '09:00', endTime: '11:00', isAvailable: true },
-        { startTime: '11:00', endTime: '13:00', isAvailable: true },
-        { startTime: '14:00', endTime: '16:00', isAvailable: true },
-        { startTime: '16:00', endTime: '18:00', isAvailable: true }
-      ],
-      
-      providerId: null,
-      hasChanges: false
+        { startTime: '09:00', endTime: '11:00', isActive: true, isBooked: false, hasError: false },
+        { startTime: '11:00', endTime: '13:00', isActive: true, isBooked: false, hasError: false },
+        { startTime: '14:00', endTime: '16:00', isActive: true, isBooked: false, hasError: false },
+        { startTime: '16:00', endTime: '18:00', isActive: true, isBooked: false, hasError: false }
+      ]
     };
   },
   computed: {
-    currentDateRange() {
-      if (this.generatedDays.length === 0) return '';
-      const firstDay = this.generatedDays[0];
-      const lastDay = this.generatedDays[this.generatedDays.length - 1];
-      return `${firstDay.display} - ${lastDay.display}`;
+    currentMonthYear() {
+      const month = this.currentDate.toLocaleDateString('en-US', { month: 'long' });
+      const year = this.currentDate.getFullYear();
+      return `${month} ${year}`;
     },
-    serviceStatus() {
-      if (!this.service) return 'draft';
-      if (!this.service.slots || !Array.isArray(this.service.slots) || this.service.slots.length === 0) {
-        return 'draft';
-      }
-      return 'active';
+    
+    daysInMonth() {
+      const year = this.currentDate.getFullYear();
+      const month = this.currentDate.getMonth();
+      return new Date(year, month + 1, 0).getDate();
+    },
+    
+    firstDayOffset() {
+      const year = this.currentDate.getFullYear();
+      const month = this.currentDate.getMonth();
+      return new Date(year, month, 1).getDay();
+    },
+    
+    selectedDays() {
+      return Object.keys(this.scheduleData).filter(dateKey => 
+        this.scheduleData[dateKey] && this.isDateInCurrentMonth(dateKey)
+      );
+    },
+    
+    hasExistingSlot() {
+      return !!this.mainSlotId;
     }
   },
   async created() {
-    await this.getProviderId();
-    this.generate7DaySchedule(); // Generate next 7 days
-    await this.loadTimeSlotsFromBackend(); // Load from actual API
-    await this.fetchBookedSlots(); // Mark booked slots
+    console.log('🔍 Service ID:', this.serviceId);
+    // Load day templates first
+    this.loadDayTemplates();
+    await this.loadData();
+    await this.fetchBookedSlots();
+  },
+  watch: {
+    scheduleData: {
+      deep: true,
+      handler() {
+        this.updateSelectedDaysData();
+        this.hasChanges = true;
+      }
+    }
   },
   methods: {
-    async getProviderId() {
-      try {
-        const fromLocalStorage = localStorage.getItem('providerId') || 
-                                localStorage.getItem('loggedProvider');
-        
-        if (fromLocalStorage) {
-          try {
-            const parsed = JSON.parse(fromLocalStorage);
-            this.providerId = parsed.pid || parsed.providerId || parsed._id || parsed.id || fromLocalStorage;
-          } catch {
-            this.providerId = fromLocalStorage;
-          }
-        }
-        
-        if (!this.providerId) {
-          const response = await http.get('/users/profile');
-          const userData = response.data;
-          this.providerId = userData.providerId || userData.pid || userData._id || userData.id;
-          
-          if (this.providerId) {
-            localStorage.setItem('providerId', this.providerId);
-          }
-        }
-      } catch (error) {
-        console.warn('Could not get provider ID:', error);
-        this.providerId = null;
-      }
-    },
-    
-    // Generate next 7 days
-    generate7DaySchedule() {
-      this.generatedDays = [];
-      const today = new Date();
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() + i);
-        const dayOfWeek = this.getDayOfWeek(date);
-        const displayDate = this.formatDateForDisplay(date);
-        const dateString = this.formatDateForInput(date);
-        this.generatedDays.push({
-          date: dateString,
-          dayKey: dayOfWeek.key,
-          dayName: dayOfWeek.name,
-          display: `${dayOfWeek.label}, ${displayDate}`,
-          isToday: i === 0
-        });
-      }
-    },
-    
-    // Load time slots from backend API
-    async loadTimeSlotsFromBackend() {
+    // ========== LOAD DATA ==========
+    async loadData() {
       this.loading = true;
       try {
-        console.log('Loading time slots from backend...');
-        const response = await http.get(`/services/${this.serviceId}/slots`);
-        this.existingSlots = response.data || [];
+        console.log('📥 Loading from:', `/services/${this.serviceId}/slots`);
         
-        if (this.existingSlots.length > 0) {
-          console.log('Found existing slots:', this.existingSlots);
-          this.processExistingSlots(this.existingSlots);
+        const response = await http.get(`/services/${this.serviceId}/slots`);
+        this.allSlots = response.data || [];
+        
+        console.log('📦 Response:', this.allSlots);
+        
+        if (this.allSlots.length > 0) {
+          this.mainSlotId = this.allSlots[0]._id || this.allSlots[0].slotId;
+          this.loadScheduleFromSlot(this.allSlots[0]);
         } else {
-          console.log('No existing slots found, initializing with defaults');
-          this.initializeDefaultSlots();
+          this.scheduleData = {};
         }
+        
+        this.updateSelectedDaysData();
+        
       } catch (error) {
-        console.error('Error loading time slots:', error);
-        this.setError('Failed to load time slots from server');
-        // Initialize with defaults as fallback
-        this.initializeDefaultSlots();
+        console.error('❌ Load error:', error);
+        if (error.response?.status !== 404) {
+          this.error = error.response?.data?.message || 'Failed to load schedule';
+        }
       } finally {
         this.loading = false;
       }
     },
     
-    // Process slots from backend
-    processExistingSlots(slots) {
-      slots.forEach(slot => {
-        this.existingSlotId = slot.slotId || slot._id;
-        
-        if (slot.weeklySchedule && Array.isArray(slot.weeklySchedule)) {
-          // Store day templates from backend
-          slot.weeklySchedule.forEach(daySchedule => {
-            if (daySchedule && daySchedule.day && Array.isArray(daySchedule.timeSlots)) {
-              const dayKey = daySchedule.day.toLowerCase();
+    loadScheduleFromSlot(slot) {
+      this.scheduleData = {};
+      
+      console.log('🔍 Slot structure:', slot);
+      
+      // Check for weeklySchedule (from old working code)
+      const scheduleData = slot.weeklySchedule || slot.slots || [];
+      
+      console.log('📅 Schedule data found:', scheduleData);
+      
+      scheduleData.forEach(daySchedule => {
+        if (daySchedule && daySchedule.date) {
+          const dateKey = this.formatDate(daySchedule.date);
+          
+          if (!this.isDatePast(dateKey)) {
+            this.scheduleData[dateKey] = {
+              working: daySchedule.isWorkingDay !== false,
+              slots: []
+            };
+            
+            if (daySchedule.isWorkingDay && Array.isArray(daySchedule.timeSlots)) {
+              console.log(`📋 Loading timeSlots for ${dateKey}:`, daySchedule.timeSlots);
               
-              // Store template for this day
-              this.dayTemplates[dayKey] = {
-                isWorkingDay: daySchedule.isWorkingDay !== false,
-                timeSlots: daySchedule.timeSlots.map(ts => ({
+              this.scheduleData[dateKey].slots = daySchedule.timeSlots.map(ts => {
+                const slotData = {
                   startTime: this.formatTime(ts.startTime),
                   endTime: this.formatTime(ts.endTime),
-                  isAvailable: ts.isAvailable !== false
-                }))
-              };
+                  isActive: ts.isAvailable !== false,  // Map isAvailable to isActive
+                  isBooked: ts.isBooked || false,
+                  hasError: false,
+                  errorMessage: ''
+                };
+                console.log(`   Slot ${ts.startTime}-${ts.endTime}: isAvailable=${ts.isAvailable}, isActive=${slotData.isActive}`);
+                return slotData;
+              });
             }
-          });
+          }
         }
       });
       
-      // Apply templates to current days
-      this.applyTemplatesToDays();
+      console.log('📊 Processed schedule data:', this.scheduleData);
     },
     
-    // Apply stored templates to generated days
-    applyTemplatesToDays() {
-      this.generatedDays.forEach(day => {
-        const template = this.dayTemplates[day.dayKey];
-        
-        if (template && template.isWorkingDay && template.timeSlots.length > 0) {
-          // Day has slots from backend
-          this.dailySchedules[day.date] = template.timeSlots.map(slot => ({
-            ...slot,
-            isBooked: false,
-            hasError: false
-          }));
-        } else {
-          // No template or day off
-          this.dailySchedules[day.date] = [];
-        }
-      });
-    },
-    
-    // Initialize with default slots
-    initializeDefaultSlots() {
-      this.generatedDays.forEach(day => {
-        // All days start as working days with 4 default slots
-        this.dailySchedules[day.date] = this.defaultTimeSlots.map(slot => ({
-          ...JSON.parse(JSON.stringify(slot)),
-          isBooked: false,
-          hasError: false
-        }));
-      });
-    },
-    
-    // Toggle day on/off
-    toggleWorkingDay(date, isWorking) {
-      if (isWorking) {
-        // Check if we have template for this day
-        const day = this.generatedDays.find(d => d.date === date);
-        const template = this.dayTemplates[day.dayKey];
-        
-        if (template && template.timeSlots.length > 0) {
-          // Use existing template
-          this.dailySchedules[date] = template.timeSlots.map(slot => ({
-            ...slot,
-            isBooked: false,
-            hasError: false
-          }));
-        } else {
-          // Use default slots
-          this.dailySchedules[date] = this.defaultTimeSlots.map(slot => ({
-            ...JSON.parse(JSON.stringify(slot)),
-            isBooked: false,
-            hasError: false
-          }));
+    // ========== TEMPLATE SYSTEM FROM OLD CODE ==========
+    loadDayTemplates() {
+      const savedTemplates = localStorage.getItem(`dayTemplates_${this.serviceId}`);
+      if (savedTemplates) {
+        try {
+          this.dayTemplates = JSON.parse(savedTemplates);
+          console.log('Loaded templates from localStorage:', this.dayTemplates);
+        } catch (error) {
+          console.warn('Could not load day templates:', error);
+          this.dayTemplates = {};
         }
       } else {
-        // Day off - clear slots
-        this.dailySchedules[date] = [];
+        console.log('No saved templates found in localStorage');
+        this.dayTemplates = {};
       }
-      
-      this.hasChanges = true;
     },
     
-    // Add time slot
-    addTimeSlot(date) {
-      if (!this.dailySchedules[date]) {
-        this.dailySchedules[date] = [];
+    saveDayTemplates() {
+      try {
+        localStorage.setItem(`dayTemplates_${this.serviceId}`, JSON.stringify(this.dayTemplates));
+        console.log('Saved templates to localStorage:', this.dayTemplates);
+      } catch (error) {
+        console.warn('Could not save day templates:', error);
       }
+    },
+    
+    autoSaveTemplates() {
+      console.log('Auto-saving templates from current schedule...');
       
-      const slots = this.dailySchedules[date];
-      const lastSlot = slots.length > 0 ? slots[slots.length - 1] : null;
-      let newStartTime = '09:00';
-      let newEndTime = '11:00';
+      // Get all selected dates and save their templates
+      const dateKeys = Object.keys(this.scheduleData)
+        .filter(dateKey => !this.isDatePast(dateKey))
+        .sort();
       
-      if (lastSlot) {
-        // Add slot 2 hours after last slot
-        const [h, m] = lastSlot.endTime.split(':').map(Number);
-        let newStartH = h + 2;
+      dateKeys.forEach(dateKey => {
+        const date = new Date(dateKey);
+        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const dayKey = days[date.getDay()];
+        const dayData = this.scheduleData[dateKey];
         
-        if (newStartH >= 24) {
-          newStartH = 9; // Reset to morning if too late
+        if (dayData.working && dayData.slots.length > 0) {
+          // Working day with slots
+          this.dayTemplates[dayKey] = dayData.slots.map(slot => ({
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+            isActive: slot.isActive
+          }));
+          console.log(`Saved template for ${dayKey}:`, this.dayTemplates[dayKey]);
+        } else {
+          // Day off (empty array)
+          this.dayTemplates[dayKey] = [];
+          console.log(`Saved ${dayKey} as Day Off (empty array)`);
+        }
+      });
+      
+      this.saveDayTemplates();
+    },
+    
+    // ========== SAVE CHANGES - WITH REDIRECT/CLOSE ==========
+    async saveAllChanges() {
+      if (this.saving) return;
+      
+      console.log('🔍 ========== SAVE STARTED ==========');
+      this.saving = true;
+      this.error = '';
+      this.success = '';
+      
+      try {
+        // First save templates (from old working code)
+        this.autoSaveTemplates();
+        
+        // Build weekly schedule
+        const weeklySchedule = this.buildWeeklySchedule();
+        console.log('📅 Built weeklySchedule (raw):', weeklySchedule);
+        console.log('📅 Built weeklySchedule (JSON):', JSON.stringify(weeklySchedule, null, 2));
+        
+        if (weeklySchedule.length === 0) {
+          throw new Error('No schedule data to save');
         }
         
-        newStartTime = `${newStartH.toString().padStart(2, '0')}:00`;
-        newEndTime = `${(newStartH + 2).toString().padStart(2, '0')}:00`;
+        // Use old working code structure
+        const slotData = {
+          slotId: this.mainSlotId || `slot_${Date.now()}`,
+          slotLabel: `${this.serviceId} Schedule`,
+          isActive: true,
+          weeklySchedule: weeklySchedule
+        };
+        
+        console.log('🔧 Slot data prepared:', slotData);
+        
+        let response;
+        
+        if (!this.mainSlotId) {
+          console.log('🚀 Creating NEW slot...');
+          
+          // CREATE payload: Wrap in "slots" array (from old working code)
+          const createPayload = {
+            slots: [slotData]
+          };
+          
+          console.log('📤 CREATE Payload:', JSON.stringify(createPayload, null, 2));
+          
+          response = await http.post(
+            `/services/${this.serviceId}/slots`,
+            createPayload
+          );
+          
+          console.log('✅ CREATE successful:', response.data);
+          this.mainSlotId = response.data[0]?.slotId || response.data[0]?._id || slotData.slotId;
+          
+        } else {
+          console.log('✏️ Updating EXISTING slot...');
+          
+          // UPDATE payload: Direct object with weeklySchedule (from old working code)
+          const updatePayload = {
+            slotLabel: slotData.slotLabel,
+            isActive: slotData.isActive,
+            weeklySchedule: slotData.weeklySchedule
+          };
+          
+          console.log('📤 UPDATE Payload:', JSON.stringify(updatePayload, null, 2));
+          
+          response = await http.put(
+            `/services/${this.serviceId}/slots/${this.mainSlotId}`,
+            updatePayload
+          );
+          
+          console.log('✅ UPDATE successful:', response.data);
+        }
+        
+        console.log('✅ Response:', response.data);
+        this.success = 'Schedule saved successfully! Your schedule will repeat weekly.';
+        this.hasChanges = false;
+        
+        // 🚀 EMIT EVENTS FOR PARENT COMPONENT
+        this.$emit('saved');      // Notify parent that save was successful
+        this.$emit('close');      // Tell parent to close the modal/dialog
+        
+        // Reload data
+        await this.loadData();
+        await this.fetchBookedSlots();
+        
+        // 🚀 AUTO-CLOSE/REDIRECT AFTER 2 SECONDS
+        setTimeout(() => {
+          this.$emit('close'); // Emit close event again to ensure parent closes
+          
+          // If using Vue Router and you want to redirect to services page
+          // this.$router.push('/provider/services');
+        }, 2000);
+        
+      } catch (error) {
+        console.error('❌ ========== SAVE FAILED ==========');
+        console.error('📋 ERROR:', error);
+        
+        if (error.response) {
+          console.error('Status:', error.response.status);
+          console.error('Data:', error.response.data);
+          console.error('URL:', error.config?.url);
+          
+          if (error.response.data?.message) {
+            this.error = Array.isArray(error.response.data.message) 
+              ? error.response.data.message.join(', ')
+              : error.response.data.message;
+          } else if (error.response.data?.error) {
+            this.error = error.response.data.error;
+          } else {
+            this.error = `Server error: ${error.response.status}`;
+          }
+          
+          // Show request data for debugging
+          if (error.config?.data) {
+            try {
+              console.error('Request that failed:', JSON.parse(error.config.data));
+            } catch (e) {
+              console.error('Request that failed (raw):', error.config.data);
+            }
+          }
+          
+        } else {
+          this.error = error.message;
+        }
+        
+      } finally {
+        this.saving = false;
+        console.log('🔍 ========== SAVE FINISHED ==========');
+      }
+    },
+    
+    // ========== BUILD WEEKLY SCHEDULE ==========
+    buildWeeklySchedule() {
+      const weeklySchedule = [];
+      
+      const dateKeys = Object.keys(this.scheduleData)
+        .filter(dateKey => !this.isDatePast(dateKey))
+        .sort();
+      
+      console.log('📅 Date keys to process:', dateKeys);
+      
+      if (dateKeys.length === 0) {
+        console.log('⚠️ No future dates selected');
+        return [];
       }
       
-      const newSlot = { 
-        startTime: this.formatTime(newStartTime), 
-        endTime: this.formatTime(newEndTime), 
-        isAvailable: true, 
-        isBooked: false 
-      };
+      dateKeys.forEach(dateKey => {
+        const dayData = this.scheduleData[dateKey];
+        const backendDate = this.formatDateForBackend(dateKey);
+        
+        // Get day name in lowercase
+        const [day, month, year] = backendDate.split('/').map(Number);
+        const dateObj = new Date(year, month - 1, day);
+        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const dayName = days[dateObj.getDay()];
+        
+        const scheduleItem = {
+          day: dayName,
+          date: backendDate, // DD/MM/YYYY format
+          isWorkingDay: dayData.working,
+          timeSlots: []
+        };
+        
+        // Only add timeSlots if it's a working day
+        if (dayData.working && dayData.slots.length > 0) {
+          console.log(`📋 Building timeSlots for ${dateKey}:`, dayData.slots);
+          
+          // Validate and format each time slot
+          scheduleItem.timeSlots = dayData.slots.map(slot => {
+            const timeSlotData = {
+              startTime: this.ensureTimeFormat(slot.startTime),
+              endTime: this.ensureTimeFormat(slot.endTime),
+              isAvailable: slot.isActive,  // Map isActive back to isAvailable
+              isBooked: slot.isBooked || false
+            };
+            console.log(`   Slot ${slot.startTime}-${slot.endTime}: isActive=${slot.isActive}, isAvailable=${timeSlotData.isAvailable}`);
+            return timeSlotData;
+          });
+        }
+        
+        weeklySchedule.push(scheduleItem);
+      });
       
-      this.dailySchedules[date].push(newSlot);
-      this.hasChanges = true;
+      console.log('🔧 Final weeklySchedule built:', JSON.stringify(weeklySchedule, null, 2));
+      return weeklySchedule;
     },
     
-    // Remove time slot
-    removeTimeSlot(date, slotIndex) {
-      if (!this.dailySchedules[date] || slotIndex >= this.dailySchedules[date].length) return;
+    // ========== CALENDAR METHODS ==========
+    prevMonth() {
+      this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() - 1, 1);
+    },
+    
+    nextMonth() {
+      this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 1);
+    },
+    
+    isToday(day) {
+      const today = new Date();
+      return today.getDate() === day &&
+             today.getMonth() === this.currentDate.getMonth() &&
+             today.getFullYear() === this.currentDate.getFullYear();
+    },
+    
+    isPastDay(day) {
+      const dateKey = this.getDateKey(day);
+      return this.isDatePast(dateKey);
+    },
+    
+    isSelected(day) {
+      const dateKey = this.getDateKey(day);
+      return this.scheduleData[dateKey] !== undefined;
+    },
+    
+    isWorkingDay(day) {
+      const dateKey = this.getDateKey(day);
+      const dayData = this.scheduleData[dateKey];
+      return dayData && dayData.working === true;
+    },
+    
+    isDateInCurrentMonth(dateKey) {
+      const [year, month] = dateKey.split('-').map(Number);
+      const currentYear = this.currentDate.getFullYear();
+      const currentMonth = this.currentDate.getMonth() + 1;
+      return year === currentYear && month === currentMonth;
+    },
+    
+    isDatePast(dateKey) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const date = new Date(dateKey);
+      date.setHours(0, 0, 0, 0);
+      return date < today;
+    },
+    
+    selectDay(day) {
+      const dateKey = this.getDateKey(day);
       
-      this.dailySchedules[date].splice(slotIndex, 1);
-      this.hasChanges = true;
+      if (this.isDatePast(dateKey)) {
+        this.error = 'Cannot schedule past dates';
+        setTimeout(() => this.error = '', 3000);
+        return;
+      }
+      
+      if (!this.scheduleData[dateKey]) {
+        // Check if we have a template for this day of week
+        const date = new Date(dateKey);
+        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const dayKey = days[date.getDay()];
+        
+        if (this.dayTemplates[dayKey] && this.dayTemplates[dayKey].length > 0) {
+          // Use template if it exists
+          this.scheduleData[dateKey] = {
+            working: true,
+            slots: JSON.parse(JSON.stringify(this.dayTemplates[dayKey]))
+          };
+          console.log(`Selected ${dateKey} using template for ${dayKey}`);
+        } else {
+          // Use defaults
+          this.scheduleData[dateKey] = {
+            working: true,
+            slots: JSON.parse(JSON.stringify(this.defaultTimeSlots))
+          };
+        }
+      }
+      
+      this.updateSelectedDaysData();
     },
     
-    // Toggle slot availability (FIXED - no v-model)
-    toggleSlotAvailability(timeSlot) {
-      timeSlot.isAvailable = !timeSlot.isAvailable;
-      this.hasChanges = true;
+    updateSelectedDaysData() {
+      this.selectedDaysData = this.selectedDays
+        .map(dateKey => {
+          const date = new Date(dateKey);
+          const dayData = this.scheduleData[dateKey];
+          
+          return {
+            dateKey,
+            working: dayData.working,
+            slots: [...dayData.slots],
+            formattedDateShort: this.formatDateShort(dateKey),
+            dayOfWeek: date.toLocaleDateString('en-US', { weekday: 'long' })
+          };
+        })
+        .sort((a, b) => new Date(a.dateKey) - new Date(b.dateKey));
     },
     
-    // Update time slot time
-    updateTimeSlot(slot, field, newValue) {
-      if (newValue && newValue.length === 5) {
-        slot[field] = this.formatTime(newValue);
-        this.hasChanges = true;
+    toggleDayOff(dateKey) {
+      if (this.isDatePast(dateKey)) {
+        this.error = 'Cannot modify past dates';
+        setTimeout(() => this.error = '', 3000);
+        return;
+      }
+      
+      const dayData = this.scheduleData[dateKey];
+      if (dayData) {
+        dayData.working = !dayData.working;
+        
+        if (dayData.working && dayData.slots.length === 0) {
+          // Check for template
+          const date = new Date(dateKey);
+          const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+          const dayKey = days[date.getDay()];
+          
+          if (this.dayTemplates[dayKey] && this.dayTemplates[dayKey].length > 0) {
+            dayData.slots = JSON.parse(JSON.stringify(this.dayTemplates[dayKey]));
+          } else {
+            dayData.slots = JSON.parse(JSON.stringify(this.defaultTimeSlots));
+          }
+        } else if (!dayData.working) {
+          dayData.slots = [];
+        }
+        
+        this.updateSelectedDaysData();
       }
     },
     
-    formatTime(timeStr) {
-      if (!timeStr) return '09:00';
-      
-      if (timeStr === '24:00' || timeStr.startsWith('24:')) {
-        return `00:${timeStr.split(':')[1] || '00'}`;
+    addSlotToDay(dateKey) {
+      if (this.isDatePast(dateKey)) {
+        this.error = 'Cannot modify past dates';
+        setTimeout(() => this.error = '', 3000);
+        return;
       }
       
-      const [h, m] = timeStr.split(':').map(Number);
-      
-      let hour = h;
-      if (hour >= 24) {
-        hour = hour % 24;
-      } else if (hour < 0) {
-        hour = 0;
+      const dayData = this.scheduleData[dateKey];
+      if (dayData && dayData.working) {
+        const slots = dayData.slots;
+        const lastSlot = slots.length > 0 ? slots[slots.length - 1] : null;
+        let newStartTime = '09:00';
+        let newEndTime = '11:00';
+        
+        if (lastSlot) {
+          const [h, m] = lastSlot.endTime.split(':').map(Number);
+          let newStartH = h + 2;
+          if (newStartH >= 24) newStartH = 9;
+          newStartTime = `${newStartH.toString().padStart(2, '0')}:00`;
+          newEndTime = `${(newStartH + 2).toString().padStart(2, '0')}:00`;
+        }
+        
+        dayData.slots.push({ 
+          startTime: this.formatTime(newStartTime), 
+          endTime: this.formatTime(newEndTime), 
+          isActive: true, 
+          isBooked: false,
+          hasError: false
+        });
+      }
+    },
+    
+    removeSlot(dateKey, index) {
+      if (this.isDatePast(dateKey)) {
+        this.error = 'Cannot modify past dates';
+        setTimeout(() => this.error = '', 3000);
+        return;
       }
       
-      let minute = m;
-      if (minute >= 60) {
-        minute = 59;
-      } else if (minute < 0) {
-        minute = 0;
-      } else if (isNaN(minute)) {
-        minute = 0;
+      const dayData = this.scheduleData[dateKey];
+      if (dayData && dayData.working && dayData.slots.length > 1) {
+        const slot = dayData.slots[index];
+        if (!slot.isBooked) {
+          dayData.slots.splice(index, 1);
+        }
+      }
+    },
+    
+    toggleSlotActive(dateKey, index) {
+      if (this.isDatePast(dateKey)) {
+        this.error = 'Cannot modify past dates';
+        setTimeout(() => this.error = '', 3000);
+        return;
       }
       
-      return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+      const dayData = this.scheduleData[dateKey];
+      if (dayData && dayData.working) {
+        const slot = dayData.slots[index];
+        if (slot && !slot.isBooked) {
+          slot.isActive = !slot.isActive;
+        }
+      }
     },
     
-    formatTime12(time24) {
-      if (!time24) return '';
+    updateTimeSlot(dateKey, index, field, newValue) {
+      if (this.isDatePast(dateKey)) {
+        this.error = 'Cannot modify past dates';
+        setTimeout(() => this.error = '', 3000);
+        return;
+      }
       
-      const normalizedTime = this.formatTime(time24);
-      const [h, m] = normalizedTime.split(':').map(Number);
-      const period = h >= 12 ? 'PM' : 'AM';
-      const displayH = h % 12 || 12;
-      return `${displayH}:${m.toString().padStart(2, '0')} ${period}`;
+      const dayData = this.scheduleData[dateKey];
+      if (dayData && dayData.working) {
+        const slot = dayData.slots[index];
+        if (slot && !slot.isBooked && newValue && newValue.length === 5) {
+          const oldValue = slot[field];
+          slot[field] = this.formatTime(newValue);
+          
+          if (!this.validateTimeSlot(dateKey, index)) {
+            slot[field] = oldValue;
+          }
+        }
+      }
     },
     
-    isWorkingAtDay(date) {
-      return this.dailySchedules[date] && this.dailySchedules[date].length > 0;
+    validateTimeSlot(dateKey, index) {
+      const dayData = this.scheduleData[dateKey];
+      if (dayData && dayData.working) {
+        const slot = dayData.slots[index];
+        if (slot) {
+          slot.hasError = false;
+          slot.errorMessage = '';
+          
+          if (slot.startTime && slot.endTime) {
+            const startTime = this.formatTime(slot.startTime);
+            const endTime = this.formatTime(slot.endTime);
+            
+            if (startTime >= endTime) {
+              slot.hasError = true;
+              slot.errorMessage = 'End time must be after start time';
+              return false;
+            }
+          }
+          return true;
+        }
+      }
+      return false;
     },
     
-    // Load booked slots
     async fetchBookedSlots() {
       this.loadingBookings = true;
       try {
@@ -567,247 +913,127 @@ export default {
               endTime: this.formatTime(normalizeTime(booking.endTime))
             };
           });
-        this.markBookedSlotsInDailySchedules();
+        
+        this.markBookedSlotsInSchedule();
+        
       } catch (error) {
         console.error('Failed to fetch booked slots:', error);
-        this.setError('Failed to load booked appointments');
       } finally {
         this.loadingBookings = false;
       }
     },
     
-    markBookedSlotsInDailySchedules() {
-      this.generatedDays.forEach(day => {
-        const dateKey = day.date;
-        const backendDate = this.formatDateForBackend(dateKey);
-        const bookingsForDay = this.bookedSlots.filter(b => b.date === backendDate);
-        
-        if (!this.dailySchedules[dateKey]) {
-          this.dailySchedules[dateKey] = [];
-        }
-        
-        bookingsForDay.forEach(booking => {
-          const existingSlot = this.dailySchedules[dateKey].find(slot => 
-            slot.startTime === booking.startTime && slot.endTime === booking.endTime
-          );
+    markBookedSlotsInSchedule() {
+      Object.keys(this.scheduleData).forEach(dateKey => {
+        const dayData = this.scheduleData[dateKey];
+        if (dayData && dayData.working) {
+          const backendDate = this.formatDateForBackend(dateKey);
+          const bookingsForDay = this.bookedSlots.filter(b => b.date === backendDate);
           
-          if (!existingSlot) {
-            const newSlot = {
-              startTime: booking.startTime,
-              endTime: booking.endTime,
-              isAvailable: false,
-              isBooked: true,
-              hasError: false,
-              errorMessage: ''
-            };
-            this.dailySchedules[dateKey].push(newSlot);
-          } else {
-            existingSlot.isBooked = true;
-            existingSlot.isAvailable = false;
-          }
-        });
-      });
-    },
-    
-    getBookingForSlot(date, startTime, endTime) {
-      const backendDate = this.formatDateForBackend(date);
-      return this.bookedSlots.find(booking => {
-        return booking.date === backendDate &&
-               booking.startTime === startTime &&
-               booking.endTime === endTime;
-      });
-    },
-    
-    getDayOfWeek(date) {
-      const days = [
-        { key: 'sunday', name: 'Sunday', label: 'Sun' },
-        { key: 'monday', name: 'Monday', label: 'Mon' },
-        { key: 'tuesday', name: 'Tuesday', label: 'Tue' },
-        { key: 'wednesday', name: 'Wednesday', label: 'Wed' },
-        { key: 'thursday', name: 'Thursday', label: 'Thu' },
-        { key: 'friday', name: 'Friday', label: 'Fri' },
-        { key: 'saturday', name: 'Saturday', label: 'Sat' }
-      ];
-      return days[date.getDay()];
-    },
-    
-    // SAVE to backend API
-    async saveTimeSlots() {
-      if (!this.validateAllTimeSlots()) {
-        this.setError('Please fix time slot errors before saving');
-        return;
-      }
-      
-      this.saving = true;
-      this.errorMessage = '';
-      
-      try {
-        // Prepare weekly schedule data for backend
-        const weeklySchedule = [];
-        this.generatedDays.forEach(day => {
-          const timeSlots = this.dailySchedules[day.date] || [];
-          const isWorkingDay = timeSlots.length > 0;
-          
-          weeklySchedule.push({
-            date: this.formatDateForBackend(day.date),
-            day: day.dayKey,
-            isWorkingDay: isWorkingDay,
-            timeSlots: isWorkingDay ? timeSlots.map(slot => ({
-              startTime: this.formatTime(slot.startTime),
-              endTime: this.formatTime(slot.endTime),
-              isAvailable: slot.isAvailable
-            })) : []
+          bookingsForDay.forEach(booking => {
+            const existingSlot = dayData.slots.find(slot => 
+              slot.startTime === booking.startTime && slot.endTime === booking.endTime
+            );
+            
+            if (existingSlot) {
+              existingSlot.isBooked = true;
+              existingSlot.isActive = false;
+            }
           });
-        });
-        
-        const slotData = {
-          slotId: this.existingSlotId || `slot_${Date.now()}`,
-          slotLabel: this.slotConfig.slotLabel,
-          isActive: this.slotConfig.isActive,
-          weeklySchedule: weeklySchedule
-        };
-        
-        console.log('Saving slot data to backend:', slotData);
-        
-        // Use actual API endpoints
-        if (this.existingSlotId) {
-          await http.put(`/services/${this.serviceId}/slots/${this.existingSlotId}`, slotData);
-        } else {
-          const response = await http.post(`/services/${this.serviceId}/slots`, { slots: [slotData] });
-          if (response.data?.length > 0) {
-            this.existingSlotId = response.data[0].slotId || response.data[0]._id;
-          }
         }
-        
-        this.setSuccess('Time slots updated successfully!');
-        this.$emit('saved');
-        this.hasChanges = false;
-        
-      } catch (error) {
-        console.error('Error saving time slots:', error);
-        this.handleApiError(error, 'save time slots');
-      } finally {
-        this.saving = false;
+      });
+      
+      this.updateSelectedDaysData();
+    },
+    
+    // ========== UTILITY METHODS ==========
+    formatTime(timeStr) {
+      if (!timeStr) return '09:00';
+      
+      if (timeStr === '24:00' || timeStr.startsWith('24:')) {
+        return `00:${timeStr.split(':')[1] || '00'}`;
       }
+      
+      const [h, m] = timeStr.split(':').map(Number);
+      let hour = isNaN(h) ? 9 : h;
+      if (hour >= 24) hour = hour % 24;
+      if (hour < 0) hour = 0;
+      
+      let minute = isNaN(m) ? 0 : m;
+      if (minute >= 60) minute = 59;
+      if (minute < 0) minute = 0;
+      
+      return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
     },
     
-    formatDateForDisplay(date) {
-      if (typeof date === 'string') date = new Date(date);
-      const month = date.toLocaleDateString('en-US', { month: 'short' });
-      const day = date.getDate();
-      const year = date.getFullYear();
-      return `${month} ${day}, ${year}`;
+    ensureTimeFormat(timeStr) {
+      const formatted = this.formatTime(timeStr);
+      if (!formatted.match(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/)) {
+        return '09:00';
+      }
+      return formatted;
     },
     
-    formatDateForInput(date) {
-      if (typeof date === 'string') return date;
-      return date.toISOString().split('T')[0];
+    formatTo12Hour(timeStr) {
+      if (!timeStr) return '12:00 AM';
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const hour12 = hours % 12 || 12;
+      return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
     },
     
-    formatDateForBackend(dateString) {
-      const date = new Date(dateString);
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const year = date.getFullYear();
+    getDateKey(day) {
+      const year = this.currentDate.getFullYear();
+      const month = (this.currentDate.getMonth() + 1).toString().padStart(2, '0');
+      const dayStr = day.toString().padStart(2, '0');
+      return `${year}-${month}-${dayStr}`;
+    },
+    
+    formatDate(dateStr) {
+      if (!dateStr) return '';
+      if (dateStr.includes('/')) {
+        const [day, month, year] = dateStr.split('/');
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+      }
+      return dateStr;
+    },
+    
+    formatDateForBackend(dateKey) {
+      const [year, month, day] = dateKey.split('-');
       return `${day}/${month}/${year}`;
     },
     
-    validateTimeSlot(timeSlot) {
-      timeSlot.hasError = false;
-      timeSlot.errorMessage = '';
-      
-      if (timeSlot.startTime && timeSlot.endTime) {
-        const normalizedStartTime = this.formatTime(timeSlot.startTime);
-        const normalizedEndTime = this.formatTime(timeSlot.endTime);
-        
-        const startHour = parseInt(normalizedStartTime.split(':')[0]);
-        const endHour = parseInt(normalizedEndTime.split(':')[0]);
-        
-        if (startHour < 0 || startHour > 23) {
-          timeSlot.hasError = true;
-          timeSlot.errorMessage = 'Start time must be between 00:00 and 23:59';
-          return false;
-        }
-        
-        if (endHour < 0 || endHour > 23) {
-          timeSlot.hasError = true;
-          timeSlot.errorMessage = 'End time must be between 00:00 and 23:59';
-          return false;
-        }
-        
-        if (normalizedStartTime >= normalizedEndTime) {
-          timeSlot.hasError = true;
-          timeSlot.errorMessage = 'End time must be after start time';
-          return false;
-        }
-      }
-      return true;
+    formatDateShort(dateKey) {
+      const date = new Date(dateKey);
+      const day = date.getDate();
+      const month = date.toLocaleDateString('en-US', { month: 'short' });
+      const year = date.getFullYear();
+      return `${day} ${month} ${year}`;
     },
     
-    validateAllTimeSlots() {
-      let isValid = true;
-      this.generatedDays.forEach(day => {
-        const timeSlots = this.dailySchedules[day.date];
-        if (timeSlots) {
-          timeSlots.forEach(slot => {
-            if (!this.validateTimeSlot(slot)) isValid = false;
-          });
-        }
-      });
-      return isValid;
-    },
-    
-    handleApiError(error, operation) {
-      console.error(`Error during ${operation}:`, error);
-      let errorMsg = `Failed to ${operation}`;
-      if (error.response?.status === 400) {
-        errorMsg = 'Invalid data format. Please check your time slots.';
-      } else if (error.response?.status === 500) {
-        errorMsg = 'Server error. Please try again.';
-      } else if (error.response?.data?.message) {
-        errorMsg = Array.isArray(error.response.data.message)
-          ? error.response.data.message.join(', ')
-          : error.response.data.message;
-      } else if (error.message) {
-        errorMsg = error.message;
-      }
-      this.setError(errorMsg);
-    },
-    
+    // ========== CANCEL/CLOSE METHOD ==========
     handleCancel() {
-      if (this.hasChanges) {
-        if (!confirm('You have unsaved changes. Are you sure you want to cancel?')) {
-          return;
-        }
-      }
       this.$emit('close');
-    },
-    
-    setError(message) {
-      this.errorMessage = message;
-      setTimeout(() => { this.errorMessage = ''; }, 5000);
-    },
-    
-    setSuccess(message) {
-      this.successMessage = message;
-      setTimeout(() => { this.successMessage = ''; }, 3000);
     }
   }
 };
 </script>
 
 <style scoped>
+
+
 /* ===== BASE STYLES ===== */
-.time-slots-container {
+.ultimate-scheduler {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 10px;
+  padding: 20px;
   font-family: "Inter", sans-serif;
-  color: #29282e;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
 /* ===== MESSAGES ===== */
-.loading-state, .error-message, .success-message, .draft-alert {
+.loading, .message {
   padding: 14px 16px;
   margin-bottom: 20px;
   border-radius: 10px;
@@ -815,10 +1041,20 @@ export default {
   align-items: center;
   gap: 12px;
 }
-.loading-state { background: #f1f5f9; color: #64748b; }
-.error-message { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
-.success-message { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-.draft-alert { background: #fffbeb; color: #d97706; border: 1px solid #fef3c7; }
+.loading { background: #f1f5f9; color: #64748b; }
+.error { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+.success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.draft-alert { 
+  background: #fffbeb; 
+  color: #d97706; 
+  border: 1px solid #fef3c7;
+  padding: 14px 16px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
 .close-error, .close-success {
   margin-left: auto;
   background: none;
@@ -829,137 +1065,316 @@ export default {
 }
 .close-error:hover, .close-success:hover { opacity: 1; }
 
-/* ===== WEEKLY SCHEDULE ===== */
-.weekly-schedule-section {
+/* ===== CALENDAR ===== */
+.calendar-wrapper {
   background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  margin-bottom: 24px;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 20px;
 }
-.schedule-header {
+
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.nav-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  background: #2563eb;
+}
+
+.month-year {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: center;
+  flex: 1;
+}
+
+/* Scrollable Calendar */
+.calendar-scroll {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.calendar-grid {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.85rem;
+  position: sticky;
+  top: 0;
+  background: #f8fafc;
+  z-index: 1;
+}
+
+.weekdays div {
+  padding: 8px 2px;
+}
+
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.day {
+  aspect-ratio: 1;
+  min-height: 45px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+  position: relative;
+}
+
+.day.empty {
+  border: none;
+  background: transparent;
+  cursor: default;
+}
+
+.day.today {
+  border-color: #f59e0b;
+  background: #fef3c7;
+}
+
+.day.selected {
+  border-color: #10b981;
+  background: #d1fae5;
+}
+
+.day.working {
+  border-color: #10b981;
+}
+
+.day.past {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.day:not(.past):not(.empty):hover {
+  border-color: #3b82f6;
+  transform: scale(1.05);
+}
+
+.day-number {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.day.past .day-number {
+  color: #9ca3af;
+}
+
+.past-overlay {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  color: #9ca3af;
+  font-size: 0.7rem;
+}
+
+/* ===== SELECTED DAYS ===== */
+.selected-days-wrapper {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.selected-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e2e8f0;
 }
-.schedule-header h4 {
-  font-size: 2.05rem;
+
+.selected-header h3 {
   margin: 0;
-  color: #0f172a;
+  font-size: 1.2rem;
+  color: #1e293b;
+  font-weight: 600;
 }
-.date-range {
-  background: #dbeafe;
-  color: #1d4ed8;
-  padding: 10px 12px;
+
+.selected-count {
+  background: #3b82f6;
+  color: white;
+  padding: 6px 12px;
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 600;
 }
-.section-description {
-  color: #64748b;
-  margin-bottom: 20px;
-  font-size: 0.95rem;
+
+/* Horizontal Scroll */
+.days-horizontal-scroll {
+  display: flex;
+  gap: 15px;
+  overflow-x: auto;
+  padding: 10px 5px 20px;
+  margin: 0 -5px;
 }
 
-/* ===== DAYS GRID ===== */
-.days-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-  gap: 10px;
-}
+/* Day Card */
 .day-card {
+  min-width: 320px;
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 18px;
-  background: #454365;
-}
-.day-card.working-day { border-color: #22c55e; background: #f2f4f6; }
-.day-card.today { border-color: #3b82f6; background: #e0e3b3; }
-.day-card.day-off { opacity: 0.85; background: #fcfdff; }
-.day-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.day-toggle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-}
-.day-label {
-  font-weight: 300;
-  font-size: 1.05rem;
-}
-.day-labels { display: flex; gap: 6px; }
-.off-label {
-  background: #da182b;
-  color: #111214;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-}
-.today-label {
-  background: #3b82f6;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.8rem;
-}
-.day-off-message {
-  text-align: center;
-  color: #94a3b8;
-  padding: 20px 0;
-  font-style: italic;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  flex-shrink: 0;
 }
 
-/* ===== COMPACT TIME SLOT LAYOUT ===== */
+/* Day Header */
+.day-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* Toggle Rectangle */
+.day-toggle-left {
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.toggle-rectangle {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.toggle-rectangle.working {
+  background: #10b981;
+  color: white;
+}
+
+.toggle-rectangle.off {
+  background: #9ca3af;
+  color: white;
+}
+
+.toggle-rectangle:hover {
+  transform: translateY(-2px);
+}
+
+.toggle-rectangle i {
+  font-size: 1rem;
+}
+
+/* Day Date */
+.day-date-info {
+  flex: 1;
+}
+
+.day-date {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+
+.day-week {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+/* ===== TIME SLOTS LIST ===== */
 .time-slots-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.time-slot-item {
-  background: rgb(35, 27, 37);
+
+/* TIME SLOT LINE - COMPACT SINGLE LINE */
+.time-slot-line {
+  background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 80px;
-  padding: 10px 10px;
+  border-radius: 8px;
+  padding: 10px;
   transition: all 0.2s ease;
 }
-.time-slot-item.booked-slot {
+
+.time-slot-line.booked-slot {
   background: #fef2f2;
   border-color: #fecaca;
 }
-.time-slot-item.available-slot {
+
+.time-slot-line.available-slot {
   background: #f0fdf4;
-  border-color: #c1cac4;
+  border-color: #bbf7d0;
 }
-.time-slot-item.unavailable-slot {
+
+.time-slot-line.unavailable-slot {
   background: #f8fafc;
   border-color: #e2e8f0;
 }
-.time-slot-item.has-error {
+
+.time-slot-line.has-error {
   border-color: #f87171;
   background: #fff1f1;
 }
 
-/* COMPACT SINGLE LINE CONTAINER */
+/* COMPACT SINGLE LINE LAYOUT */
 .slot-compact-line {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
   flex-wrap: nowrap;
 }
 
-/* TIME RANGE COMPACT - MORE SPACE FOR TIMES */
+/* TIME RANGE COMPACT - FROM WORKING CODE */
 .time-range-compact {
   display: flex;
   align-items: center;
@@ -967,20 +1382,24 @@ export default {
   flex: 1;
   min-width: 0;
 }
+
 .slot-icon {
-  color: #64748b;
   font-size: 0.9rem;
   flex-shrink: 0;
 }
-.booked-slot .slot-icon {
+
+.booked-slot-icon {
   color: #dc2626;
 }
-.available-slot .slot-icon {
+
+.available-slot-icon {
   color: #22c55e;
 }
-.unavailable-slot .slot-icon {
+
+.unavailable-slot-icon {
   color: #94a3b8;
 }
+
 .booked-time-text {
   font-weight: 600;
   color: #1e40af;
@@ -988,6 +1407,7 @@ export default {
   white-space: nowrap;
   min-width: 140px;
 }
+
 .edit-time-range {
   display: flex;
   align-items: center;
@@ -996,30 +1416,34 @@ export default {
   min-width: 0;
   flex: 1;
 }
+
 .time-input-wrapper {
   display: flex;
   align-items: center;
   min-width: 0;
 }
+
 .time-input {
   width: 80px;
   min-width: 75px;
   padding: 6px 8px;
   border: 1px solid #cbd5e1;
-  border-radius: 10px;
+  border-radius: 6px;
   font-size: 0.85rem;
   text-align: center;
   font-family: 'Inter', monospace;
-  color: hsl(212, 81%, 34%);
-  background: rgb(247, 250, 253);
+  color: #1e293b;
+  background: white;
   box-sizing: border-box;
   flex-shrink: 0;
 }
+
 .time-input:focus {
   outline: none;
-  border-color: #966881;
-  box-shadow: 0 0 0 2px rgba(181, 33, 62, 0.2);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
+
 .time-separator {
   color: #64748b;
   font-size: 0.9rem;
@@ -1029,44 +1453,37 @@ export default {
   margin: 0 2px;
 }
 
-/* STATUS INDICATOR COMPACT */
+/* STATUS INDICATOR COMPACT - FROM WORKING CODE */
 .status-indicator-compact {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
 }
+
 .booked-indicator {
   display: flex;
   align-items: center;
   gap: 6px;
 }
+
 .status-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   display: inline-block;
 }
+
 .booked-dot {
   background: #dc2626;
 }
-.customer-compact {
-  background: #fee2e2;
-  color: #dc2626;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-}
 
-/* SMALLER TOGGLE SWITCH */
+/* SMALLER TOGGLE SWITCH - FROM WORKING CODE */
 .toggle-container {
   flex-shrink: 0;
   margin-left: 4px;
 }
+
 .toggle-switch-small {
   display: inline-block;
   position: relative;
@@ -1074,11 +1491,13 @@ export default {
   height: 20px;
   cursor: pointer;
 }
+
 .toggle-switch-small input {
   opacity: 0;
   width: 0;
   height: 0;
 }
+
 .toggle-slider-small {
   position: absolute;
   cursor: pointer;
@@ -1090,6 +1509,7 @@ export default {
   transition: .3s;
   border-radius: 10px;
 }
+
 .toggle-slider-small:before {
   position: absolute;
   content: "";
@@ -1101,26 +1521,30 @@ export default {
   transition: .3s;
   border-radius: 50%;
 }
+
 .toggle-switch-small input:checked + .toggle-slider-small {
   background-color: #22c55e;
 }
+
 .toggle-switch-small input:checked + .toggle-slider-small:before {
-  transform: translateX(16px);
+  transform: translateX(10px);
 }
 
-/* ACTIONS COMPACT */
+/* ACTIONS COMPACT - FROM WORKING CODE */
 .actions-compact {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
 }
+
 .error-indicator {
   color: #dc2626;
   font-size: 0.9rem;
   cursor: help;
   flex-shrink: 0;
 }
+
 .remove-btn-compact {
   width: 22px;
   height: 22px;
@@ -1137,151 +1561,185 @@ export default {
   transition: all 0.2s ease;
   padding: 0;
 }
+
 .remove-btn-compact:hover:not(:disabled) {
   background: #fecaca;
   transform: scale(1.05);
 }
+
 .remove-btn-compact:disabled {
   opacity: 0.3;
   cursor: not-allowed;
   transform: none;
 }
 
-/* ===== ADD SLOT BUTTON COMPACT ===== */
-.btn-add-slot-compact {
-  width: 100%;
-  padding: 8px;
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
+/* ===== ADD SLOT BUTTON ===== */
+.add-slot-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  padding: 8px 12px;
   border-radius: 6px;
-  color: #475569;
-  font-size: 0.85rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+  font-size: 0.85rem;
   margin-top: 8px;
-  transition: all 0.2s ease;
-}
-.btn-add-slot-compact:hover:not(:disabled) {
-  background: #e2e8f0;
-  border-color: #94a3b8;
+  width: 100%;
 }
 
-/* ===== ACTION BUTTONS ===== */
-.action-buttons {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
-  flex-wrap: wrap;
-}
-.primary-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.btn {
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border: none;
-  font-size: 0.95rem;
-  min-height: 42px;
-  transition: all 0.2s ease;
-}
-.btn-secondary {
-  background: #f1f5f9;
+.add-slot-btn:hover {
+  background: #e2e8f0;
   color: #475569;
-  border: 1px solid #e2e8f0;
 }
-.btn-secondary:hover:not(:disabled) { background: #e2e8f0; }
-.btn-primary {
-  background: #22c55e;
-  color: white;
+
+/* ===== DAY OFF CARD ===== */
+.day-off-card {
+  text-align: center;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed #cbd5e1;
+  color: #64748b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
-.btn-primary:hover:not(:disabled) { background: #16a34a; }
-.btn-info {
+
+.day-off-card i {
+  font-size: 1.5rem;
+  color: #94a3b8;
+}
+
+.make-working-btn {
   background: #3b82f6;
   color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s;
 }
-.btn-info:hover:not(:disabled) { background: #2563eb; }
-.btn:disabled {
+
+.make-working-btn:hover {
+  background: #2563eb;
+}
+
+/* ===== NO SELECTION ===== */
+.no-selection {
+  background: white;
+  border-radius: 10px;
+  padding: 30px 20px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+}
+
+.empty-message i {
+  font-size: 2.5rem;
+  color: #cbd5e1;
+  margin-bottom: 10px;
+}
+
+.empty-message h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+  color: #475569;
+}
+
+.empty-message p {
+  margin: 0 0 6px 0;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.past-note {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.past-note i {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ===== SAVE BUTTON ===== */
+.save-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.save-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  min-width: 160px;
+  justify-content: center;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.save-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-/* ===== DEBUG INFO SECTION ===== */
-.debug-info {
-  margin-top: 20px;
-  padding: 15px;
-  background: #f8fafc;
-  border: 1px dashed #cbd5e1;
-  border-radius: 8px;
-  font-family: monospace;
-  font-size: 0.85rem;
-  color: #475569;
-}
-.debug-info h5 {
-  margin: 0 0 10px 0;
-  color: #0f172a;
-  font-size: 0.9rem;
-}
-.debug-info p {
-  margin: 5px 0;
-}
-.debug-info div {
-  margin: 3px 0;
-  padding-left: 10px;
-  border-left: 2px solid #e2e8f0;
-}
-
 /* ===== RESPONSIVE DESIGN ===== */
 
-/* Desktop (≥768px) - OPTIMIZED FOR DESKTOP */
+/* Desktop (≥768px) */
 @media (min-width: 768px) {
   .slot-compact-line {
     gap: 12px;
-    flex-wrap: nowrap;
   }
   
   .time-range-compact {
     flex: 0 0 220px;
-    min-width: 220px;
   }
   
   .time-input {
     width: 85px;
-    min-width: 85px;
   }
   
   .booked-time-text {
     min-width: 180px;
   }
-  
-  .status-indicator-compact {
-    margin-left: 0;
-  }
-  
-  .actions-compact {
-    margin-left: auto;
-  }
-  
-  .remove-btn-compact {
-    margin-left: 8px;
-  }
 }
 
-/* Tablet (480px-768px) - VERTICAL STACK */
+/* Tablet (480px-768px) */
 @media (max-width: 768px) and (min-width: 480px) {
-  .days-grid {
+  .days-horizontal-scroll {
+    display: grid;
     grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .day-card {
+    min-width: auto;
   }
   
   .slot-compact-line {
@@ -1295,44 +1753,36 @@ export default {
   
   .time-input {
     width: 80px;
-    min-width: 80px;
     padding: 5px 6px;
-    font-size: 0.85rem;
   }
   
   .booked-time-text {
     min-width: 160px;
   }
-  
-  .status-indicator-compact {
-    margin-left: 0;
-  }
-  
-  .actions-compact {
-    margin-left: auto;
-  }
 }
 
-/* Mobile (<480px) - CLEAN VERTICAL STACK */
+/* Mobile (<480px) */
 @media (max-width: 480px) {
-  .time-slots-container {
+  .ultimate-scheduler {
     padding: 10px;
   }
   
-  .weekly-schedule-section {
-    padding: 12px;
+  .calendar-wrapper,
+  .selected-days-wrapper {
+    padding: 15px;
   }
   
-  .days-grid {
+  .days-horizontal-scroll {
+    display: grid;
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 15px;
   }
   
   .day-card {
+    min-width: auto;
     padding: 12px;
   }
   
-  /* MOBILE: VERTICAL STACKING */
   .slot-compact-line {
     display: flex;
     flex-direction: row;
@@ -1340,14 +1790,9 @@ export default {
     justify-content: space-between;
     gap: 8px;
     flex-wrap: nowrap;
-    width: 100%;
   }
   
   .time-range-compact {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 0 0 auto;
     min-width: 160px;
   }
   
@@ -1357,26 +1802,12 @@ export default {
   }
   
   .edit-time-range {
-    display: flex;
-    align-items: center;
     gap: 4px;
   }
   
   .time-input {
     width: 75px;
-    min-width: 75px;
     padding: 5px 4px;
-    font-size: 0.85rem;
-  }
-  
-  .status-indicator-compact {
-    flex-shrink: 0;
-    margin-left: 0;
-  }
-  
-  .actions-compact {
-    flex-shrink: 0;
-    margin-left: 0;
   }
   
   .toggle-switch-small {
@@ -1387,28 +1818,14 @@ export default {
   .toggle-slider-small:before {
     height: 14px;
     width: 14px;
-    left: 2px;
-    bottom: 2px;
   }
   
   .toggle-switch-small input:checked + .toggle-slider-small:before {
     transform: translateX(12px);
   }
-  
-  .customer-compact {
-    width: 20px;
-    height: 20px;
-    font-size: 0.75rem;
-  }
-  
-  .remove-btn-compact {
-    width: 20px;
-    height: 20px;
-    font-size: 0.8rem;
-  }
 }
 
-/* Extra Small Mobile (<360px) - COMPACT VERTICAL */
+/* Extra Small Mobile (<360px) */
 @media (max-width: 360px) {
   .slot-compact-line {
     gap: 6px;
@@ -1425,9 +1842,7 @@ export default {
   
   .time-input {
     width: 65px;
-    min-width: 65px;
     padding: 4px 3px;
-    font-size: 0.8rem;
   }
   
   .toggle-switch-small {
@@ -1438,8 +1853,6 @@ export default {
   .toggle-slider-small:before {
     height: 12px;
     width: 12px;
-    left: 2px;
-    bottom: 2px;
   }
   
   .toggle-switch-small input:checked + .toggle-slider-small:before {
@@ -1447,58 +1860,9 @@ export default {
   }
 }
 
-/* ENSURE NO BREAKING */
-.slot-compact-line {
-  display: flex !important;
-  overflow: visible !important;
-}
-
-.time-range-compact,
-.edit-time-range {
-  flex-shrink: 0 !important;
-  overflow: visible !important;
-}
-
-.time-input {
-  overflow: visible !important;
-  text-overflow: clip !important;
-}
-
-.time-input[type="time"] {
-  -moz-appearance: textfield;
-}
-
 /* Hover effects */
-.time-slot-item:hover {
+.time-slot-line:hover {
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   transform: translateY(-1px);
-}
-
-/* Tooltip for toggle */
-.toggle-switch-small[title]:hover::after {
-  content: attr(title);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #2f5082;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  z-index: 100;
-  margin-bottom: 5px;
-}
-
-/* Accessibility */
-@media (prefers-reduced-motion: reduce) {
-  .slot-compact-line,
-  .time-slot-item,
-  .remove-btn-compact,
-  .toggle-slider-small,
-  .toggle-slider-small:before {
-    transition: none;
-  }
 }
 </style>

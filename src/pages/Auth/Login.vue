@@ -1,4 +1,4 @@
-<!-- src/pages/Auth/Login.vue - UPDATED -->
+<!-- src/pages/Auth/Login.vue - UPDATED FOR PHONE AUTHENTICATION -->
 <template>
   <div class="auth-page">
     <!-- Visual Section -->
@@ -37,26 +37,29 @@
         </div>
 
         <form class="auth-form" @submit.prevent="handleLogin">
-          <!-- Email Field -->
+          <!-- Phone Number Field (REPLACED EMAIL) -->
           <div class="form-group">
-            <label for="email" class="form-label">Email Address</label>
+            <label for="phonenumber" class="form-label">Phone Number *</label>
             <input
-              id="email"
-              v-model="loginEmail"
-              type="email"
-              placeholder="Enter your email"
+              id="phonenumber"
+              v-model="loginPhone"
+              type="tel"
+              placeholder="+251 XXX XXX XXX"
               required
               class="form-input"
-              :class="{ 'error': emailError }"
-              @blur="validateEmail"
+              :class="{ 'error': phoneError }"
+              @blur="validatePhone"
             />
-            <div v-if="emailError" class="field-error">{{ emailError }}</div>
+            <div v-if="phoneError" class="field-error">{{ phoneError }}</div>
+            <div v-if="!phoneError && loginPhone" class="field-hint">
+              Use the phone number you registered with
+            </div>
           </div>
 
           <!-- Password Field -->
           <div class="form-group">
             <div class="label-row">
-              <label for="password" class="form-label">Password</label>
+              <label for="password" class="form-label">Password *</label>
               <button 
                 type="button" 
                 class="forgot-link" 
@@ -128,26 +131,31 @@ import http from "@/api/index.js";
 
 const router = useRouter();
 
-// Reactive data
-const loginEmail = ref("");
+// Reactive data - CHANGED: loginPhone instead of loginEmail
+const loginPhone = ref("");
 const loginPassword = ref("");
 const showPassword = ref(false);
 const loginLoading = ref(false);
 const loginError = ref("");
 const statusMessage = ref("");
 const statusType = ref("");
-const emailError = ref("");
+const phoneError = ref(""); // CHANGED: phoneError instead of emailError
 const passwordError = ref("");
 
-// Validation functions
-const validateEmail = () => {
-  const email = loginEmail.value.trim();
-  if (!email) {
-    emailError.value = "Email is required";
-  } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-    emailError.value = "Please enter a valid email address";
+// Validation functions - UPDATED for phone validation
+const validatePhone = () => {
+  const phone = loginPhone.value.trim();
+  
+  if (!phone) {
+    phoneError.value = "Phone number is required";
   } else {
-    emailError.value = "";
+    // Check for at least 10 digits (allowing any format)
+    const phoneDigits = phone.replace(/\D/g, '');
+    if (phoneDigits.length < 10) {
+      phoneError.value = "Please enter a valid phone number (at least 10 digits)";
+    } else {
+      phoneError.value = "";
+    }
   }
 };
 
@@ -159,7 +167,7 @@ const validatePassword = () => {
   }
 };
 
-// Form submission
+// Form submission - UPDATED to use phone instead of email
 async function handleLogin() {
   // Clear previous messages
   loginError.value = "";
@@ -167,23 +175,26 @@ async function handleLogin() {
   statusType.value = "";
   
   // Validate fields
-  validateEmail();
+  validatePhone();
   validatePassword();
   
-  if (emailError.value || passwordError.value) {
+  if (phoneError.value || passwordError.value) {
     return;
   }
 
   loginLoading.value = true;
 
   try {
-    const email = loginEmail.value.trim();
+    const phone = loginPhone.value.trim();
     const password = loginPassword.value;
 
-    console.log('🔐 Attempting login for:', email);
+    console.log('🔐 Attempting login with phone:', phone);
 
-    // Make the request WITHOUT the interceptor throwing an error
-    const response = await http.post("/auth/login", { email, password }, {
+    // FIXED: Use 'phonenumber' instead of 'phone' to match backend expectation
+    const response = await http.post("/auth/login", { 
+      phonenumber: phone, // CORRECTED: Backend expects 'phonenumber' field
+      password 
+    }, {
       // Disable throwing on error - we'll handle it manually
       validateStatus: function (status) {
         return status >= 200 && status < 500; // Accept all 2xx and 4xx responses
@@ -206,7 +217,7 @@ async function handleLogin() {
 
       // Case 1: Account is pending/under review
       if (status === 'pending' || status === 'under review' || status === 'unapproved') {
-        statusMessage.value = "Your account is under review. Please check your email for updates. You'll be able to login once approved.";
+        statusMessage.value = "Your account is under review. You'll receive an SMS notification once approved.";
         statusType.value = "pending";
         
         // Clear password field for security
@@ -233,6 +244,7 @@ async function handleLogin() {
         localStorage.setItem("loggedProvider", JSON.stringify({
           _id: user._id,
           email: user.email,
+          phone: user.phonenumber, // ADDED: Store phone number
           fullname: user.fullname,
           role: user.role,
           status: user.status,
@@ -282,7 +294,7 @@ async function handleLogin() {
                    errorMessage.includes('Unauthorized')) {
           
           // Invalid credentials
-          loginError.value = "Invalid email or password. Please try again.";
+          loginError.value = "Invalid phone number or password. Please try again."; // UPDATED: Phone instead of email
           
         } else {
           // Generic 401
@@ -293,7 +305,7 @@ async function handleLogin() {
       else if (errorStatus === 400) {
         loginError.value = errorMessage || "Bad request. Please check your input.";
       } else if (errorStatus === 404) {
-        loginError.value = "User not found. Please check your email or register.";
+        loginError.value = "User not found. Please check your phone number or register."; // UPDATED: Phone instead of email
       } else if (errorStatus >= 500) {
         loginError.value = "Server error. Please try again later.";
       } else {
@@ -330,10 +342,10 @@ function goToRegister() {
 }
 
 function goToForgotPassword() {
+  // Note: You may need to update the forgot password page to handle phone numbers
   router.push("/forgot-password");
 }
 </script>
-
 <style scoped>
 /* ===== BASE STYLES ===== */
 .auth-page {
@@ -563,6 +575,14 @@ function goToForgotPassword() {
   font-size: 0.8rem;
   color: #ef4444;
   margin-top: 4px;
+}
+
+/* NEW: Field hint style */
+.field-hint {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 2px;
+  font-style: italic;
 }
 
 /* ===== BUTTON STYLES ===== */

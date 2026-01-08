@@ -119,12 +119,20 @@
             />
             <div v-if="previewImage" class="image-preview-container">
               <img :src="previewImage" class="banner-preview" />
-              <button class="remove-image-btn" @click.stop="removeImage" aria-label="Remove image">✕</button>
+              <div class="banner-actions">
+                <button class="remove-image-btn" @click.stop="removeImage" aria-label="Remove image" title="Remove image">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+                <button class="change-image-btn" @click.stop="triggerFileInput" aria-label="Change image" title="Change image">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+              </div>
             </div>
             <div v-else class="upload-placeholder">
               <i class="fa-solid fa-cloud-arrow-up"></i>
-              <p>Upload banner (JPG/PNG)</p>
-              <p class="upload-hint">Recommended: 800×400 px</p>
+              <p>Click to upload banner image</p>
+              <p class="upload-hint">Recommended: 800×400 px (JPG, PNG, WebP)</p>
+              <p class="upload-hint">Max size: 5MB</p>
             </div>
           </div>
           <div v-if="showError && !hasValidBanner" class="error-message">
@@ -132,7 +140,11 @@
           </div>
           <div v-if="isEdit && !local.bannerFile" class="banner-info">
             <i class="fa-solid fa-info-circle"></i>
-            <span>Current banner will be kept unless you upload a new one</span>
+            <span>Current banner will be kept. Upload a new image to change it.</span>
+          </div>
+          <div v-if="isEdit && originalBanner && !local.bannerFile" class="current-banner-info">
+            <p class="current-banner-label"><i class="fa-solid fa-image"></i> Current banner:</p>
+            <img :src="originalBanner" alt="Current banner" class="current-banner-preview" />
           </div>
         </div>
 
@@ -269,6 +281,7 @@ export default {
         subcategoryIds: [],
         title: "",
         bannerFile: null,
+        bannerUrl: null, // NEW: For storing existing banner URL
         description: "",
         totalPrice: 0,
         bookingPrice: 0,
@@ -278,7 +291,7 @@ export default {
         slots: []
       },
       previewImage: null,
-      originalBanner: null, // Store original banner URL
+      originalBanner: null,
       categories: [],
       subcategories: [],
       paymentMethods: ["Telebirr", "CBE Birr", "Cash"],
@@ -322,11 +335,10 @@ export default {
         return !!this.local.bannerFile;
       }
       
-      // For editing: either existing banner OR new file
-      return !!(this.originalBanner || this.local.bannerFile);
+      // For editing: either existing banner OR new file OR we keep the original
+      return !!(this.local.bannerFile || this.local.bannerUrl || this.originalBanner);
     },
     
-    // FIXED: Get consistent service identifier
     getServiceIdentifier() {
       return (service) => {
         if (!service) return null;
@@ -359,6 +371,23 @@ export default {
             });
           }
           
+          // Extract banner URL
+          let bannerUrl = null;
+          if (val.banner) {
+            if (typeof val.banner === 'string') {
+              bannerUrl = val.banner;
+            } else if (typeof val.banner === 'object' && val.banner.url) {
+              bannerUrl = val.banner.url;
+            } else if (Array.isArray(val.banner) && val.banner.length > 0) {
+              const firstItem = val.banner[0];
+              if (typeof firstItem === 'string') {
+                bannerUrl = firstItem;
+              } else if (typeof firstItem === 'object' && firstItem.url) {
+                bannerUrl = firstItem.url;
+              }
+            }
+          }
+          
           this.local = {
             _id: this.local._id,
             categoryId: categoryId || "",
@@ -371,18 +400,13 @@ export default {
             status: val.status || "draft",
             paymentMethod: val.paymentMethod || "Telebirr",
             slots: Array.isArray(val.slots) ? [...val.slots] : [],
-            bannerFile: null
+            bannerFile: null,
+            bannerUrl: bannerUrl // Store the existing banner URL
           };
           
           // Store original banner and set preview
-          if (val.banner) {
-            console.log('📸 Original banner found:', val.banner);
-            this.originalBanner = val.banner;
-            this.previewImage = val.banner;
-          } else {
-            this.originalBanner = null;
-            this.previewImage = null;
-          }
+          this.originalBanner = bannerUrl;
+          this.previewImage = bannerUrl;
           
           // Update selected category when categories are loaded
           this.updateSelectedCategory();
@@ -394,6 +418,7 @@ export default {
           this.updateBookingPrice();
           
           console.log('✅ ServiceForm initialized for editing:', this.local);
+          console.log('📸 Original banner URL:', bannerUrl);
         } else {
           // Reset for new service
           this.local = {
@@ -402,6 +427,7 @@ export default {
             subcategoryIds: [],
             title: "",
             bannerFile: null,
+            bannerUrl: null,
             description: "",
             totalPrice: 0,
             bookingPrice: 0,
@@ -460,6 +486,10 @@ export default {
   },
 
   methods: {
+    triggerFileInput() {
+      this.$refs.fileInput.click();
+    },
+    
     updateBookingPrice() {
       this.local.bookingPrice = Math.round(this.local.totalPrice * 0.1);
     },
@@ -546,9 +576,10 @@ export default {
       console.log('🗑️ Removing image...');
       this.previewImage = null;
       this.local.bannerFile = null;
+      this.local.bannerUrl = null; // Also clear the banner URL
       
-      // Only clear original banner if we're in new service mode
-      if (!this.isEdit) {
+      // If we're in edit mode and had an original banner, clear it too
+      if (this.isEdit) {
         this.originalBanner = null;
       }
       
@@ -590,13 +621,14 @@ export default {
         console.log('  isEdit:', this.isEdit);
         console.log('  originalBanner:', this.originalBanner);
         console.log('  bannerFile:', this.local.bannerFile);
+        console.log('  bannerUrl:', this.local.bannerUrl);
         return false;
       }
       
       return true;
     },
 
-    // FIXED: Save service with proper ID handling
+    // FIXED: Save service with proper banner handling
     async saveService() {
       console.log('💾 Saving service...');
       console.log('🔍 Mode:', this.isEdit ? 'EDIT' : 'CREATE');
@@ -606,7 +638,8 @@ export default {
         price: this.local.totalPrice,
         categoryId: this.local.categoryId,
         hasBannerFile: !!this.local.bannerFile,
-        hasOriginalBanner: !!this.originalBanner
+        hasOriginalBanner: !!this.originalBanner,
+        hasBannerUrl: !!this.local.bannerUrl
       });
       
       if (!this.validateForm()) {
@@ -665,17 +698,24 @@ export default {
           formData.append('subcategories[]', name);
         });
 
-        // FIXED: Handle banner properly
+        // FIXED: IMPROVED BANNER HANDLING
         if (this.local.bannerFile) {
-          // New file uploaded
+          // New file uploaded - always use this for both new and edit
           console.log('📸 Adding new banner file to form data');
           formData.append('banner', this.local.bannerFile);
+          
+          // If editing and we had an original banner, tell backend to replace it
+          if (this.isEdit && this.originalBanner) {
+            console.log('📸 Replacing existing banner');
+            formData.append('replaceBanner', 'true');
+          }
         } else if (this.isEdit && this.originalBanner) {
-          // For editing, if no new file but we have original banner
-          console.log('📸 Keeping original banner URL:', this.originalBanner);
+          // For editing: keep the original banner (no new file uploaded)
+          console.log('📸 Keeping original banner');
+          formData.append('keepBanner', 'true');
           formData.append('bannerUrl', this.originalBanner);
         } else if (!this.isEdit) {
-          // New service must have a banner file (already validated)
+          // New service must have a banner file
           throw new Error("Banner image is required for new services");
         }
 
@@ -721,8 +761,8 @@ export default {
           throw new Error("Server returned empty response");
         }
         
-        // FIXED: Get consistent service ID from response
-        const serviceId = savedService._id || savedService.serviceId || savedService.id;
+        // Get service ID from response
+        const serviceId = savedService._id || savedService.serviceId || savedService.id || this.local._id;
         if (!serviceId) {
           console.error('❌ No service ID in response:', savedService);
           throw new Error("Service saved but no ID returned from server");
@@ -730,7 +770,7 @@ export default {
         
         console.log('🎯 Service saved with ID:', serviceId);
         
-        // FIXED: Return complete, consistent service object
+        // Prepare the updated service object to emit
         const updatedService = {
           // ID fields - all consistent
           _id: serviceId,
@@ -749,8 +789,8 @@ export default {
           priceUnit: "ETB",
           serviceType: "fixed",
           
-          // Banner - get from response if available, otherwise use what we have
-          banner: savedService.banner || this.originalBanner || this.previewImage,
+          // Banner handling
+          banner: this.getBannerFromResponse(savedService),
           
           // Subcategories
           subcategoryIds: [...this.local.subcategoryIds],
@@ -768,6 +808,7 @@ export default {
         console.log('🎯 Emitting saved service:', updatedService);
         console.log('🎯 Service ID:', updatedService._id);
         console.log('🎯 Has banner:', !!updatedService.banner);
+        console.log('🎯 Banner value:', updatedService.banner);
         
         // Emit the saved service
         this.$emit("save", updatedService);
@@ -809,7 +850,22 @@ export default {
       }
     },
     
-    // FIXED: Helper method for consistent ID handling
+    // Helper to extract banner from response
+    getBannerFromResponse(savedService) {
+      // First try to get banner from response
+      if (savedService.banner) {
+        return savedService.banner;
+      }
+      
+      // If we uploaded a new file, use the preview
+      if (this.local.bannerFile && this.previewImage) {
+        return this.previewImage;
+      }
+      
+      // Otherwise keep the original banner
+      return this.originalBanner;
+    },
+    
     getServiceIdentifier(service) {
       if (!service) return null;
       return service._id || service.serviceId || service.id;
@@ -953,27 +1009,30 @@ input:focus, select:focus, textarea:focus {
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  width: 100%;
 }
 
 .banner-preview {
-  max-width: 100%;
-  display: block;
+  width: 100%;
   max-height: 200px;
   object-fit: contain;
+  background: #f8fafc;
 }
 
-.remove-image-btn {
+.banner-actions {
   position: absolute;
-  top: -12px;
-  right: -12px;
-  width: 32px;
-  height: 32px;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.remove-image-btn, .change-image-btn {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: #ef4444;
-  color: white;
   border: 2px solid white;
   cursor: pointer;
-  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -981,8 +1040,23 @@ input:focus, select:focus, textarea:focus {
   transition: all 0.2s;
 }
 
+.remove-image-btn {
+  background: #ef4444;
+  color: white;
+}
+
 .remove-image-btn:hover {
   background: #dc2626;
+  transform: scale(1.1);
+}
+
+.change-image-btn {
+  background: #3b82f6;
+  color: white;
+}
+
+.change-image-btn:hover {
+  background: #2563eb;
   transform: scale(1.1);
 }
 
@@ -997,6 +1071,31 @@ input:focus, select:focus, textarea:focus {
 
 .banner-info i {
   color: #3b82f6;
+}
+
+.current-banner-info {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.current-banner-label {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.current-banner-preview {
+  width: 100%;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
 }
 
 .price-section {
@@ -1366,6 +1465,18 @@ input:focus, select:focus, textarea:focus {
 
   input, select, textarea {
     padding: 18px;
+  }
+  
+  .banner-actions {
+    flex-direction: column;
+    top: 5px;
+    right: 5px;
+  }
+  
+  .remove-image-btn, .change-image-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
   }
 }
 

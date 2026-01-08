@@ -126,8 +126,8 @@
           {{ getServiceStatus(service) === 'draft' ? 'Draft' : 'Active' }}
         </div>
 
-        <!-- Banner - FULL WIDTH -->
-        <div class="card-banner full-width">
+        <!-- Banner - FULL WIDTH with improved visibility -->
+        <div class="card-banner full-width" @click="previewBanner(service)">
           <img
             v-if="getBannerUrl(service)"
             :src="getBannerUrl(service)"
@@ -511,6 +511,27 @@
         </div>
       </div>
     </transition>
+
+    <!-- Banner Preview Modal -->
+    <transition name="modal-fade">
+      <div v-if="showBannerPreview" class="modal-overlay" @click.self="showBannerPreview = false">
+        <div class="modal banner-preview-modal" @click.stop>
+          <div class="modal-header">
+            <h2>Banner Preview</h2>
+            <button class="close-btn" @click="showBannerPreview = false" aria-label="Close">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div class="modal-content">
+            <img 
+              :src="previewBannerUrl" 
+              alt="Banner Preview" 
+              class="banner-preview-img"
+            />
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -560,6 +581,10 @@ export default {
         distribution: {}
       },
       reviewsSortBy: 'newest',
+      
+      // Banner Preview State
+      showBannerPreview: false,
+      previewBannerUrl: '',
       
       // Banner editing state - SIMPLIFIED
       newBannerFile: null,
@@ -675,31 +700,43 @@ export default {
       return this.getServiceStatus(service) === 'active';
     },
     
+    // UPDATED: Get accurate available days count from schedule
     getAccurateAvailableDaysCount(service) {
       if (!service || !service.slots || !Array.isArray(service.slots)) return 0;
+      
       const availableDays = new Set();
+      
       service.slots.forEach(slot => {
         if (slot && slot.weeklySchedule && Array.isArray(slot.weeklySchedule)) {
           slot.weeklySchedule.forEach(daySchedule => {
-            if (this.shouldCountDay(daySchedule)) {
-              availableDays.add(daySchedule.day);
+            // Check if this day has any available time slots
+            if (this.isDayAvailable(daySchedule)) {
+              const dateStr = daySchedule.date || daySchedule.day;
+              if (dateStr) {
+                availableDays.add(dateStr);
+              }
             }
           });
         }
       });
+      
+      // Return count of unique available days
       return availableDays.size;
     },
     
-    shouldCountDay(daySchedule) {
+    // NEW: Improved method to check if a day is available
+    isDayAvailable(daySchedule) {
       if (!daySchedule) return false;
       if (daySchedule.isWorkingDay !== true) return false;
       if (!daySchedule.timeSlots || !Array.isArray(daySchedule.timeSlots)) return false;
+      
+      // Check if any time slot is available
       return daySchedule.timeSlots.some(slot => 
         slot && slot.isAvailable === true
       );
     },
 
-    // ===== BANNER METHODS =====
+    // ===== BANNER METHODS - IMPROVED =====
     getBannerUrl(service) {
       if (!service || !service.banner) return null;
       
@@ -721,7 +758,25 @@ export default {
     },
     
     handleBannerError(event) {
+      console.warn('Banner image failed to load');
       event.target.style.display = 'none';
+      // Show placeholder instead
+      const parent = event.target.parentElement;
+      if (parent) {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'banner-placeholder';
+        placeholder.innerHTML = '<i class="fa-solid fa-scissors"></i>';
+        parent.appendChild(placeholder);
+      }
+    },
+    
+    // NEW: Banner preview functionality
+    previewBanner(service) {
+      const bannerUrl = this.getBannerUrl(service);
+      if (bannerUrl) {
+        this.previewBannerUrl = bannerUrl;
+        this.showBannerPreview = true;
+      }
     },
 
     // ===== SERVICE METHODS =====
@@ -1188,7 +1243,45 @@ export default {
 </script>
 
 <style scoped>
-/* ===== ADDED: Time Slots Modal Styles ===== */
+/* ===== IMPROVED: Banner Styles ===== */
+.card-banner.full-width {
+  position: relative;
+  height: 140px;
+  width: 100%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.card-banner.full-width:hover {
+  opacity: 0.95;
+}
+
+.banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  transition: transform 0.5s ease;
+}
+
+.card-banner.full-width:hover .banner-img {
+  transform: scale(1.05);
+}
+
+.banner-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2.5rem;
+  opacity: 0.8;
+}
+
+/* ===== IMPROVED: Time Slots Modal Styles ===== */
 .time-slots-modal {
   max-width: 800px;
   max-height: 90vh;
@@ -1223,14 +1316,15 @@ export default {
 .current-banner-info {
   max-height: 150px;
   overflow: hidden;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
   background: #f7fafc;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .current-banner {
@@ -1238,14 +1332,19 @@ export default {
   height: auto;
   max-height: 120px;
   object-fit: contain;
-  border-radius: 6px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e0;
 }
 
 .banner-note {
   margin-top: 0.5rem;
   text-align: center;
-  color: #718096;
+  color: #4a5568;
   font-size: 0.8rem;
+  padding: 0.5rem;
+  background: #edf2f7;
+  border-radius: 6px;
+  width: 100%;
 }
 
 .banner-note i {
@@ -1256,46 +1355,95 @@ export default {
 .no-banner-info {
   padding: 2rem 1rem;
   text-align: center;
-  background: #f8fafc;
+  background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
   border: 2px dashed #cbd5e0;
-  border-radius: 8px;
-  color: #718096;
+  border-radius: 12px;
+  color: #4a5568;
 }
 
 .no-banner-info i {
-  font-size: 2rem;
+  font-size: 2.5rem;
   color: #a0aec0;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
   display: block;
+  opacity: 0.7;
 }
 
 .no-banner-info p {
   margin: 0.5rem 0;
   font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .edit-full-btn {
-  background: #3182ce;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
   font-size: 0.85rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: all 0.2s ease;
-  margin-top: 0.5rem;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .edit-full-btn:hover {
-  background: #2c5282;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* ===== REST OF YOUR EXISTING STYLES (keep everything else the same) ===== */
+/* ===== NEW: Banner Preview Modal ===== */
+.banner-preview-modal {
+  max-width: 800px;
+  max-height: 90vh;
+}
+
+.banner-preview-modal .modal-content {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a202c;
+}
+
+.banner-preview-img {
+  width: 100%;
+  height: auto;
+  max-height: 70vh;
+  object-fit: contain;
+  display: block;
+}
+
+/* ===== IMPROVED: Availability Badge ===== */
+.availability-badge.available {
+  background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+  color: #276749;
+  padding: 0.5rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 4px rgba(56, 161, 105, 0.2);
+}
+
+.days-count {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #276749;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  margin-left: 0.25rem;
+}
+
+/* ===== REST OF YOUR EXISTING STYLES ===== */
 /* ... All your existing styles remain here ... */
 
 /* ===== BASE STYLES ===== */
@@ -1612,37 +1760,6 @@ export default {
   border-color: #3182ce;
 }
 
-/* ===== FULL WIDTH BANNER ===== */
-.card-banner.full-width {
-  position: relative;
-  height: 140px;
-  width: 100%;
-  overflow: hidden;
-  background: #edf2f7;
-}
-
-.banner-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.card-banner.full-width:hover .banner-img {
-  transform: scale(1.03);
-}
-
-.banner-placeholder {
-  width: 100%;
-  height: 100%;
-  background: #3182ce;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 2rem;
-}
-
 /* ===== SERVICE STATUS BADGE ===== */
 .service-status-badge {
   position: absolute;
@@ -1858,12 +1975,6 @@ export default {
   color: #38a169;
 }
 
-.days-count {
-  font-size: 0.75rem;
-  font-weight: normal;
-  color: #718096;
-}
-
 .draft-notice.compact {
   font-size: 0.8rem;
   padding: 0.5rem;
@@ -1989,11 +2100,6 @@ export default {
   outline: none;
   border-color: #3182ce;
   box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
-}
-
-/* ===== BANNER INFO SECTION ===== */
-.banner-info-section {
-  margin: 1rem 0;
 }
 
 /* ===== COMPACT SAVE BUTTON ===== */
@@ -2744,6 +2850,14 @@ export default {
     border-color: #4a5568;
     color: #e2e8f0;
   }
+  
+  .card-banner.full-width {
+    background: #2d3748;
+  }
+  
+  .banner-placeholder {
+    background: #4a5568;
+  }
 }
 
 /* Print styles */
@@ -2765,6 +2879,10 @@ export default {
   
   .services-grid.compact {
     display: block;
+  }
+  
+  .card-banner.full-width {
+    display: none !important;
   }
 }
 </style>
