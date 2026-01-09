@@ -25,121 +25,115 @@
       <i class="fas fa-clock"></i>
       <div class="alert-content">
         <strong>Schedule Your Availability</strong>
-        <p>Click on calendar days to set your working hours.</p>
+        <p>Click on calendar days to set your working hours. Customers can book these time slots.</p>
       </div>
     </div>
 
     <!-- Main Content -->
     <div v-if="!loading" class="scheduler-container">
       <!-- Calendar Section -->
-      <div class="calendar-section">
-        <div class="calendar-wrapper">
-          <!-- Month Navigation -->
-          <div class="month-nav">
-            <button @click="prevMonth" class="nav-btn">
-              <i class="fas fa-chevron-left"></i>
-            </button>
-            <div class="month-year">{{ currentMonthYear }}</div>
-            <button @click="nextMonth" class="nav-btn">
-              <i class="fas fa-chevron-right"></i>
-            </button>
+      <div class="calendar-wrapper">
+        <!-- Month Navigation -->
+        <div class="month-nav">
+          <button @click="prevMonth" class="nav-btn">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <div class="month-year">{{ currentMonthYear }}</div>
+          <button @click="nextMonth" class="nav-btn">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="calendar-grid">
+          <!-- Week Days -->
+          <div class="weekdays">
+            <div v-for="day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']" :key="day">
+              {{ day }}
+            </div>
           </div>
 
-          <!-- Calendar Grid -->
-          <div class="calendar-grid">
-            <!-- Week Days -->
-            <div class="weekdays">
-              <div v-for="day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']" :key="day">
-                {{ day }}
-              </div>
-            </div>
-
-            <!-- Days Grid -->
-            <div class="days-grid">
-              <!-- Empty Days -->
-              <div v-for="n in firstDayOffset" :key="'empty-' + n" class="day empty"></div>
+          <!-- Days Grid -->
+          <div class="days-grid">
+            <!-- Empty Days -->
+            <div v-for="n in firstDayOffset" :key="'empty-' + n" class="day empty"></div>
+            
+            <!-- Actual Days -->
+            <div
+              v-for="day in daysInMonth"
+              :key="day"
+              class="day"
+              :class="getDayClasses(day)"
+              @click="!isPastDay(day) && selectSingleDay(day)"
+            >
+              <div class="day-number">{{ day }}</div>
               
-              <!-- Actual Days -->
-              <div
-                v-for="day in daysInMonth"
-                :key="day"
-                class="day"
-                :class="getDayClasses(day)"
-                @click="!isPastDay(day) && selectSingleDay(day)"
-              >
-                <div class="day-number">{{ day }}</div>
-                
-                <!-- BIG COLOR INDICATORS -->
-                <div class="day-indicators-big">
-                  <!-- Booked Indicator - BIG RED DOT -->
-                  <div v-if="hasBookings(day)" class="booked-indicator-big" title="Has bookings">
-                    ●
-                  </div>
-                  
-                  <!-- Available Indicator - BIG GREEN DOT -->
-                  <div v-else-if="isAvailableDay(day)" class="available-indicator-big" title="Available">
-                    ●
-                  </div>
-                  
-                  <!-- Off Day Indicator - BIG GRAY MINUS -->
-                  <div v-else-if="isOffDay(day)" class="off-indicator-big" title="Day off">
-                    –
-                  </div>
+              <!-- BIG COLOR INDICATORS (only the colors bigger) -->
+              <div class="day-indicators-big">
+                <!-- Booked Indicator - BIG RED DOT -->
+                <div v-if="hasBookings(day)" class="booked-indicator-big" title="Has bookings">
+                  ●
                 </div>
                 
-                <!-- Active Day Highlight -->
-                <div v-if="isActiveDay(day)" class="active-highlight"></div>
-                
-                <!-- Past Overlay -->
-                <div v-if="isPastDay(day)" class="past-overlay">
-                  <i class="fas fa-lock"></i>
+                <!-- Available Indicator - BIG GREEN DOT -->
+                <div v-else-if="isAvailableDay(day)" class="available-indicator-big" title="Available">
+                  ●
                 </div>
+                
+                <!-- Off Day Indicator - BIG GRAY MINUS -->
+                <div v-else-if="isOffDay(day)" class="off-indicator-big" title="Day off">
+                  –
+                </div>
+              </div>
+              
+              <!-- Active Day Highlight -->
+              <div v-if="isActiveDay(day)" class="active-highlight"></div>
+              
+              <!-- Past Overlay -->
+              <div v-if="isPastDay(day)" class="past-overlay">
+                <i class="fas fa-lock"></i>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Mobile Color Legend -->
-          <div class="mobile-color-legend">
-            <div class="legend-row">
-              <div class="legend-item-mobile">
-                <div class="legend-dot-mobile active-dot-mobile"></div>
-                <span>Selected</span>
-              </div>
-              <div class="legend-item-mobile">
-                <div class="legend-dot-mobile booked-dot-mobile"></div>
-                <span>Booked</span>
-              </div>
-            </div>
-            <div class="legend-row">
-              <div class="legend-item-mobile">
-                <div class="legend-dot-mobile available-dot-mobile"></div>
-                <span>Available</span>
-              </div>
-              <div class="legend-item-mobile">
-                <div class="legend-dot-mobile off-dot-mobile"></div>
-                <span>Day Off</span>
-              </div>
-            </div>
+        <!-- BIG Color Legend -->
+        <div class="big-color-legend">
+          <div class="legend-item-big">
+            <div class="legend-dot-big active-dot-big"></div>
+            <span>Selected</span>
+          </div>
+          <div class="legend-item-big">
+            <div class="legend-dot-big booked-dot-big"></div>
+            <span>Booked</span>
+          </div>
+          <div class="legend-item-big">
+            <div class="legend-dot-big available-dot-big"></div>
+            <span>Available</span>
+          </div>
+          <div class="legend-item-big">
+            <div class="legend-dot-big off-dot-big"></div>
+            <span>Day Off</span>
           </div>
         </div>
       </div>
 
       <!-- Timeslot Panel for Active Day -->
       <div v-if="activeDate" class="timeslot-panel">
-        <!-- Mobile Active Day Header -->
-        <div class="mobile-day-header">
-          <div class="mobile-day-info">
-            <h3>{{ formatDateShort(activeDate) }}</h3>
-            <div class="mobile-day-status">
-              <div class="day-toggle-mobile" @click="toggleActiveDayOff()">
-                <div class="toggle-circle" :class="{ 'working': activeDayData.working, 'off': !activeDayData.working }">
+        <!-- Active Day Header -->
+        <div class="active-day-header">
+          <div class="day-info">
+            <h3>{{ formatDateLong(activeDate) }}</h3>
+            <div class="day-status-badges">
+              <div class="day-toggle-rectangle" @click="toggleActiveDayOff()">
+                <div class="toggle-rectangle" :class="{ 'working': activeDayData.working, 'off': !activeDayData.working }">
                   <i v-if="activeDayData.working" class="fas fa-check"></i>
                   <i v-else class="fas fa-minus"></i>
                 </div>
-                <span>{{ activeDayData.working ? 'Working Day' : 'Day Off' }}</span>
+                <span class="toggle-label">{{ activeDayData.working ? 'Working Day' : 'Day Off' }}</span>
               </div>
               
-              <div v-if="hasBookingsForActiveDay()" class="mobile-booked-badge">
+              <div v-if="hasBookingsForActiveDay()" class="booked-badge">
                 <i class="fas fa-calendar-check"></i>
                 {{ getBookedCount() }} booked
               </div>
@@ -154,114 +148,96 @@
             :key="index"
             class="time-slot-line"
           >
-            <!-- MOBILE COMPACT LAYOUT -->
-            <div class="slot-mobile-line">
-              <!-- Icon Column -->
-              <div class="slot-icon-column">
-                <i class="fas fa-clock slot-icon" :class="{
-                  'booked-slot-icon': slot.isBooked,
-                  'available-slot-icon': !slot.isBooked && slot.isActive,
-                  'unavailable-slot-icon': !slot.isBooked && !slot.isActive
-                }"></i>
-              </div>
-              
-              <!-- Time Column -->
-              <div class="slot-time-column">
+            <!-- COMPACT SINGLE LINE LAYOUT (CLOCK ICON REMOVED) -->
+            <div class="slot-compact-line">
+              <!-- TIME RANGE - NO CLOCK ICON -->
+              <div class="time-range-compact">
                 <!-- For booked slots -->
-                <div v-if="slot.isBooked" class="booked-slot-mobile">
-                  <div class="booked-time-mobile">
-                    {{ formatTo12Hour(slot.startTime) }} – {{ formatTo12Hour(slot.endTime) }}
-                  </div>
-                  <div class="booked-label-mobile">
-                    <i class="fas fa-calendar-check"></i> Booked
-                  </div>
-                </div>
+                <span v-if="slot.isBooked" class="booked-time-text">
+                  {{ formatTo12Hour(slot.startTime) }} – {{ formatTo12Hour(slot.endTime) }}
+                </span>
                 
                 <!-- For editable slots -->
-                <div v-else class="editable-slot-mobile">
-                  <div class="time-inputs-mobile">
-                    <div class="time-input-group-mobile">
-                      <label>Start</label>
-                      <input
-                        type="time"
-                        :value="formatTimeForInput(slot.startTime)"
-                        @input="updateSlotTime(index, 'startTime', $event.target.value)"
-                        class="time-input-mobile"
-                        @change="validateActiveSlot(index)"
-                      />
-                    </div>
-                    
-                    <div class="time-separator-mobile">–</div>
-                    
-                    <div class="time-input-group-mobile">
-                      <label>End</label>
-                      <input
-                        type="time"
-                        :value="formatTimeForInput(slot.endTime)"
-                        @input="updateSlotTime(index, 'endTime', $event.target.value)"
-                        class="time-input-mobile"
-                        @change="validateActiveSlot(index)"
-                      />
-                    </div>
+                <span v-else class="edit-time-range">
+                  <div class="time-input-wrapper">
+                    <input
+                      type="time"
+                      :value="formatTimeForInput(slot.startTime)"
+                      @input="updateSlotTime(index, 'startTime', $event.target.value)"
+                      class="time-input"
+                      @change="validateActiveSlot(index)"
+                    />
                   </div>
-                  
-                  <div class="slot-actions-mobile">
-                    <!-- Toggle Switch -->
-                    <label class="toggle-switch-mobile">
-                      <input
-                        type="checkbox"
-                        :checked="slot.isActive"
-                        @change="toggleSlotActiveInActiveDay(index)"
-                      />
-                      <span class="toggle-slider-mobile"></span>
-                    </label>
-                    
-                    <!-- Remove Button -->
-                    <button
-                      class="remove-btn-mobile"
-                      @click="removeSlotFromActiveDay(index)"
-                      :disabled="activeDayData.slots.length === 1 || slot.isBooked"
-                      title="Remove"
-                    >
-                      <i class="fas fa-times"></i>
-                    </button>
+                  <span class="time-separator">–</span>
+                  <div class="time-input-wrapper">
+                    <input
+                      type="time"
+                      :value="formatTimeForInput(slot.endTime)"
+                      @input="updateSlotTime(index, 'endTime', $event.target.value)"
+                      class="time-input"
+                      @change="validateActiveSlot(index)"
+                    />
                   </div>
+                </span>
+              </div>
+
+              <!-- STATUS INDICATOR -->
+              <div class="status-indicator-compact">
+                <!-- BOOKED - Just icon -->
+                <div v-if="slot.isBooked" class="booked-indicator-icon">
+                  <i class="fas fa-calendar-check"></i>
+                </div>
+                
+                <!-- AVAILABLE/UNAVAILABLE TOGGLE -->
+                <div v-else class="toggle-container">
+                  <label class="toggle-switch-small">
+                    <input
+                      type="checkbox"
+                      :checked="slot.isActive"
+                      @change="toggleSlotActiveInActiveDay(index)"
+                    />
+                    <span class="toggle-slider-small"></span>
+                  </label>
                 </div>
               </div>
-            </div>
-            
-            <!-- Error Message -->
-            <div v-if="slot.hasError" class="slot-error-mobile">
-              <i class="fas fa-exclamation-triangle"></i>
-              {{ slot.errorMessage }}
+
+              <!-- ERROR & REMOVE -->
+              <div class="actions-compact">
+                <div v-if="slot.hasError" class="error-indicator" :title="slot.errorMessage">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <button
+                  class="remove-btn-compact"
+                  @click="removeSlotFromActiveDay(index)"
+                  :disabled="activeDayData.slots.length === 1 || slot.isBooked"
+                  :title="slot.isBooked ? 'Cannot remove booked slot' : 'Remove time slot'"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
             </div>
           </div>
 
           <!-- Add Slot Button -->
-          <button @click="addSlotToActiveDay()" class="add-slot-btn-mobile">
+          <button @click="addSlotToActiveDay()" class="add-slot-btn">
             <i class="fas fa-plus"></i> Add Time Slot
           </button>
         </div>
 
         <!-- Day Off Message -->
-        <div v-else class="day-off-card-mobile">
-          <div class="day-off-content-mobile">
-            <i class="fas fa-moon"></i>
-            <div class="day-off-text">
-              <h4>Day Off</h4>
-              <p>No appointments available on this day</p>
-            </div>
-            <button @click="toggleActiveDayOff()" class="make-working-btn-mobile">
-              Set Working
-            </button>
-          </div>
+        <div v-else class="day-off-card">
+          <i class="fas fa-moon"></i>
+          <span>Day Off</span>
+          <button @click="toggleActiveDayOff()" class="make-working-btn">
+            Set Working
+          </button>
         </div>
 
         <!-- Save Button -->
-        <div class="save-section-mobile">
+        <div class="save-section">
           <button 
             @click="saveActiveDayChanges()" 
-            class="save-btn-mobile"
+            class="save-btn"
             :disabled="!hasChanges || saving"
           >
             <i v-if="saving" class="fas fa-spinner fa-spin"></i>
@@ -272,11 +248,11 @@
       </div>
 
       <!-- No Selection Message -->
-      <div v-else class="no-selection-mobile">
-        <div class="empty-message-mobile">
+      <div v-else class="no-selection">
+        <div class="empty-message">
           <i class="fas fa-calendar-alt"></i>
-          <h3>Select a Day</h3>
-          <p>Tap on any future date to set working hours</p>
+          <h3>Select a Day to Schedule</h3>
+          <p>Click on future dates in the calendar to schedule</p>
         </div>
       </div>
     </div>
@@ -844,14 +820,6 @@ export default {
       });
     },
     
-    formatDateShort(dateKey) {
-      const date = new Date(dateKey);
-      const day = date.getDate();
-      const month = date.toLocaleDateString('en-US', { month: 'short' });
-      const year = date.getFullYear();
-      return `${day} ${month} ${year}`;
-    },
-    
     formatTime(timeStr) {
       if (!timeStr) return '09:00';
       if (timeStr === '24:00' || timeStr.startsWith('24:')) {
@@ -889,28 +857,25 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 /* ===== BASE STYLES ===== */
 .ultimate-scheduler {
-  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 16px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 20px;
+  font-family: "Inter", sans-serif;
   background: #f8fafc;
   min-height: 100vh;
-  -webkit-tap-highlight-color: transparent;
 }
 
 /* ===== MESSAGES ===== */
 .loading, .message {
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 14px;
+  gap: 12px;
 }
 .loading { background: #f1f5f9; color: #64748b; }
 .error { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
@@ -919,45 +884,39 @@ export default {
   background: #fffbeb; 
   color: #d97706; 
   border: 1px solid #fef3c7;
-  padding: 12px 16px;
-  border-radius: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 20px;
-  font-size: 14px;
 }
 .close-error, .close-success {
   margin-left: auto;
   background: none;
   border: none;
-  font-size: 16px;
+  font-size: 1.1rem;
   cursor: pointer;
   opacity: 0.7;
 }
+.close-error:hover, .close-success:hover { opacity: 1; }
 
-/* ===== CALENDAR SECTION ===== */
-.calendar-section {
-  width: 100%;
-  margin-bottom: 24px;
-}
-
+/* ===== CALENDAR ===== */
 .calendar-wrapper {
   background: white;
-  border-radius: 16px;
+  border-radius: 10px;
   padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
   border: 1px solid #e2e8f0;
-  width: 100%;
+  margin-bottom: 20px;
 }
 
-/* Month Navigation - Mobile Friendly */
 .month-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
-  padding-bottom: 16px;
+  padding-bottom: 15px;
   border-bottom: 1px solid #e2e8f0;
 }
 
@@ -965,15 +924,14 @@ export default {
   background: #3b82f6;
   color: white;
   border: none;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
-  font-size: 18px;
 }
 
 .nav-btn:hover {
@@ -981,22 +939,19 @@ export default {
 }
 
 .month-year {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 1.3rem;
+  font-weight: 600;
   color: #1e293b;
   text-align: center;
   flex: 1;
-  padding: 0 10px;
 }
 
-/* Calendar Grid - Mobile Optimized */
+/* Calendar Grid */
 .calendar-grid {
   background: #f8fafc;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
-  width: 100%;
-  overflow: hidden;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
 }
 
 .weekdays {
@@ -1008,24 +963,22 @@ export default {
   margin-bottom: 12px;
   padding-bottom: 10px;
   border-bottom: 1px solid #e2e8f0;
-  font-size: 12px;
-  width: 100%;
+  font-size: 0.85rem;
 }
 
 .weekdays div {
-  padding: 6px 0;
+  padding: 8px 2px;
 }
 
 .days-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  width: 100%;
+  gap: 6px;
 }
 
 .day {
   aspect-ratio: 1;
-  min-height: 0;
+  min-height: 45px;
   border: 2px solid #e2e8f0;
   border-radius: 8px;
   display: flex;
@@ -1035,32 +988,6 @@ export default {
   transition: all 0.2s;
   background: white;
   position: relative;
-  padding: 2px;
-  width: 100%;
-}
-
-/* Make calendar smaller for mobile */
-@media (max-width: 480px) {
-  .days-grid {
-    gap: 3px;
-  }
-  
-  .day {
-    border-width: 1.5px;
-    border-radius: 6px;
-  }
-  
-  .day-number {
-    font-size: 13px !important;
-  }
-  
-  .weekdays {
-    font-size: 11px;
-  }
-  
-  .month-year {
-    font-size: 16px;
-  }
 }
 
 .day.empty {
@@ -1092,46 +1019,44 @@ export default {
 }
 
 .day-number {
-  font-size: 14px;
+  font-size: 1rem;
   font-weight: 600;
   color: #1e293b;
-  text-align: center;
-  width: 100%;
 }
 
 .day.past .day-number {
   color: #9ca3af;
 }
 
-/* BIG COLOR INDICATORS - Mobile Optimized */
+/* BIG COLOR INDICATORS */
 .day-indicators-big {
   position: absolute;
-  bottom: 2px;
+  bottom: 4px;
   left: 0;
   right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 14px;
+  height: 16px;
 }
 
 .booked-indicator-big {
   color: #dc2626;
-  font-size: 16px; /* BIG RED DOT for mobile */
+  font-size: 0.9rem;
   line-height: 1;
   font-weight: bold;
 }
 
 .available-indicator-big {
   color: #10b981;
-  font-size: 16px; /* BIG GREEN DOT for mobile */
+  font-size: 0.9rem;
   line-height: 1;
   font-weight: bold;
 }
 
 .off-indicator-big {
   color: #9ca3af;
-  font-size: 18px; /* BIG GRAY MINUS for mobile */
+  font-size: 1.1rem;
   line-height: 1;
   font-weight: bold;
 }
@@ -1149,291 +1074,256 @@ export default {
 
 .past-overlay {
   position: absolute;
-  top: 1px;
-  right: 1px;
+  top: 2px;
+  right: 2px;
   color: #9ca3af;
-  font-size: 10px;
+  font-size: 0.7rem;
 }
 
-/* Mobile Color Legend */
-.mobile-color-legend {
+/* BIG COLOR LEGEND */
+.big-color-legend {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.legend-row {
-  display: flex;
-  justify-content: space-between;
+  justify-content: center;
   gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+  font-size: 0.85rem;
+  color: #64748b;
 }
 
-.legend-item-mobile {
+.legend-item-big {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  color: #475569;
-  flex: 1;
 }
 
-.legend-dot-mobile {
+.legend-dot-big {
   width: 20px;
   height: 20px;
   border-radius: 50%;
+  display: inline-block;
   border: 2px solid;
-  flex-shrink: 0;
 }
 
-.active-dot-mobile {
+.active-dot-big {
   background: #3b82f6;
   border-color: #3b82f6;
 }
 
-.booked-dot-mobile {
+.booked-dot-big {
   background: #dc2626;
   border-color: #dc2626;
 }
 
-.available-dot-mobile {
+.available-dot-big {
   background: #10b981;
   border-color: #10b981;
 }
 
-.off-dot-mobile {
+.off-dot-big {
   background: #f3f4f6;
   border-color: #d1d5db;
 }
 
-/* ===== MOBILE TIMESLOT PANEL ===== */
+/* ===== TIMESLOT PANEL ===== */
 .timeslot-panel {
   background: white;
-  border-radius: 16px;
+  border-radius: 10px;
   padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
   border: 1px solid #e2e8f0;
-  width: 100%;
 }
 
-/* Mobile Day Header */
-.mobile-day-header {
+/* Active Day Header */
+.active-day-header {
   margin-bottom: 20px;
-  padding-bottom: 16px;
+  padding-bottom: 15px;
   border-bottom: 1px solid #e2e8f0;
 }
 
-.mobile-day-info h3 {
-  margin: 0 0 12px 0;
-  font-size: 18px;
+.day-info h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.3rem;
   color: #1e293b;
-  font-weight: 700;
+  font-weight: 600;
 }
 
-.mobile-day-status {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.day-toggle-mobile {
+.day-status-badges {
   display: flex;
   align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  padding: 8px 12px;
-  background: #f8fafc;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
+  gap: 15px;
+  flex-wrap: wrap;
 }
 
-.toggle-circle {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+.day-toggle-rectangle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.toggle-rectangle {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  transition: all 0.2s;
 }
 
-.toggle-circle.working {
+.toggle-rectangle.working {
   background: #10b981;
   color: white;
 }
 
-.toggle-circle.off {
+.toggle-rectangle.off {
   background: #9ca3af;
   color: white;
 }
 
-.day-toggle-mobile span {
+.toggle-rectangle:hover {
+  transform: translateY(-2px);
+}
+
+.toggle-rectangle i {
+  font-size: 0.9rem;
+}
+
+.toggle-label {
   font-weight: 600;
   color: #475569;
-  font-size: 14px;
+  font-size: 0.95rem;
 }
 
-.mobile-booked-badge {
+.booked-badge {
   background: #fee2e2;
   color: #dc2626;
-  padding: 8px 12px;
-  border-radius: 20px;
-  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 0.85rem;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-weight: 600;
-  align-self: flex-start;
+  gap: 5px;
+  font-weight: 500;
 }
 
-/* ===== MOBILE TIME SLOTS LIST ===== */
+/* ===== TIME SLOTS LIST - FIXED TOGGLE OVERLAP ===== */
 .time-slots-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 20px;
 }
 
 .time-slot-line {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 16px;
-  transition: all 0.2s ease;
+  border-radius: 8px;
+  padding: 10px 12px;
 }
 
-/* Mobile Slot Layout */
-.slot-mobile-line {
+/* SIMPLE ONE LINE LAYOUT */
+.slot-compact-line {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
+  gap: 8px;
 }
 
-.slot-icon-column {
-  flex-shrink: 0;
-  padding-top: 4px;
+/* TIME RANGE - MORE SPACE */
+.time-range-compact {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  margin-right: 10px; /* ADDED: Space between time and toggle */
 }
 
-.slot-icon {
-  font-size: 16px;
+.booked-time-text {
+  font-weight: 600;
+  color: #1e40af;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  padding: 0 4px;
 }
 
-.booked-slot-icon {
-  color: #dc2626;
-}
-
-.available-slot-icon {
-  color: #22c55e;
-}
-
-.unavailable-slot-icon {
-  color: #94a3b8;
-}
-
-.slot-time-column {
+.edit-time-range {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   flex: 1;
   min-width: 0;
 }
 
-/* Booked Slot Mobile */
-.booked-slot-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.booked-time-mobile {
-  font-weight: 600;
-  color: #1e40af;
-  font-size: 14px;
-}
-
-.booked-label-mobile {
-  color: #dc2626;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-weight: 600;
-}
-
-/* Editable Slot Mobile */
-.editable-slot-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.time-inputs-mobile {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.time-input-group-mobile {
-  flex: 1;
-  min-width: 120px;
-}
-
-.time-input-group-mobile label {
-  display: block;
-  font-size: 11px;
-  color: #64748b;
-  margin-bottom: 4px;
-  font-weight: 500;
-}
-
-.time-input-mobile {
-  width: 100%;
-  padding: 10px;
+/* TIME INPUT - SMALLER */
+.time-input {
+  width: 78px; /* SLIGHTLY SMALLER */
+  min-width: 78px;
+  padding: 6px 6px; /* SMALLER PADDING */
   border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-align: center;
   font-family: 'Inter', monospace;
   color: #1e293b;
   background: white;
-  -webkit-appearance: none;
-  appearance: none;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
-.time-input-mobile:focus {
+.time-input:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
-.time-separator-mobile {
+.time-separator {
   color: #64748b;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 0 4px;
+  font-size: 0.9rem;
+  padding: 0 2px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.slot-actions-mobile {
+/* STATUS INDICATOR - SMALLER TOGGLE */
+.status-indicator-compact {
   display: flex;
   align-items: center;
-  gap: 12px;
-  justify-content: flex-end;
+  gap: 12px; /* INCREASED: More space before X */
+  flex-shrink: 0;
 }
 
-.toggle-switch-mobile {
+.booked-indicator-icon {
+  color: #dc2626;
+  font-size: 1rem;
+  cursor: help;
+  flex-shrink: 0;
+}
+
+/* TOGGLE SWITCH - SMALLER */
+.toggle-container {
+  flex-shrink: 0;
+}
+
+.toggle-switch-small {
+  display: inline-block;
   position: relative;
-  width: 40px;
-  height: 24px;
+  width: 32px; /* SMALLER */
+  height: 18px; /* SMALLER */
   cursor: pointer;
+  flex-shrink: 0;
 }
 
-.toggle-switch-mobile input {
+.toggle-switch-small input {
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-.toggle-slider-mobile {
+.toggle-slider-small {
   position: absolute;
   cursor: pointer;
   top: 0;
@@ -1442,14 +1332,14 @@ export default {
   bottom: 0;
   background-color: #ef4444;
   transition: .3s;
-  border-radius: 12px;
+  border-radius: 10px;
 }
 
-.toggle-slider-mobile:before {
+.toggle-slider-small:before {
   position: absolute;
   content: "";
-  height: 20px;
-  width: 20px;
+  height: 14px; /* SMALLER */
+  width: 14px; /* SMALLER */
   left: 2px;
   bottom: 2px;
   background-color: white;
@@ -1457,17 +1347,32 @@ export default {
   border-radius: 50%;
 }
 
-.toggle-switch-mobile input:checked + .toggle-slider-mobile {
+.toggle-switch-small input:checked + .toggle-slider-small {
   background-color: #22c55e;
 }
 
-.toggle-switch-mobile input:checked + .toggle-slider-mobile:before {
-  transform: translateX(16px);
+.toggle-switch-small input:checked + .toggle-slider-small:before {
+  transform: translateX(14px); /* SMALLER MOVEMENT */
 }
 
-.remove-btn-mobile {
-  width: 32px;
-  height: 32px;
+/* ACTIONS */
+.actions-compact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.error-indicator {
+  color: #dc2626;
+  font-size: 0.9rem;
+  cursor: help;
+  flex-shrink: 0;
+}
+
+.remove-btn-compact {
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: #fee2e2;
   color: #dc2626;
@@ -1476,249 +1381,234 @@ export default {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  padding: 0;
+  transition: all 0.2s;
 }
 
-.remove-btn-mobile:hover:not(:disabled) {
+.remove-btn-compact:hover:not(:disabled) {
   background: #fecaca;
+  transform: scale(1.05);
 }
 
-.remove-btn-mobile:disabled {
+.remove-btn-compact:disabled {
   opacity: 0.3;
-  cursor: not-allowed;
-}
-
-/* Error Message Mobile */
-.slot-error-mobile {
-  margin-top: 10px;
-  background: #fee2e2;
-  color: #dc2626;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Add Slot Button Mobile */
-.add-slot-btn-mobile {
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  color: #64748b;
-  padding: 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-weight: 600;
-  transition: all 0.2s;
-  font-size: 14px;
-  margin-top: 8px;
-  width: 100%;
-}
-
-.add-slot-btn-mobile:hover {
-  background: #e2e8f0;
-  color: #475569;
-}
-
-/* ===== DAY OFF CARD MOBILE ===== */
-.day-off-card-mobile {
-  background: #f8fafc;
-  border-radius: 12px;
-  border: 1px dashed #cbd5e1;
-  padding: 24px 16px;
-  margin-bottom: 20px;
-}
-
-.day-off-content-mobile {
-  text-align: center;
-  color: #6b7280;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.day-off-content-mobile i {
-  font-size: 40px;
-  color: #94a3b8;
-}
-
-.day-off-text h4 {
-  margin: 0 0 4px 0;
-  font-size: 16px;
-  color: #4b5563;
-  font-weight: 700;
-}
-
-.day-off-text p {
-  margin: 0;
-  font-size: 13px;
-  color: #9ca3af;
-}
-
-.make-working-btn-mobile {
-  background: #3b82f6;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.make-working-btn-mobile:hover {
-  background: #2563eb;
-}
-
-/* ===== SAVE BUTTON MOBILE ===== */
-.save-section-mobile {
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid #e2e8f0;
-  text-align: center;
-}
-
-.save-btn-mobile {
-  background: #10b981;
-  color: white;
-  border: none;
-  padding: 16px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: all 0.2s;
-  width: 100%;
-  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
-}
-
-.save-btn-mobile:hover:not(:disabled) {
-  background: #059669;
-  transform: translateY(-2px);
-}
-
-.save-btn-mobile:disabled {
-  opacity: 0.5;
   cursor: not-allowed;
   transform: none;
 }
 
-/* ===== NO SELECTION MOBILE ===== */
-.no-selection-mobile {
+/* ===== ADD SLOT BUTTON ===== */
+.add-slot-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.add-slot-btn:hover {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+/* ===== DAY OFF CARD ===== */
+.day-off-card {
+  text-align: center;
+  padding: 30px 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed #cbd5e1;
+  color: #64748b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.day-off-card i {
+  font-size: 2rem;
+  color: #94a3b8;
+}
+
+.day-off-card span {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.make-working-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.make-working-btn:hover {
+  background: #2563eb;
+}
+
+/* ===== NO SELECTION ===== */
+.no-selection {
   background: white;
-  border-radius: 16px;
+  border-radius: 10px;
   padding: 40px 20px;
   text-align: center;
   border: 1px solid #e2e8f0;
   margin-top: 20px;
 }
 
-.empty-message-mobile i {
-  font-size: 48px;
+.empty-message i {
+  font-size: 3rem;
   color: #cbd5e1;
-  margin-bottom: 16px;
+  margin-bottom: 15px;
 }
 
-.empty-message-mobile h3 {
-  margin: 0 0 12px 0;
-  font-size: 18px;
+.empty-message h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.2rem;
   color: #475569;
-  font-weight: 700;
+  font-weight: 600;
 }
 
-.empty-message-mobile p {
-  margin: 0;
-  font-size: 14px;
+.empty-message p {
+  margin: 0 0 8px 0;
+  font-size: 0.95rem;
   color: #64748b;
 }
 
-/* ===== RESPONSIVE BREAKPOINTS ===== */
+/* ===== SAVE BUTTON ===== */
+.save-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+}
 
-/* Tablet (768px and up) */
+.save-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  min-width: 160px;
+  justify-content: center;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* DESKTOP: Vertical stacking */
 @media (min-width: 768px) {
-  .ultimate-scheduler {
-    max-width: 800px;
-    padding: 24px;
-  }
-  
-  .calendar-wrapper,
-  .timeslot-panel {
-    padding: 24px;
-  }
-  
-  .days-grid {
-    gap: 6px;
-  }
-  
-  .day {
-    min-height: 50px;
-  }
-  
-  .day-number {
-    font-size: 15px;
-  }
-  
-  .time-input-group-mobile {
-    min-width: 140px;
-  }
-}
-
-/* Desktop (1024px and up) */
-@media (min-width: 1024px) {
-  .ultimate-scheduler {
-    max-width: 1000px;
-  }
-  
   .scheduler-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    align-items: start;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
   }
   
-  .calendar-section {
-    margin-bottom: 0;
+  .slot-compact-line {
+    gap: 12px;
   }
   
-  .timeslot-panel {
-    margin-top: 0;
+  .time-input {
+    width: 80px;
   }
   
-  .mobile-color-legend {
-    display: none;
+  .toggle-switch-small {
+    width: 34px;
+    height: 19px;
   }
   
-  /* Show desktop layout on large screens */
-  .days-grid {
-    gap: 8px;
+  .toggle-slider-small:before {
+    height: 15px;
+    width: 15px;
   }
   
-  .day {
-    min-height: 60px;
-  }
-  
-  .day-number {
-    font-size: 16px;
+  .toggle-switch-small input:checked + .toggle-slider-small:before {
+    transform: translateX(15px);
   }
 }
 
-/* Extra Small Phones (320px - 375px) */
-@media (max-width: 375px) {
+/* Tablet */
+@media (min-width: 480px) and (max-width: 767px) {
+  .ultimate-scheduler {
+    padding: 15px;
+  }
+  
+  .slot-compact-line {
+    gap: 10px;
+  }
+  
+  .time-input {
+    width: 76px;
+    padding: 5px 5px;
+  }
+  
+  .time-range-compact {
+    margin-right: 8px;
+  }
+  
+  .status-indicator-compact {
+    gap: 10px;
+  }
+  
+  .toggle-switch-small {
+    width: 30px;
+    height: 17px;
+  }
+  
+  .toggle-slider-small:before {
+    height: 13px;
+    width: 13px;
+  }
+  
+  .toggle-switch-small input:checked + .toggle-slider-small:before {
+    transform: translateX(13px);
+  }
+  
+  .remove-btn-compact {
+    width: 22px;
+    height: 22px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 479px) {
   .ultimate-scheduler {
     padding: 12px;
   }
@@ -1728,101 +1618,130 @@ export default {
     padding: 16px;
   }
   
-  .days-grid {
-    gap: 2px;
-  }
-  
-  .day {
-    border-radius: 4px;
-  }
-  
-  .day-number {
-    font-size: 12px;
-  }
-  
-  .booked-indicator-big,
-  .available-indicator-big {
-    font-size: 14px;
-  }
-  
-  .off-indicator-big {
-    font-size: 16px;
-  }
-  
-  .time-input-group-mobile {
-    min-width: 100px;
-  }
-  
-  .time-input-mobile {
-    padding: 8px;
-    font-size: 13px;
-  }
-}
-
-/* Landscape Mode */
-@media (max-height: 600px) and (orientation: landscape) {
-  .calendar-grid {
-    padding: 12px;
-  }
-  
-  .days-grid {
-    gap: 2px;
-  }
-  
+  /* Mobile Calendar */
   .day {
     min-height: 40px;
   }
   
   .day-number {
-    font-size: 12px;
+    font-size: 0.9rem;
   }
   
-  .time-slot-line {
-    padding: 12px;
+  /* Mobile timeslot */
+  .slot-compact-line {
+    gap: 6px;
+  }
+  
+  .time-input {
+    width: 72px;
+    padding: 5px 4px;
+    font-size: 0.85rem;
+  }
+  
+  .time-range-compact {
+    margin-right: 6px;
+  }
+  
+  .booked-time-text {
+    font-size: 0.85rem;
+    padding: 0 2px;
+  }
+  
+  .time-separator {
+    font-size: 0.85rem;
+    padding: 0 1px;
+  }
+  
+  .status-indicator-compact {
+    gap: 8px;
+  }
+  
+  .toggle-switch-small {
+    width: 28px;
+    height: 16px;
+  }
+  
+  .toggle-slider-small:before {
+    height: 12px;
+    width: 12px;
+  }
+  
+  .toggle-switch-small input:checked + .toggle-slider-small:before {
+    transform: translateX(12px);
+  }
+  
+  .remove-btn-compact {
+    width: 22px;
+    height: 22px;
+    font-size: 0.85rem;
+  }
+  
+  /* Mobile legend */
+  .big-color-legend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px;
+    justify-items: start;
+    font-size: 0.8rem;
+  }
+  
+  .legend-dot-big {
+    width: 16px;
+    height: 16px;
   }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .ultimate-scheduler {
-    background: #0f172a;
-  }
-  
-  .calendar-wrapper,
-  .timeslot-panel,
-  .no-selection-mobile {
-    background: #1e293b;
-    border-color: #334155;
-  }
-  
-  .calendar-grid {
-    background: #0f172a;
-  }
-  
+/* Small Phones (iPhone SE) */
+@media (max-width: 374px) {
   .day {
-    background: #1e293b;
-    border-color: #334155;
+    min-height: 36px;
   }
   
-  .day-number {
-    color: #e2e8f0;
+  .slot-compact-line {
+    gap: 4px;
   }
   
-  .time-slot-line {
-    background: #0f172a;
-    border-color: #334155;
+  .time-input {
+    width: 68px;
+    padding: 4px 3px;
+    font-size: 0.8rem;
   }
   
-  .time-input-mobile {
-    background: #1e293b;
-    border-color: #475569;
-    color: #e2e8f0;
+  .time-range-compact {
+    margin-right: 4px;
   }
   
-  .add-slot-btn-mobile {
-    background: #1e293b;
-    border-color: #475569;
-    color: #94a3b8;
+  .booked-time-text {
+    font-size: 0.8rem;
+    padding: 0 1px;
+  }
+  
+  .time-separator {
+    font-size: 0.8rem;
+  }
+  
+  .status-indicator-compact {
+    gap: 6px;
+  }
+  
+  .toggle-switch-small {
+    width: 26px;
+    height: 15px;
+  }
+  
+  .toggle-slider-small:before {
+    height: 11px;
+    width: 11px;
+  }
+  
+  .toggle-switch-small input:checked + .toggle-slider-small:before {
+    transform: translateX(11px);
+  }
+  
+  .remove-btn-compact {
+    width: 20px;
+    height: 20px;
+    font-size: 0.8rem;
   }
 }
 </style>
