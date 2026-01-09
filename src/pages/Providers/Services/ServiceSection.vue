@@ -279,24 +279,48 @@
             </div>
             
             <!-- BANNER INFO SECTION - SIMPLIFIED -->
-            <div class="form-group banner-info-section">
-              <label>Service Banner</label>
-              <div class="banner-info-display">
-                <div v-if="getBannerUrl(editingServiceData)" class="current-banner-info">
-                  <img :src="getBannerUrl(editingServiceData)" alt="Current banner" class="current-banner" />
-                  <p class="banner-note">
-                    <small><i class="fa-solid fa-info-circle"></i> To change banner, use the full edit form</small>
-                  </p>
-                </div>
-                <div v-else class="no-banner-info">
-                  <i class="fa-solid fa-image"></i>
-                  <p>No banner uploaded</p>
-                  <button class="btn edit-full-btn" @click="openForm(service)">
-                    <i class="fa-solid fa-pen"></i> Edit with Form
-                  </button>
-                </div>
-              </div>
-            </div>
+           <!-- BANNER UPLOAD SECTION - ADDED -->
+<div class="form-group banner-upload-section">
+  <label>Service Banner</label>
+  
+  <!-- Current Banner Display -->
+  <div v-if="getBannerUrl(editingServiceData)" class="current-banner-display">
+    <span class="current-banner-label">Current Banner:</span>
+    <img :src="getBannerUrl(editingServiceData)" alt="Current banner" class="current-banner" />
+  </div>
+  
+  <!-- Banner Upload Area -->
+  <div class="banner-upload-area" @click="triggerFileInput">
+    <input 
+      :id="'bannerInput_' + editingServiceId"
+      type="file" 
+      accept="image/*"
+      @change="handleBannerFileSelect"
+      style="display: none"
+    />
+    
+    <!-- Preview New Banner -->
+    <div v-if="editingServiceData.newBannerPreview" class="new-banner-preview">
+      <img :src="editingServiceData.newBannerPreview" alt="New banner preview" />
+      <button type="button" class="remove-banner-btn" @click.stop="removeNewBanner">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    </div>
+    
+    <!-- Upload Instructions -->
+    <div v-else class="upload-instructions">
+      <i class="fa-solid fa-cloud-arrow-up"></i>
+      <p>Click to {{ getBannerUrl(editingServiceData) ? 'change' : 'upload' }} banner</p>
+      <p class="upload-hint">Click to select image</p>
+      <p class="upload-hint">Max size: 5MB</p>
+    </div>
+  </div>
+  
+  <!-- Banner Note -->
+  <div class="banner-note">
+    <small><i class="fa-solid fa-info-circle"></i> {{ getBannerUrl(editingServiceData) ? 'Upload a new image to replace current banner' : 'Upload a banner image for your service' }}</small>
+  </div>
+</div>
             
             <!-- Save Button -->
             <div class="edit-actions compact">
@@ -585,10 +609,6 @@ export default {
       // Banner Preview State
       showBannerPreview: false,
       previewBannerUrl: '',
-      
-      // Banner editing state - SIMPLIFIED
-      newBannerFile: null,
-      bannerUploading: false
     };
   },
   computed: {
@@ -779,6 +799,61 @@ export default {
       }
     },
 
+    // ===== BANNER UPLOAD METHODS - ADDED =====
+    triggerFileInput() {
+      if (!this.editingServiceId) return;
+      
+      const inputId = 'bannerInput_' + this.editingServiceId;
+      const fileInput = document.getElementById(inputId);
+      
+      if (fileInput) {
+        fileInput.click();
+      } else {
+        console.warn('File input not found:', inputId);
+      }
+    },
+    
+    handleBannerFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        // Validate file type
+        if (!file.type.match('image.*')) {
+          this.setError("Please select an image file (JPG, PNG, WebP).");
+          return;
+        }
+        
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          this.setError("File size should be less than 5MB.");
+          return;
+        }
+        
+        // Store the file
+        this.editingServiceData.bannerFile = file;
+        
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.editingServiceData.newBannerPreview = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        
+        console.log('New banner selected:', file.name);
+      }
+    },
+    
+    removeNewBanner() {
+      this.editingServiceData.bannerFile = null;
+      this.editingServiceData.newBannerPreview = null;
+      
+      // Clear file input
+      const inputId = 'bannerInput_' + this.editingServiceId;
+      const fileInput = document.getElementById(inputId);
+      if (fileInput) {
+        fileInput.value = '';
+      }
+    },
+
     // ===== SERVICE METHODS =====
     truncateDescription(description, maxLength = 60) {
       if (!description) return '';
@@ -868,6 +943,7 @@ export default {
       }
     },
     
+    // ===== START EDIT - UPDATED WITH BANNER FIELDS =====
     startEdit(service) {
       if (!service) {
         this.setError("Cannot edit service: Service data is missing");
@@ -878,19 +954,26 @@ export default {
         this.setError("This service cannot be edited (missing service ID).");
         return;
       }
+      
+      // Deep copy the service data
       this.editingServiceData = JSON.parse(JSON.stringify(service));
       this.editingServiceId = serviceId;
+      
+      // Initialize banner upload fields
+      this.editingServiceData.bannerFile = null;
+      this.editingServiceData.newBannerPreview = null;
     },
     
-    // ===== SAVE SERVICE (SIMPLIFIED) =====
+    // ===== SAVE SERVICE - EXACT ORIGINAL PATTERN WITH BANNER =====
     async saveService() {
       if (!this.editingServiceData || !this.editingServiceId) {
         this.setError("No service data to save.");
         return;
       }
+      
       this.saving = true;
       try {
-        // Prepare basic service data (NO BANNER UPLOAD)
+        // Prepare service data - EXACTLY LIKE ORIGINAL
         const serviceData = {
           title: String(this.editingServiceData.title || '').trim(),
           description: String(this.editingServiceData.description || '').trim(),
@@ -900,15 +983,46 @@ export default {
           serviceType: String(this.editingServiceData.serviceType || 'fixed'),
           priceUnit: String(this.editingServiceData.priceUnit || 'ETB')
         };
-        
-        // Update the service (banner remains unchanged)
-        await http.put(`/services/${this.editingServiceId}`, serviceData);
+
+        // Add category if exists
+        if (this.editingServiceData.category) {
+          serviceData.category = this.editingServiceData.category;
+        }
+        if (this.editingServiceData.categoryId) {
+          serviceData.categoryId = this.editingServiceData.categoryId;
+        }
+
+        // ===== SIMPLE LOGIC: If banner, use FormData. If no banner, use JSON =====
+        if (this.editingServiceData.bannerFile) {
+          // Create FormData for file upload
+          const formData = new FormData();
+          
+          // Add all service data to FormData
+          Object.keys(serviceData).forEach(key => {
+            formData.append(key, serviceData[key]);
+          });
+          
+          // Add banner file
+          formData.append('banner', this.editingServiceData.bannerFile);
+          
+          // Update the service with FormData (for banner)
+          await http.put(`/services/${this.editingServiceId}`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+          
+        } else {
+          // Update the service (no banner) - EXACT ORIGINAL CODE
+          await http.put(`/services/${this.editingServiceId}`, serviceData);
+        }
         
         this.setSuccess("Service updated successfully!");
         
-        // Refresh services list
+        // ===== ORIGINAL WORKING PATTERN: Refresh services list =====
         await this.fetchServices();
         
+        // Close edit mode - EXACT ORIGINAL CODE
         this.editingServiceId = null;
         this.editingServiceData = null;
         
@@ -2164,6 +2278,113 @@ export default {
   color: inherit;
   cursor: pointer;
   padding: 0.25rem;
+}
+
+/* ===== BANNER UPLOAD SECTION STYLES ===== */
+.banner-upload-section {
+  margin: 1rem 0;
+}
+
+.banner-upload-area {
+  border: 2px dashed #cbd5e0;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  background: #f8fafc;
+  transition: all 0.3s ease;
+  position: relative;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner-upload-area:hover {
+  border-color: #3182ce;
+  background: #edf2f7;
+}
+
+.upload-instructions {
+  color: #718096;
+}
+
+.upload-instructions i {
+  font-size: 2.5rem;
+  color: #a0aec0;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.upload-instructions p {
+  margin: 0.25rem 0;
+}
+
+.upload-hint {
+  font-size: 0.85rem;
+  color: #a0aec0;
+}
+
+.new-banner-preview {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.new-banner-preview img {
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.remove-banner-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: #e53e3e;
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.remove-banner-btn:hover {
+  background: #c53030;
+}
+
+.current-banner-display {
+  margin-bottom: 1rem;
+}
+
+.current-banner-label {
+  display: block;
+  font-size: 0.85rem;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+}
+
+.current-banner {
+  width: 100%;
+  height: auto;
+  max-height: 120px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.banner-note {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #718096;
+  text-align: center;
 }
 
 /* ===== LOADING STATE ===== */

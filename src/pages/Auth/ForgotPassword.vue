@@ -4,18 +4,18 @@
     <div class="forgot-card">
       <h2>Forgot Password?</h2>
       <p class="subtitle">
-        Enter your email and we'll send you a link to reset your password.
+        Enter your phone number to receive a reset code via Telegram.
       </p>
 
-      <form class="form" @submit.prevent="sendResetLink">
+      <form class="form" @submit.prevent="sendResetOtp">
         <input
-          v-model="email"
-          type="email"
-          placeholder="Your Email"
+          v-model="phone"
+          type="text"
+          placeholder="Phone Number (e.g., +998901234567)"
           required
         />
         <button type="submit" class="btn" :disabled="loading">
-          {{ loading ? "Sending..." : "Send Reset Link" }}
+          {{ loading ? "Sending OTP..." : "Send Code via Telegram" }}
         </button>
         <p class="back-text" @click="goToLogin">← Back to Login</p>
         <p v-if="error" class="error">{{ error }}</p>
@@ -30,13 +30,14 @@ import { useRouter } from "vue-router";
 import http from "@/api/index.js";
 
 const router = useRouter();
-const email = ref("");
+const phone = ref("");
 const loading = ref(false);
 const error = ref("");
 
-async function sendResetLink() {
-  if (!email.value) {
-    error.value = "Please enter your email.";
+async function sendResetOtp() {
+  const phoneNumber = phone.value.trim();
+  if (!phoneNumber) {
+    error.value = "Please enter your phone number.";
     return;
   }
 
@@ -44,14 +45,20 @@ async function sendResetLink() {
     loading.value = true;
     error.value = "";
 
-    // ✅ Connect to backend endpoint
-    await http.post("/auth/forgot-password", { email: email.value });
+    // ✅ Send OTP via Telegram using the correct endpoint
+    await http.post("/auth/forgot-password", {
+      phone: phoneNumber,
+    });
 
-    alert("✅ Reset link sent! Check your email.");
-    router.push("/login");
+    // Store phone in localStorage/session so ResetPassword can use it
+    localStorage.setItem("reset_phone", phoneNumber);
+
+    alert("✅ OTP sent! Check your Telegram messages.");
+    router.push("/auth/reset-password");
 
   } catch (err) {
-    error.value = err.response?.data?.message || "Failed to send reset link.";
+    error.value = err.response?.data?.message || "Failed to send OTP. Please try again.";
+    console.error("OTP request error:", err.response?.data || err.message);
   } finally {
     loading.value = false;
   }
@@ -63,7 +70,6 @@ function goToLogin() {
 </script>
 
 <style scoped>
-/* Keep your existing styles */
 .forgot-page {
   display: flex;
   justify-content: center;

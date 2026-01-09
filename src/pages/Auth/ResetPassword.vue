@@ -1,10 +1,19 @@
+<!-- src/pages/auth/ResetPassword.vue -->
 <template>
   <div class="reset-page">
     <div class="reset-card">
       <h2>Set New Password</h2>
-      <p class="subtitle">Create a new password for your account.</p>
+      <p class="subtitle">Enter the OTP from Telegram and your new password.</p>
 
       <form class="form" @submit.prevent="resetPassword">
+        <input
+          v-model="otp"
+          type="text"
+          placeholder="6-digit OTP from Telegram"
+          maxlength="6"
+          inputmode="numeric"
+          required
+        />
         <input
           v-model="password"
           type="password"
@@ -28,31 +37,32 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRouter, useRoute } from "vue-router";
+import { useRouter } from "vue-router";
 import http from "@/api/index.js";
 
 const router = useRouter();
-const route = useRoute();
+const otp = ref("");
 const password = ref("");
 const confirmPassword = ref("");
 const loading = ref(false);
 const error = ref("");
 
-// ✅ Extract token from /reset-password/:token
-const token = route.params.token;
+// Get phone from storage (set in ForgotPassword step)
+let phone = localStorage.getItem("reset_phone");
 
 onMounted(() => {
-  if (!token) {
-    alert("❌ Invalid reset link. Please request a new one.");
-    router.push("/forgot-password");
+  if (!phone) {
+    alert("⚠️ No phone number found. Please request a new OTP.");
+    router.push("/auth/forgot-password");
   }
 });
 
 async function resetPassword() {
-  if (!password.value || !confirmPassword.value) {
+  if (!otp.value || !password.value || !confirmPassword.value) {
     error.value = "All fields are required.";
     return;
   }
+
   if (password.value !== confirmPassword.value) {
     error.value = "Passwords do not match.";
     return;
@@ -62,29 +72,27 @@ async function resetPassword() {
     loading.value = true;
     error.value = "";
 
-    // ✅ Ensure token exists
-    if (!token) {
-      throw new Error("No reset token found.");
-    }
-
-    // ✅ Send to backend
-    await http.post(`/auth/reset-password/${token}`, {
-      password: password.value
+    // ✅ Call reset endpoint with phone, otp, and new password
+    await http.post("/auth/reset-password", {
+      phone: phone,
+      otp: otp.value.trim(),
+      password: password.value,
     });
 
-    alert("✅ Password reset successful!");
+    alert("✅ Password reset successful! You can now log in.");
+    localStorage.removeItem("reset_phone"); // clean up
     router.push("/login");
 
   } catch (err) {
-    error.value = err.response?.data?.message || "Reset failed. Link may be expired.";
+    error.value = err.response?.data?.message || "Reset failed. OTP may be invalid or expired.";
     console.error("Reset error:", err.response?.data || err.message);
   } finally {
     loading.value = false;
   }
 }
 </script>
+
 <style scoped>
-/* Same as ForgotPassword.vue */
 .reset-page {
   display: flex;
   justify-content: center;
