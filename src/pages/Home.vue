@@ -16,11 +16,11 @@
             <div class="trust-badges">
               <span class="badge-industry">
                 <i class="fas fa-trophy"></i>
-                Industry Leader 2024
+               Infinity-Booking ......Infinity Advantage 
               </span>
               <span class="badge-trusted">
                 <i class="fas fa-shield-alt"></i>
-                Trusted by 2,500+ Providers
+                system operated, clean scheduler
               </span>
             </div>
             
@@ -38,86 +38,24 @@
             
             <!-- Value Proposition -->
             <p class="hero-premium-subtitle">
-              Infinity-Booking revolutionizes how service businesses connect with clients, 
-              manage operations, and scale revenue. From <strong>solo entrepreneurs</strong> 
-              to <strong>multi-location enterprises</strong>, we provide the complete 
-              ecosystem for sustainable business growth.
+              Infinity-Booking is a professional service-booking platform built to connect service providers with clients through a clear, calendar-driven scheduling system. It enables providers to list services, define availability with precision, and manage bookings in an organized and reliable way.
+              
             </p>
-            
-            <!-- Key Benefits -->
-            <div class="hero-premium-benefits">
-              <div class="benefit-item">
-                <i class="fas fa-bolt"></i>
-                <div>
-                  <h4>300% Faster Growth</h4>
-                  <p>Average business expansion rate</p>
-                </div>
-              </div>
-              <div class="benefit-item">
-                <i class="fas fa-clock"></i>
-                <div>
-                  <h4>10-Minute Setup</h4>
-                  <p>Get your business online instantly</p>
-                </div>
-              </div>
-              <div class="benefit-item">
-                <i class="fas fa-star"></i>
-                <div>
-                  <h4>4.9/5 Rating</h4>
-                  <p>Based on 850+ reviews</p>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Featured Stats Ribbon -->
-            <div class="featured-stats-ribbon">
-              <div class="stat-ribbon-item">
-                <div class="stat-ribbon-value">98%</div>
-                <div class="stat-ribbon-label">Satisfaction Rate</div>
-              </div>
-              <div class="stat-ribbon-divider"></div>
-              <div class="stat-ribbon-item">
-                <div class="stat-ribbon-value">24/7</div>
-                <div class="stat-ribbon-label">Support Available</div>
-              </div>
-              <div class="stat-ribbon-divider"></div>
-              <div class="stat-ribbon-item">
-                <div class="stat-ribbon-value">0%</div>
-                <div class="stat-ribbon-label">Commission Fee*</div>
-              </div>
-            </div>
-            
-            <!-- Service Type Selector -->
-            <div class="service-type-selector">
-              <h4 class="selector-title">I'm Looking For:</h4>
-              <div class="selector-buttons">
-                <button class="selector-btn active" @click="setServiceType('home-services')">
-                  <i class="fas fa-home"></i>
-                  <span>Home Services</span>
-                </button>
-                <button class="selector-btn" @click="setServiceType('beauty-salon')">
-                  <i class="fas fa-cut"></i>
-                  <span>Beauty & Salon</span>
-                </button>
-                <button class="selector-btn" @click="setServiceType('tutoring')">
-                  <i class="fas fa-graduation-cap"></i>
-                  <span>Tutoring</span>
-                </button>
-                <button class="selector-btn" @click="setServiceType('professional')">
-                  <i class="fas fa-briefcase"></i>
-                  <span>Professional</span>
-                </button>
-              </div>
-            </div>
             
             <!-- Primary CTA -->
             <div class="hero-premium-actions">
-              <router-link to="/provider/register" class="hero-premium-cta">
-                <i class="fas fa-play-circle"></i>
-                Start Your Free Trial
-                <span class="cta-sub">14 days • No credit card required</span>
-              </router-link>
-              
+              <div class="cta-buttons-row">
+                <router-link to="/register" class="hero-premium-cta">
+                  <i class="fas fa-user-plus"></i>
+                  Start Free Account
+                </router-link>
+                
+                <router-link to="/login" class="hero-premium-cta secondary">
+                  <i class="fas fa-sign-in-alt"></i>
+                  Login to Dashboard
+                </router-link>
+              </div>
+              <p>  <strong>The platform is designed to support efficient daily operations, reduce scheduling friction, and create a smooth booking experience for clients. Whether you are an individual professional, a growing business, or a multi-location enterprise, Infinity-Booking provides the infrastructure, visibility, and control needed to operate confidently and scale sustainably</strong></p>
               <div class="secondary-actions">
                 <a href="#how-it-works" class="action-link">
                   <i class="fas fa-info-circle"></i>
@@ -127,53 +65,6 @@
                   <i class="fas fa-list"></i>
                   Explore Features
                 </a>
-              </div>
-            </div>
-            
-            <!-- Quick Search Widget -->
-            <div class="quick-search-widget">
-              <h4 class="search-widget-title">Find Services Near You</h4>
-              <div class="search-input-group">
-                <div class="search-input">
-                  <i class="fas fa-search"></i>
-                  <input type="text" v-model="searchQuery" placeholder="What service do you need?">
-                </div>
-                <div class="search-input">
-                  <i class="fas fa-map-marker-alt"></i>
-                  <input type="text" v-model="locationQuery" placeholder="City or ZIP code">
-                </div>
-                <button class="search-btn" @click="performSearch">
-                  <i class="fas fa-arrow-right"></i>
-                </button>
-              </div>
-              <div class="popular-searches">
-                <span class="popular-tag" @click="setPopularSearch('Cleaning')">Cleaning</span>
-                <span class="popular-tag" @click="setPopularSearch('Plumbing')">Plumbing</span>
-                <span class="popular-tag" @click="setPopularSearch('Haircut')">Haircut</span>
-                <span class="popular-tag" @click="setPopularSearch('Tutoring')">Tutoring</span>
-                <span class="popular-tag" @click="setPopularSearch('Electrician')">Electrician</span>
-              </div>
-            </div>
-            
-            <!-- Social Proof -->
-            <div class="hero-premium-social-proof">
-              <div class="proof-item">
-                <div class="proof-icon">
-                  <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="proof-text">
-                  <div class="proof-title">Enterprise Security</div>
-                  <div class="proof-desc">Bank-level encryption & compliance</div>
-                </div>
-              </div>
-              <div class="proof-item">
-                <div class="proof-icon">
-                  <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="proof-text">
-                  <div class="proof-title">24/7 Support</div>
-                  <div class="proof-desc">Dedicated customer success team</div>
-                </div>
               </div>
             </div>
             
@@ -613,154 +504,6 @@
       </div>
     </section>
 
-    <!-- Pricing Section -->
-    <section class="pricing-section">
-      <div class="container">
-        <h2 class="section-title">Simple, Transparent Pricing</h2>
-        <p class="section-subtitle">
-          Choose the plan that fits your business. No hidden fees, no surprises.
-        </p>
-        
-        <div class="pricing-grid">
-          <div class="pricing-card">
-            <div class="plan-header">
-              <h3>Free</h3>
-              <div class="price">
-                <span class="amount">$0</span>
-                <span class="period">/month</span>
-              </div>
-            </div>
-            <ul class="plan-features">
-              <li><i class="fas fa-check"></i> Basic Profile Listing</li>
-              <li><i class="fas fa-check"></i> Up to 5 Services</li>
-              <li><i class="fas fa-check"></i> 20 Monthly Bookings</li>
-              <li><i class="fas fa-check"></i> Email Support</li>
-              <li><i class="fas fa-check"></i> Basic Analytics</li>
-            </ul>
-            <button class="plan-btn" @click="scrollToRegistration">
-              Get Started Free
-            </button>
-          </div>
-          
-          <div class="pricing-card popular">
-            <div class="popular-badge">Most Popular</div>
-            <div class="plan-header">
-              <h3>Professional</h3>
-              <div class="price">
-                <span class="amount">$19</span>
-                <span class="period">/month</span>
-              </div>
-            </div>
-            <ul class="plan-features">
-              <li><i class="fas fa-check"></i> Everything in Free</li>
-              <li><i class="fas fa-check"></i> Unlimited Services</li>
-              <li><i class="fas fa-check"></i> Unlimited Bookings</li>
-              <li><i class="fas fa-check"></i> Priority Support</li>
-              <li><i class="fas fa-check"></i> Advanced Analytics</li>
-              <li><i class="fas fa-check"></i> Marketing Tools</li>
-              <li><i class="fas fa-check"></i> Custom Booking Page</li>
-            </ul>
-            <button class="plan-btn primary" @click="scrollToRegistration">
-              Start 14-Day Trial
-            </button>
-          </div>
-          
-          <div class="pricing-card">
-            <div class="plan-header">
-              <h3>Business</h3>
-              <div class="price">
-                <span class="amount">$39</span>
-                <span class="period">/month</span>
-              </div>
-            </div>
-            <ul class="plan-features">
-              <li><i class="fas fa-check"></i> Everything in Professional</li>
-              <li><i class="fas fa-check"></i> Team Management</li>
-              <li><i class="fas fa-check"></i> White-label Solution</li>
-              <li><i class="fas fa-check"></i> API Access</li>
-              <li><i class="fas fa-check"></i> Dedicated Support</li>
-              <li><i class="fas fa-check"></i> Custom Integrations</li>
-            </ul>
-            <button class="plan-btn" @click="scrollToRegistration">
-              Contact Sales
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section class="faq-section">
-      <div class="container">
-        <h2 class="section-title">Frequently Asked Questions</h2>
-        <p class="section-subtitle">
-          Get answers to common questions about joining Infinity-Booking.
-        </p>
-        
-        <div class="faq-grid">
-          <div class="faq-item" :class="{ active: activeFaq === 1 }" @click="toggleFaq(1)">
-            <div class="faq-question">
-              <h4>How quickly can I start receiving bookings?</h4>
-              <i class="fas" :class="activeFaq === 1 ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-            </div>
-            <div class="faq-answer" v-if="activeFaq === 1">
-              <p>Most providers start receiving booking requests within 24-48 hours of completing their profile. We recommend adding detailed service descriptions, professional photos, and setting competitive pricing to attract customers faster.</p>
-            </div>
-          </div>
-          
-          <div class="faq-item" :class="{ active: activeFaq === 2 }" @click="toggleFaq(2)">
-            <div class="faq-question">
-              <h4>What payment methods do you support?</h4>
-              <i class="fas" :class="activeFaq === 2 ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-            </div>
-            <div class="faq-answer" v-if="activeFaq === 2">
-              <p>We currently support Telebirr for local payments and are working on integrating PayPal and card payments. All transactions are secured with bank-level encryption, and you can withdraw your earnings directly to your bank account.</p>
-            </div>
-          </div>
-          
-          <div class="faq-item" :class="{ active: activeFaq === 3 }" @click="toggleFaq(3)">
-            <div class="faq-question">
-              <h4>Can I manage multiple service locations?</h4>
-              <i class="fas" :class="activeFaq === 3 ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-            </div>
-            <div class="faq-answer" v-if="activeFaq === 3">
-              <p>Yes! Our platform allows you to add multiple service locations and set different availability, pricing, and services for each location. This is perfect for providers who serve multiple neighborhoods or cities.</p>
-            </div>
-          </div>
-          
-          <div class="faq-item" :class="{ active: activeFaq === 4 }" @click="toggleFaq(4)">
-            <div class="faq-question">
-              <h4>Is there a contract or long-term commitment?</h4>
-              <i class="fas" :class="activeFaq === 4 ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-            </div>
-            <div class="faq-answer" v-if="activeFaq === 4">
-              <p>No long-term contracts! You can start with our free plan and upgrade or downgrade at any time. The Professional plan offers a 14-day free trial, and you can cancel your subscription anytime without penalties.</p>
-            </div>
-          </div>
-          
-          <div class="faq-item" :class="{ active: activeFaq === 5 }" @click="toggleFaq(5)">
-            <div class="faq-question">
-              <h4>How do you help me attract more customers?</h4>
-              <i class="fas" :class="activeFaq === 5 ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-            </div>
-            <div class="faq-answer" v-if="activeFaq === 5">
-              <p>We use multiple strategies including SEO optimization for your profile, featured listings in relevant categories, email campaigns to potential customers in your area, and integration with social media platforms to increase your visibility.</p>
-            </div>
-          </div>
-          
-          <div class="faq-item" :class="{ active: activeFaq === 6 }" @click="toggleFaq(6)">
-            <div class="faq-question">
-              <h4>What kind of support do you provide?</h4>
-              <i class="fas" :class="activeFaq === 6 ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-            </div>
-            <div class="faq-answer" v-if="activeFaq === 6">
-              <p>We provide 24/7 email support, detailed documentation, video tutorials, and regular training webinars. Professional and Business plan users get priority support with faster response times and dedicated assistance for business growth.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- Final CTA Section -->
     <section class="cta-section">
       <div class="container">
@@ -770,10 +513,10 @@
           Start your journey today — it's free to begin.
         </p>
         <div class="cta-buttons">
-          <router-link to="/provider/register" class="cta-btn primary">
-            <i class="fas fa-rocket"></i> Start Free Account
+          <router-link to="/register" class="cta-btn primary">
+            <i class="fas fa-user-plus"></i> Start Free Account
           </router-link>
-          <router-link to="/provider/login" class="cta-btn secondary">
+          <router-link to="/login" class="cta-btn secondary">
             <i class="fas fa-sign-in-alt"></i> Login to Dashboard
           </router-link>
         </div>
@@ -851,16 +594,9 @@ const stats = ref([
 // New variables for hero enhancements
 const activeFaq = ref(1)
 const currentTestimonial = ref(0)
-const activeServiceType = ref('home-services')
-const searchQuery = ref('')
-const locationQuery = ref('')
 const activeTestimonialSlide = ref(0)
 const liveBookingCount = ref(0)
 const bookingProgress = ref(75)
-
-const toggleFaq = (index) => {
-  activeFaq.value = activeFaq.value === index ? null : index
-}
 
 const nextTestimonial = () => {
   currentTestimonial.value = (currentTestimonial.value + 1) % testimonials.length
@@ -870,31 +606,7 @@ const prevTestimonial = () => {
   currentTestimonial.value = currentTestimonial.value === 0 ? testimonials.length - 1 : currentTestimonial.value - 1
 }
 
-const scrollToRegistration = () => {
-  const ctaSection = document.querySelector('.cta-section')
-  ctaSection?.scrollIntoView({ behavior: 'smooth' })
-}
-
 // New methods for hero enhancements
-const setServiceType = (type) => {
-  activeServiceType.value = type
-  // Update selector buttons active state
-  document.querySelectorAll('.selector-btn').forEach(btn => {
-    btn.classList.remove('active')
-  })
-  event.target.classList.add('active')
-}
-
-const performSearch = () => {
-  if (searchQuery.value && locationQuery.value) {
-    router.push(`/services?q=${encodeURIComponent(searchQuery.value)}&location=${encodeURIComponent(locationQuery.value)}`)
-  }
-}
-
-const setPopularSearch = (service) => {
-  searchQuery.value = service
-}
-
 const nextTestimonialSlide = () => {
   activeTestimonialSlide.value = (activeTestimonialSlide.value + 1) % 2
 }
@@ -915,7 +627,6 @@ const particleStyle = (index) => {
   }
 }
 
-// Text rotation animation
 onMounted(() => {
   // Animate stats counters
   stats.value.forEach((stat, index) => {
@@ -953,25 +664,6 @@ onMounted(() => {
       texts[current].classList.add('active')
     }, 3000)
   }
-  
-  // Auto rotate service type selector
-  setInterval(() => {
-    const types = ['home-services', 'beauty-salon', 'tutoring', 'professional']
-    const currentIndex = types.indexOf(activeServiceType.value)
-    const nextIndex = (currentIndex + 1) % types.length
-    
-    // Update active state
-    activeServiceType.value = types[nextIndex]
-    
-    // Update button states
-    document.querySelectorAll('.selector-btn').forEach((btn, idx) => {
-      if (idx === nextIndex) {
-        btn.classList.add('active')
-      } else {
-        btn.classList.remove('active')
-      }
-    })
-  }, 5000)
   
   // Auto rotate testimonial slides
   setInterval(nextTestimonialSlide, 4000)

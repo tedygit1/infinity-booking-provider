@@ -64,7 +64,7 @@
               :key="day"
               class="day"
               :class="getDayClasses(day)"
-              @click="!isPastDay(day) && selectSingleDay(day)"
+              @click="!isPastDay(day) && selectDay(day)"
             >
               <div class="day-number">{{ day }}</div>
               
@@ -236,7 +236,7 @@
         <!-- Save Button -->
         <div class="save-section">
           <button 
-            @click="saveActiveDayChanges()" 
+            @click="saveAllChanges()" 
             class="save-btn"
             :disabled="!hasChanges || saving"
           >
@@ -284,8 +284,9 @@ export default {
       currentDate: new Date(),
       scheduleData: {},
       
-      // ONE DAY AT A TIME - Active day context
-      activeDate: null,
+      // Support for multiple days editing
+      selectedDates: [], // Array of selected dateKeys
+      activeDate: null, // Currently focused day
       activeDayData: {
         working: true,
         slots: []
@@ -330,7 +331,27 @@ export default {
     },
     
     hasExistingSlot() {
-      return !!this.mainSlotId;
+      const hasSlot = !!this.mainSlotId;
+      console.log('🔄 hasExistingSlot computed:', hasSlot, 'mainSlotId:', this.mainSlotId);
+      return hasSlot;
+    },
+    
+    // All selected days data
+    selectedDaysData() {
+      return this.selectedDates
+        .map(dateKey => {
+          const date = new Date(dateKey);
+          const dayData = this.scheduleData[dateKey] || { working: true, slots: [] };
+          
+          return {
+            dateKey,
+            working: dayData.working,
+            slots: [...dayData.slots],
+            formattedDateShort: this.formatDateShort(dateKey),
+            dayOfWeek: date.toLocaleDateString('en-US', { weekday: 'long' })
+          };
+        })
+        .sort((a, b) => new Date(a.dateKey) - new Date(b.dateKey));
     }
   },
   async created() {
@@ -340,7 +361,7 @@ export default {
     await this.fetchBookedSlots();
   },
   watch: {
-    'activeDayData': {
+    scheduleData: {
       deep: true,
       handler() {
         this.hasChanges = true;
@@ -348,8 +369,8 @@ export default {
     }
   },
   methods: {
-    // ========== SINGLE DAY SELECTION ==========
-    selectSingleDay(day) {
+    // ========== MULTI-DAY SELECTION ==========
+    selectDay(day) {
       const dateKey = this.getDateKey(day);
       
       if (this.isDatePast(dateKey)) {
@@ -358,36 +379,72 @@ export default {
         return;
       }
       
-      // Set as active day
-      this.activeDate = dateKey;
+      // Add to selected dates if not already selected
+      if (!this.selectedDates.includes(dateKey)) {
+        this.selectedDates.push(dateKey);
+      }
       
-      // Load or initialize day data
-      if (this.scheduleData[dateKey]) {
-        // Clone existing data
-        this.activeDayData = {
-          working: this.scheduleData[dateKey].working,
-          slots: JSON.parse(JSON.stringify(this.scheduleData[dateKey].slots))
-        };
-      } else {
-        // Initialize new day with template or defaults
+      // Set as active day for editing
+      this.setActiveDay(dateKey);
+      
+      // Initialize data if not exists
+      if (!this.scheduleData[dateKey]) {
         const date = new Date(dateKey);
         const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const dayKey = days[date.getDay()];
         
         if (this.dayTemplates[dayKey] && this.dayTemplates[dayKey].length > 0) {
-          this.activeDayData = {
+          this.scheduleData[dateKey] = {
             working: true,
             slots: JSON.parse(JSON.stringify(this.dayTemplates[dayKey]))
           };
         } else {
-          this.activeDayData = {
+          this.scheduleData[dateKey] = {
             working: true,
             slots: JSON.parse(JSON.stringify(this.defaultTimeSlots))
           };
         }
       }
       
-      console.log(`Selected single day: ${dateKey}`, this.activeDayData);
+      // Load active day data
+      this.loadActiveDayData(dateKey);
+    },
+    
+    setActiveDay(dateKey) {
+      this.activeDate = dateKey;
+      this.loadActiveDayData(dateKey);
+    },
+    
+    loadActiveDayData(dateKey) {
+      const dayData = this.scheduleData[dateKey];
+      if (dayData) {
+        this.activeDayData = {
+          working: dayData.working,
+          slots: JSON.parse(JSON.stringify(dayData.slots))
+        };
+      } else {
+        this.activeDayData = {
+          working: true,
+          slots: JSON.parse(JSON.stringify(this.defaultTimeSlots))
+        };
+      }
+    },
+    
+    removeSelectedDay(dateKey) {
+      const index = this.selectedDates.indexOf(dateKey);
+      if (index > -1) {
+        this.selectedDates.splice(index, 1);
+        
+        // If we removed the active day, set new active day
+        if (this.activeDate === dateKey) {
+          if (this.selectedDates.length > 0) {
+            this.setActiveDay(this.selectedDates[0]);
+          } else {
+            this.activeDate = null;
+            this.activeDayData = { working: true, slots: [] };
+          }
+        }
+      }
     },
     
     // ========== DAY STATE METHODS ==========
@@ -398,6 +455,7 @@ export default {
       if (this.isToday(day)) classes.push('today');
       if (this.isPastDay(day)) classes.push('past');
       if (this.isActiveDay(day)) classes.push('active');
+      if (this.isSelectedDay(day)) classes.push('selected');
       
       return classes;
     },
@@ -405,6 +463,11 @@ export default {
     isActiveDay(day) {
       const dateKey = this.getDateKey(day);
       return this.activeDate === dateKey;
+    },
+    
+    isSelectedDay(day) {
+      const dateKey = this.getDateKey(day);
+      return this.selectedDates.includes(dateKey);
     },
     
     isAvailableDay(day) {
@@ -434,12 +497,16 @@ export default {
       this.activeDayData.working = !this.activeDayData.working;
       
       if (this.activeDayData.working && this.activeDayData.slots.length === 0) {
-        // Add default slots when switching to working day
         this.activeDayData.slots = JSON.parse(JSON.stringify(this.defaultTimeSlots));
       } else if (!this.activeDayData.working) {
-        // Clear slots when switching to day off
         this.activeDayData.slots = [];
       }
+      
+      // Update scheduleData
+      this.scheduleData[this.activeDate] = {
+        working: this.activeDayData.working,
+        slots: JSON.parse(JSON.stringify(this.activeDayData.slots))
+      };
     },
     
     addSlotToActiveDay() {
@@ -469,6 +536,12 @@ export default {
         isBooked: false,
         hasError: false
       });
+      
+      // Update scheduleData
+      this.scheduleData[this.activeDate] = {
+        working: this.activeDayData.working,
+        slots: JSON.parse(JSON.stringify(this.activeDayData.slots))
+      };
     },
     
     removeSlotFromActiveDay(index) {
@@ -481,6 +554,11 @@ export default {
       const slot = this.activeDayData.slots[index];
       if (!slot.isBooked) {
         this.activeDayData.slots.splice(index, 1);
+        // Update scheduleData
+        this.scheduleData[this.activeDate] = {
+          working: this.activeDayData.working,
+          slots: JSON.parse(JSON.stringify(this.activeDayData.slots))
+        };
       }
     },
     
@@ -488,6 +566,11 @@ export default {
       const slot = this.activeDayData.slots[index];
       if (slot && !slot.isBooked) {
         slot.isActive = !slot.isActive;
+        // Update scheduleData
+        this.scheduleData[this.activeDate] = {
+          working: this.activeDayData.working,
+          slots: JSON.parse(JSON.stringify(this.activeDayData.slots))
+        };
       }
     },
     
@@ -499,6 +582,12 @@ export default {
         
         if (!this.validateActiveSlot(index)) {
           slot[field] = oldValue;
+        } else {
+          // Update scheduleData
+          this.scheduleData[this.activeDate] = {
+            working: this.activeDayData.working,
+            slots: JSON.parse(JSON.stringify(this.activeDayData.slots))
+          };
         }
       }
     },
@@ -524,64 +613,131 @@ export default {
       return false;
     },
     
-    // ========== SAVE ACTIVE DAY ==========
-    async saveActiveDayChanges() {
+    // ========== SAVE ALL CHANGES ==========
+    async saveAllChanges() {
       if (this.saving) return;
       
-      console.log('💾 Saving active day:', this.activeDate);
+      console.log('💾 Saving all changes...');
       this.saving = true;
       this.error = '';
+      this.success = '';
       
       try {
-        // Update scheduleData with active day
-        this.scheduleData[this.activeDate] = {
-          working: this.activeDayData.working,
-          slots: JSON.parse(JSON.stringify(this.activeDayData.slots))
-        };
-        
         // Save templates
         this.autoSaveTemplates();
         
-        // Build and save to backend
-        const weeklySchedule = this.buildWeeklySchedule();
+        // Build schedule data for backend
+        const schedule = this.buildSchedule();
+        console.log('📅 Built schedule for backend:', JSON.stringify(schedule, null, 2));
         
-        const slotData = {
-          slotId: this.mainSlotId || `slot_${Date.now()}`,
-          slotLabel: `${this.serviceId} Schedule`,
-          isActive: true,
-          weeklySchedule: weeklySchedule
-        };
+        // Validate we have schedule data
+        if (schedule.length === 0) {
+          throw new Error('No schedule data to save. Please add at least one day with working hours.');
+        }
         
         let response;
         
         if (!this.mainSlotId) {
-          const createPayload = { slots: [slotData] };
-          response = await http.post(`/services/${this.serviceId}/slots`, createPayload);
-          this.mainSlotId = response.data[0]?.slotId || response.data[0]?._id || slotData.slotId;
-        } else {
-          const updatePayload = {
-            slotLabel: slotData.slotLabel,
-            isActive: slotData.isActive,
-            weeklySchedule: slotData.weeklySchedule
+          console.log('🚀 Creating new slot...');
+          
+          const createPayload = {
+            slots: [
+              {
+                slotId: `slot_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                slotLabel: `${this.serviceId} Schedule`,
+                isActive: true,
+                isBooked: false,
+                schedule: schedule
+              }
+            ]
           };
+          
+          console.log('📤 CREATE Payload:', JSON.stringify(createPayload, null, 2));
+          
+          response = await http.post(`/services/${this.serviceId}/slots`, createPayload);
+          console.log('✅ CREATE Response:', response.data);
+          
+          // Extract and store mainSlotId
+          this.extractMainSlotId(response.data);
+          
+        } else {
+          console.log('✏️ Updating existing slot...');
+          
+          const updatePayload = {
+            slotLabel: `${this.serviceId} Schedule`,
+            isActive: true,
+            isBooked: false,
+            schedule: schedule
+          };
+          console.log('📤 UPDATE Payload:', JSON.stringify(updatePayload, null, 2));
+          
           response = await http.put(`/services/${this.serviceId}/slots/${this.mainSlotId}`, updatePayload);
+          console.log('✅ UPDATE Response:', response.data);
         }
         
         this.success = 'Schedule saved successfully!';
         this.hasChanges = false;
         
-        // Reload booked slots to refresh indicators
-        await this.fetchBookedSlots();
+        // Force Vue to re-evaluate computed properties
+        this.$forceUpdate();
         
+        // EMIT SAVED EVENT TO PARENT
+        this.$emit('saved', { success: true, slotId: this.mainSlotId });
+        
+        // Close after 1.5 seconds
         setTimeout(() => {
-          this.success = '';
-        }, 3000);
+          this.$emit('close');
+        }, 1500);
         
       } catch (error) {
-        console.error('Save error:', error);
-        this.error = error.response?.data?.message || 'Failed to save schedule';
+        console.error('❌ Save error:', error);
+        
+        if (error.response) {
+          console.error('📋 Response status:', error.response.status);
+          console.error('📋 Response data:', JSON.stringify(error.response.data, null, 2));
+          
+          if (error.response.data?.message) {
+            this.error = Array.isArray(error.response.data.message) 
+              ? error.response.data.message.join(', ')
+              : error.response.data.message;
+          } else if (error.response.data?.error) {
+            this.error = error.response.data.error;
+          } else {
+            this.error = `Server error (${error.response.status})`;
+          }
+        } else {
+          this.error = error.message || 'Failed to save schedule';
+        }
+        
+        setTimeout(() => {
+          this.error = '';
+        }, 5000);
       } finally {
         this.saving = false;
+      }
+    },
+    
+    // FIXED: Added missing saveActiveDayChanges method
+    saveActiveDayChanges() {
+      console.log('💾 Saving active day changes...');
+      // This method is called by child components if needed
+      // For now, just trigger saveAllChanges
+      return this.saveAllChanges();
+    },
+    
+    extractMainSlotId(responseData) {
+      // Handle different response formats
+      if (Array.isArray(responseData) && responseData.length > 0) {
+        this.mainSlotId = responseData[0].slotId || responseData[0]._id;
+        console.log('🎯 Set mainSlotId from array response:', this.mainSlotId);
+      } else if (responseData.slots && Array.isArray(responseData.slots) && responseData.slots.length > 0) {
+        this.mainSlotId = responseData.slots[0].slotId || responseData.slots[0]._id;
+        console.log('🎯 Set mainSlotId from slots object:', this.mainSlotId);
+      } else if (responseData.slotId || responseData._id) {
+        this.mainSlotId = responseData.slotId || responseData._id;
+        console.log('🎯 Set mainSlotId from direct object:', this.mainSlotId);
+      } else {
+        console.warn('⚠️ Could not extract mainSlotId from response');
       }
     },
     
@@ -598,22 +754,42 @@ export default {
       return this.bookedSlots.filter(booking => booking.date === backendDate).length;
     },
     
-    // ========== EXISTING METHODS ==========
+    // ========== LOAD DATA ==========
     async loadData() {
       this.loading = true;
       try {
+        console.log('📥 Loading schedule from:', `/services/${this.serviceId}/slots`);
         const response = await http.get(`/services/${this.serviceId}/slots`);
         this.allSlots = response.data || [];
+        console.log('📦 Loaded data:', this.allSlots);
         
-        if (this.allSlots.length > 0) {
-          this.mainSlotId = this.allSlots[0]._id || this.allSlots[0].slotId;
-          this.loadScheduleFromSlot(this.allSlots[0]);
+        if (this.allSlots && (Array.isArray(this.allSlots) ? this.allSlots.length > 0 : true)) {
+          let slotData;
+          
+          if (Array.isArray(this.allSlots)) {
+            slotData = this.allSlots[0];
+          } else if (this.allSlots.slots && Array.isArray(this.allSlots.slots)) {
+            slotData = this.allSlots.slots[0];
+          } else {
+            slotData = this.allSlots;
+          }
+          
+          if (slotData) {
+            this.mainSlotId = slotData.slotId || slotData._id;
+            console.log('🎯 Set mainSlotId from loaded data:', this.mainSlotId);
+            this.loadScheduleFromSlot(slotData);
+            
+            // Auto-select all scheduled days
+            this.autoSelectScheduledDays();
+          }
         } else {
           this.scheduleData = {};
+          this.mainSlotId = null;
+          console.log('📭 No slots found for this service');
         }
         
       } catch (error) {
-        console.error('Load error:', error);
+        console.error('❌ Load error:', error);
         if (error.response?.status !== 404) {
           this.error = error.response?.data?.message || 'Failed to load schedule';
         }
@@ -622,9 +798,25 @@ export default {
       }
     },
     
+    autoSelectScheduledDays() {
+      const dateKeys = Object.keys(this.scheduleData)
+        .filter(dateKey => !this.isDatePast(dateKey))
+        .sort();
+      
+      this.selectedDates = [...dateKeys];
+      
+      if (dateKeys.length > 0 && !this.activeDate) {
+        this.setActiveDay(dateKeys[0]);
+      }
+    },
+    
     loadScheduleFromSlot(slot) {
       this.scheduleData = {};
-      const scheduleData = slot.weeklySchedule || slot.slots || [];
+      
+      console.log('🔍 Loading schedule from slot:', slot);
+      
+      const scheduleData = slot.schedule || [];
+      console.log('📅 Schedule data found:', scheduleData);
       
       scheduleData.forEach(daySchedule => {
         if (daySchedule && daySchedule.date) {
@@ -637,6 +829,8 @@ export default {
             };
             
             if (daySchedule.isWorkingDay && Array.isArray(daySchedule.timeSlots)) {
+              console.log(`📋 Loading timeSlots for ${dateKey}:`, daySchedule.timeSlots);
+              
               this.scheduleData[dateKey].slots = daySchedule.timeSlots.map(ts => ({
                 startTime: this.formatTime(ts.startTime),
                 endTime: this.formatTime(ts.endTime),
@@ -649,13 +843,66 @@ export default {
           }
         }
       });
+      
+      console.log('📊 Processed schedule data:', this.scheduleData);
     },
     
+    // ========== BUILD SCHEDULE ==========
+    buildSchedule() {
+      const schedule = [];
+      const dateKeys = Object.keys(this.scheduleData)
+        .filter(dateKey => !this.isDatePast(dateKey))
+        .sort();
+      
+      console.log('📅 Date keys to process:', dateKeys);
+      
+      if (dateKeys.length === 0) {
+        console.log('⚠️ No future dates selected');
+        return [];
+      }
+      
+      dateKeys.forEach(dateKey => {
+        const dayData = this.scheduleData[dateKey];
+        const backendDate = this.formatDateForBackend(dateKey);
+        const [day, month, year] = backendDate.split('/').map(Number);
+        const dateObj = new Date(year, month - 1, day);
+        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const dayName = days[dateObj.getDay()];
+        
+        const scheduleItem = {
+          day: dayName,
+          date: backendDate,
+          isWorkingDay: dayData.working,
+          timeSlots: []
+        };
+        
+        if (dayData.working && dayData.slots.length > 0) {
+          console.log(`📋 Building timeSlots for ${dateKey}:`, dayData.slots);
+          
+          scheduleItem.timeSlots = dayData.slots.map(slot => ({
+            startTime: this.ensureTimeFormat(slot.startTime),
+            endTime: this.ensureTimeFormat(slot.endTime),
+            isAvailable: slot.isActive,
+            isBooked: slot.isBooked || false
+          }));
+        }
+        
+        schedule.push(scheduleItem);
+      });
+      
+      console.log('🔧 Final schedule built:', JSON.stringify(schedule, null, 2));
+      return schedule;
+    },
+    
+    // ========== BOOKINGS ==========
     async fetchBookedSlots() {
       this.loadingBookings = true;
       try {
+        console.log('📥 Fetching booked slots...');
         const response = await http.get(`/bookings/service/${this.serviceId}`);
         const rawBookings = response.data || [];
+        console.log('📦 Raw bookings:', rawBookings);
+        
         this.bookedSlots = rawBookings
           .filter(booking => 
             booking && 
@@ -679,61 +926,35 @@ export default {
             };
           });
         
+        console.log('✅ Processed booked slots:', this.bookedSlots);
+        
       } catch (error) {
-        console.error('Failed to fetch booked slots:', error);
+        console.error('❌ Failed to fetch booked slots:', error);
       } finally {
         this.loadingBookings = false;
       }
     },
     
-    buildWeeklySchedule() {
-      const weeklySchedule = [];
-      const dateKeys = Object.keys(this.scheduleData)
-        .filter(dateKey => !this.isDatePast(dateKey))
-        .sort();
-      
-      dateKeys.forEach(dateKey => {
-        const dayData = this.scheduleData[dateKey];
-        const backendDate = this.formatDateForBackend(dateKey);
-        const [day, month, year] = backendDate.split('/').map(Number);
-        const dateObj = new Date(year, month - 1, day);
-        const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-        const dayName = days[dateObj.getDay()];
-        
-        const scheduleItem = {
-          day: dayName,
-          date: backendDate,
-          isWorkingDay: dayData.working,
-          timeSlots: []
-        };
-        
-        if (dayData.working && dayData.slots.length > 0) {
-          scheduleItem.timeSlots = dayData.slots.map(slot => ({
-            startTime: this.ensureTimeFormat(slot.startTime),
-            endTime: this.ensureTimeFormat(slot.endTime),
-            isAvailable: slot.isActive,
-            isBooked: slot.isBooked || false
-          }));
-        }
-        
-        weeklySchedule.push(scheduleItem);
-      });
-      
-      return weeklySchedule;
-    },
-    
+    // ========== TEMPLATE SYSTEM ==========
     loadDayTemplates() {
       const savedTemplates = localStorage.getItem(`dayTemplates_${this.serviceId}`);
       if (savedTemplates) {
         try {
           this.dayTemplates = JSON.parse(savedTemplates);
+          console.log('✅ Loaded templates from localStorage:', this.dayTemplates);
         } catch (error) {
+          console.warn('⚠️ Could not load day templates:', error);
           this.dayTemplates = {};
         }
+      } else {
+        console.log('📭 No saved templates found in localStorage');
+        this.dayTemplates = {};
       }
     },
     
     autoSaveTemplates() {
+      console.log('💾 Auto-saving templates...');
+      
       const dateKeys = Object.keys(this.scheduleData)
         .filter(dateKey => !this.isDatePast(dateKey))
         .sort();
@@ -755,7 +976,11 @@ export default {
         }
       });
       
-      localStorage.setItem(`dayTemplates_${this.serviceId}`, JSON.stringify(this.dayTemplates));
+      try {
+        localStorage.setItem(`dayTemplates_${this.serviceId}`, JSON.stringify(this.dayTemplates));
+      } catch (error) {
+        console.warn('⚠️ Could not save day templates:', error);
+      }
     },
     
     // ========== UTILITY METHODS ==========
@@ -781,12 +1006,14 @@ export default {
     
     prevMonth() {
       this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() - 1, 1);
-      this.activeDate = null; // Clear active day when month changes
+      this.selectedDates = [];
+      this.activeDate = null;
     },
     
     nextMonth() {
       this.currentDate = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 1);
-      this.activeDate = null; // Clear active day when month changes
+      this.selectedDates = [];
+      this.activeDate = null;
     },
     
     getDateKey(day) {
@@ -808,6 +1035,14 @@ export default {
     formatDateForBackend(dateKey) {
       const [year, month, day] = dateKey.split('-');
       return `${day}/${month}/${year}`;
+    },
+    
+    formatDateShort(dateKey) {
+      const date = new Date(dateKey);
+      const day = date.getDate();
+      const month = date.toLocaleDateString('en-US', { month: 'short' });
+      const year = date.getFullYear();
+      return `${day} ${month} ${year}`;
     },
     
     formatDateLong(dateKey) {
@@ -853,10 +1088,16 @@ export default {
       const period = hours >= 12 ? 'PM' : 'AM';
       const hour12 = hours % 12 || 12;
       return `${hour12}:${minutes.toString().padStart(2, '0')} ${period}`;
+    },
+    
+    // ========== CANCEL/CLOSE ==========
+    cancelAndClose() {
+      this.$emit('close');
     }
   }
 };
 </script>
+
 <style scoped>
 /* ===== BASE STYLES ===== */
 .ultimate-scheduler {
@@ -1028,7 +1269,7 @@ export default {
   color: #9ca3af;
 }
 
-/* BIG COLOR INDICATORS */
+/* BIG COLOR INDICATORS (only colors bigger) */
 .day-indicators-big {
   position: absolute;
   bottom: 4px;
@@ -1042,21 +1283,21 @@ export default {
 
 .booked-indicator-big {
   color: #dc2626;
-  font-size: 0.9rem;
+  font-size: 0.9rem; /* BIGGER RED DOT */
   line-height: 1;
   font-weight: bold;
 }
 
 .available-indicator-big {
   color: #10b981;
-  font-size: 0.9rem;
+  font-size: 0.9rem; /* BIGGER GREEN DOT */
   line-height: 1;
   font-weight: bold;
 }
 
 .off-indicator-big {
   color: #9ca3af;
-  font-size: 1.1rem;
+  font-size: 1.1rem; /* BIGGER GRAY MINUS */
   line-height: 1;
   font-weight: bold;
 }
@@ -1098,8 +1339,8 @@ export default {
 }
 
 .legend-dot-big {
-  width: 20px;
-  height: 20px;
+  width: 20px; /* BIGGER LEGEND DOTS */
+  height: 20px; /* BIGGER LEGEND DOTS */
   border-radius: 50%;
   display: inline-block;
   border: 2px solid;
@@ -1208,7 +1449,7 @@ export default {
   font-weight: 500;
 }
 
-/* ===== TIME SLOTS LIST - FIXED TOGGLE OVERLAP ===== */
+/* ===== TIME SLOTS LIST ===== */
 .time-slots-list {
   display: flex;
   flex-direction: column;
@@ -1216,30 +1457,39 @@ export default {
   margin-bottom: 20px;
 }
 
+/* TIME SLOT LINE - COMPACT SINGLE LINE */
 .time-slot-line {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 10px 12px;
+  transition: all 0.2s ease;
 }
 
-/* SIMPLE ONE LINE LAYOUT */
+.time-slot-line:hover {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* COMPACT SINGLE LINE LAYOUT - OPTIMIZED */
 .slot-compact-line {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 6px; /* REDUCED GAP */
   width: 100%;
-  gap: 8px;
+  flex-wrap: nowrap;
+  min-width: 0;
 }
 
-/* TIME RANGE - MORE SPACE */
+/* TIME RANGE COMPACT - REMOVED CLOCK ICON */
 .time-range-compact {
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex: 1;
+  gap: 2px; /* MINIMAL GAP */
+  flex: 0 0 auto;
+  white-space: nowrap;
   min-width: 0;
-  margin-right: 10px; /* ADDED: Space between time and toggle */
+  margin-right: 8px; /* Space between time and toggle */
 }
 
 .booked-time-text {
@@ -1247,31 +1497,40 @@ export default {
   color: #1e40af;
   font-size: 0.9rem;
   white-space: nowrap;
-  padding: 0 4px;
+  flex-shrink: 0;
+  padding: 2px 0;
 }
 
 .edit-time-range {
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex: 1;
-  min-width: 0;
+  gap: 1px; /* TIGHT GAP */
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-/* TIME INPUT - SMALLER */
+.time-input-wrapper {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* OPTIMIZED TIME INPUT */
 .time-input {
-  width: 78px; /* SLIGHTLY SMALLER */
-  min-width: 78px;
-  padding: 6px 6px; /* SMALLER PADDING */
+  width: 72px;
+  min-width: 72px;
+  padding: 5px 6px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   text-align: center;
   font-family: 'Inter', monospace;
   color: #1e293b;
   background: white;
   box-sizing: border-box;
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums; /* Better number spacing */
 }
 
 .time-input:focus {
@@ -1282,18 +1541,21 @@ export default {
 
 .time-separator {
   color: #64748b;
-  font-size: 0.9rem;
-  padding: 0 2px;
-  white-space: nowrap;
+  font-size: 0.85rem;
   flex-shrink: 0;
+  padding: 0 1px;
+  white-space: nowrap;
+  margin: 0 1px;
 }
 
-/* STATUS INDICATOR - SMALLER TOGGLE */
+/* STATUS INDICATOR COMPACT - REDUCED SPACE */
 .status-indicator-compact {
   display: flex;
   align-items: center;
-  gap: 12px; /* INCREASED: More space before X */
+  gap: 6px; /* REDUCED GAP */
   flex-shrink: 0;
+  white-space: nowrap;
+  margin: 0 8px; /* Space between toggle and X */
 }
 
 .booked-indicator-icon {
@@ -1303,16 +1565,17 @@ export default {
   flex-shrink: 0;
 }
 
-/* TOGGLE SWITCH - SMALLER */
+/* SMALLER TOGGLE SWITCH */
 .toggle-container {
   flex-shrink: 0;
+  margin: 0 2px;
 }
 
 .toggle-switch-small {
   display: inline-block;
   position: relative;
-  width: 32px; /* SMALLER */
-  height: 18px; /* SMALLER */
+  width: 28px; /* SLIGHTLY SMALLER */
+  height: 18px; /* SLIGHTLY SMALLER */
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -1352,27 +1615,28 @@ export default {
 }
 
 .toggle-switch-small input:checked + .toggle-slider-small:before {
-  transform: translateX(14px); /* SMALLER MOVEMENT */
+  transform: translateX(10px);
 }
 
-/* ACTIONS */
+/* ACTIONS COMPACT - TIGHTLY PACKED */
 .actions-compact {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .error-indicator {
   color: #dc2626;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   cursor: help;
   flex-shrink: 0;
 }
 
 .remove-btn-compact {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: #fee2e2;
   color: #dc2626;
@@ -1381,10 +1645,11 @@ export default {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   flex-shrink: 0;
+  transition: all 0.2s ease;
   padding: 0;
-  transition: all 0.2s;
+  margin-left: 2px; /* Small separation */
 }
 
 .remove-btn-compact:hover:not(:disabled) {
@@ -1541,25 +1806,23 @@ export default {
   }
   
   .slot-compact-line {
-    gap: 12px;
+    gap: 8px;
+  }
+  
+  .time-range-compact {
+    flex: 0 0 230px;
   }
   
   .time-input {
-    width: 80px;
+    width: 75px;
   }
   
-  .toggle-switch-small {
-    width: 34px;
-    height: 19px;
+  .booked-time-text {
+    min-width: 140px;
   }
   
-  .toggle-slider-small:before {
-    height: 15px;
-    width: 15px;
-  }
-  
-  .toggle-switch-small input:checked + .toggle-slider-small:before {
-    transform: translateX(15px);
+  .remove-btn-compact {
+    margin-left: 4px;
   }
 }
 
@@ -1570,44 +1833,32 @@ export default {
   }
   
   .slot-compact-line {
-    gap: 10px;
-  }
-  
-  .time-input {
-    width: 76px;
-    padding: 5px 5px;
+    gap: 6px;
   }
   
   .time-range-compact {
-    margin-right: 8px;
+    flex: 0 0 210px;
+  }
+  
+  .time-input {
+    width: 72px;
+    padding: 5px 5px;
+  }
+  
+  .time-separator {
+    margin: 0;
+  }
+  
+  .booked-time-text {
+    min-width: 130px;
   }
   
   .status-indicator-compact {
-    gap: 10px;
-  }
-  
-  .toggle-switch-small {
-    width: 30px;
-    height: 17px;
-  }
-  
-  .toggle-slider-small:before {
-    height: 13px;
-    width: 13px;
-  }
-  
-  .toggle-switch-small input:checked + .toggle-slider-small:before {
-    transform: translateX(13px);
-  }
-  
-  .remove-btn-compact {
-    width: 22px;
-    height: 22px;
-    font-size: 0.85rem;
+    margin: 0 6px;
   }
 }
 
-/* Mobile */
+/* Mobile: Optimized for single line */
 @media (max-width: 479px) {
   .ultimate-scheduler {
     padding: 12px;
@@ -1627,37 +1878,48 @@ export default {
     font-size: 0.9rem;
   }
   
-  /* Mobile timeslot */
+  /* MOBILE TIMESLOT - ULTRA COMPACT */
   .slot-compact-line {
-    gap: 6px;
-  }
-  
-  .time-input {
-    width: 72px;
-    padding: 5px 4px;
-    font-size: 0.85rem;
+    gap: 4px;
+    padding: 2px 0;
   }
   
   .time-range-compact {
+    flex: 0 0 180px;
+    gap: 0;
     margin-right: 6px;
   }
   
   .booked-time-text {
+    min-width: 110px;
     font-size: 0.85rem;
-    padding: 0 2px;
+    padding: 0;
+  }
+  
+  .edit-time-range {
+    gap: 0;
+  }
+  
+  .time-input {
+    width: 68px;
+    min-width: 68px;
+    padding: 4px 4px;
+    font-size: 0.8rem;
   }
   
   .time-separator {
-    font-size: 0.85rem;
+    margin: 0;
+    font-size: 0.8rem;
     padding: 0 1px;
   }
   
   .status-indicator-compact {
-    gap: 8px;
+    gap: 4px;
+    margin: 0 6px;
   }
   
   .toggle-switch-small {
-    width: 28px;
+    width: 26px;
     height: 16px;
   }
   
@@ -1667,22 +1929,27 @@ export default {
   }
   
   .toggle-switch-small input:checked + .toggle-slider-small:before {
-    transform: translateX(12px);
+    transform: translateX(10px);
+  }
+  
+  /* MOBILE ACTIONS - FIXED X POSITION */
+  .actions-compact {
+    gap: 2px;
+    flex-shrink: 0;
   }
   
   .remove-btn-compact {
-    width: 22px;
-    height: 22px;
-    font-size: 0.85rem;
+    width: 20px;
+    height: 20px;
+    font-size: 0.8rem;
+    margin-left: 0;
   }
   
   /* Mobile legend */
   .big-color-legend {
-    display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px 14px;
-    justify-items: start;
-    font-size: 0.8rem;
+    gap: 10px 12px;
+    font-size: 0.75rem;
   }
   
   .legend-dot-big {
@@ -1698,50 +1965,45 @@ export default {
   }
   
   .slot-compact-line {
-    gap: 4px;
-  }
-  
-  .time-input {
-    width: 68px;
-    padding: 4px 3px;
-    font-size: 0.8rem;
+    gap: 2px;
   }
   
   .time-range-compact {
-    margin-right: 4px;
+    flex: 0 0 165px;
+  }
+  
+  .time-input {
+    width: 64px;
+    min-width: 64px;
+    padding: 3px 3px;
+    font-size: 0.75rem;
   }
   
   .booked-time-text {
-    font-size: 0.8rem;
-    padding: 0 1px;
-  }
-  
-  .time-separator {
-    font-size: 0.8rem;
-  }
-  
-  .status-indicator-compact {
-    gap: 6px;
+    min-width: 100px;
+    font-size: 0.75rem;
   }
   
   .toggle-switch-small {
-    width: 26px;
-    height: 15px;
+    width: 24px;
+    height: 14px;
   }
   
   .toggle-slider-small:before {
-    height: 11px;
-    width: 11px;
+    height: 10px;
+    width: 10px;
+    left: 2px;
+    bottom: 2px;
   }
   
   .toggle-switch-small input:checked + .toggle-slider-small:before {
-    transform: translateX(11px);
+    transform: translateX(10px);
   }
   
   .remove-btn-compact {
-    width: 20px;
-    height: 20px;
-    font-size: 0.8rem;
+    width: 18px;
+    height: 18px;
+    font-size: 0.75rem;
   }
 }
 </style>

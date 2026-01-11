@@ -251,6 +251,10 @@ export default {
     const unreadCount = ref(0);
     const notificationInterval = ref(null);
     const isMobile = ref(window.innerWidth < 768);
+    
+    // Track when we should trust local state vs API
+    const useLocalNotificationState = ref(true);
+    const lastNotificationSync = ref(null);
 
     // Menu items - NO CHANGES
     const menuItems = {
@@ -303,56 +307,145 @@ export default {
              route.name === menuRoute;
     };
 
-    // NEW: Function to update badge from localStorage - NO CHANGES
-    const updateBadgeFromStorage = () => {
+    // ========== FIXED: Load notification state from localStorage ==========
+    const loadNotificationState = () => {
       try {
-        // First try to get from localStorage
+        console.log('🔄 Dashboard: Loading notification state from localStorage')
+        
+        // CRITICAL FIX: Check the shared state that NotificationSection saves
+        const savedState = localStorage.getItem('notification_shared_state')
+        if (savedState) {
+          const state = JSON.parse(savedState)
+          if (state && typeof state.unreadCount === 'number') {
+            unreadCount.value = state.unreadCount
+            useLocalNotificationState.value = true
+            console.log(`✅ Dashboard: Loaded from shared state: ${state.unreadCount}`)
+            return true
+          }
+        }
+        
+        // Fallback to other storage methods
+        const savedSummary = localStorage.getItem('notification_summary')
+        if (savedSummary) {
+          const parsed = JSON.parse(savedSummary)
+          if (parsed && typeof parsed.unread === 'number') {
+            unreadCount.value = parsed.unread
+            useLocalNotificationState.value = true
+            console.log(`✅ Dashboard: Loaded from summary: ${parsed.unread}`)
+            return true
+          }
+        }
+        
         const storedCount = localStorage.getItem('unread_notification_count')
         if (storedCount !== null) {
           const count = parseInt(storedCount)
           if (!isNaN(count)) {
             unreadCount.value = count
-            console.log(`📊 Dashboard: Updated badge from localStorage: ${count}`)
+            useLocalNotificationState.value = true
+            console.log(`✅ Dashboard: Loaded from count: ${count}`)
             return true
           }
         }
         
-        // Fallback to notification_count object
-        const notificationData = localStorage.getItem('notification_count')
-        if (notificationData) {
-          const parsed = JSON.parse(notificationData)
-          if (parsed && typeof parsed.unread === 'number') {
-            unreadCount.value = parsed.unread
-            console.log(`📊 Dashboard: Updated badge from notification_count: ${parsed.unread}`)
-            return true
-          }
-        }
+        console.log('⚠️ Dashboard: No local state found, will fetch from API')
+        useLocalNotificationState.value = false
+        return false
+        
       } catch (error) {
-        console.error('Error reading from localStorage:', error)
+        console.error('❌ Dashboard: Error loading notification state:', error)
+        useLocalNotificationState.value = false
+        return false
       }
-      return false
     }
 
-    // NEW: Event listener for real-time updates - NO CHANGES
+    // ========== FIXED: Event listener for real-time updates ==========
     const setupNotificationListener = () => {
-      // Listen for events from NotificationsSection.vue
-      window.addEventListener('notification-count-changed', (event) => {
+      console.log('🔔 Dashboard: Setting up notification listeners')
+      
+      // Listen for updates from NotificationSection
+      window.addEventListener('notification-count-updated', (event) => {
+        console.log('📢 Dashboard: Received notification-count-updated event')
         if (event.detail && typeof event.detail.unread === 'number') {
           unreadCount.value = event.detail.unread
-          console.log(`📢 Dashboard: Received real-time update: ${event.detail.unread} unread`)
+          useLocalNotificationState.value = true
+          lastNotificationSync.value = new Date().toISOString()
+          console.log(`✅ Dashboard: Updated count to ${event.detail.unread}`)
+          
+          // Save to shared state
+          localStorage.setItem('notification_shared_state', JSON.stringify({
+            unreadCount: event.detail.unread,
+            totalCount: event.detail.total,
+            lastUpdated: new Date().toISOString(),
+            source: 'notification-center'
+          }))
         }
       })
       
-      // Also listen for storage events (when localStorage changes in another tab)
+      // Listen for individual notification read
+      window.addEventListener('notification-marked-read', (event) => {
+        console.log('📢 Dashboard: Received notification-marked-read event')
+        if (unreadCount.value > 0) {
+          unreadCount.value--
+          useLocalNotificationState.value = true
+          console.log(`✅ Dashboard: Decremented count to ${unreadCount.value}`)
+          
+          // Update shared state
+          const sharedState = {
+            unreadCount: unreadCount.value,
+            lastUpdated: new Date().toISOString(),
+            source: 'dashboard-event'
+          }
+          localStorage.setItem('notification_shared_state', JSON.stringify(sharedState))
+        }
+      })
+      
+      // Listen for all notifications read - CRITICAL FIX
+      window.addEventListener('all-notifications-marked-read', () => {
+        console.log('📢 Dashboard: Received all-notifications-marked-read event')
+        unreadCount.value = 0
+        useLocalNotificationState.value = true
+        console.log('✅ Dashboard: Set count to 0')
+        
+        // Save to shared state
+        localStorage.setItem('notification_shared_state', JSON.stringify({
+          unreadCount: 0,
+          totalCount: 0,
+          lastUpdated: new Date().toISOString(),
+          source: 'mark-all-read'
+        }))
+        
+        // Also clear other storage
+        localStorage.setItem('unread_notification_count', '0')
+      })
+      
+      // Listen for storage events
       window.addEventListener('storage', (event) => {
-        if (event.key === 'unread_notification_count') {
-          const count = parseInt(event.newValue || '0')
-          if (!isNaN(count)) {
-            unreadCount.value = count
-            console.log(`📦 Dashboard: Storage event updated badge: ${count}`)
+        console.log('📦 Dashboard: Storage event for', event.key)
+        
+        if (event.key === 'notification_shared_state') {
+          try {
+            if (event.newValue) {
+              const state = JSON.parse(event.newValue)
+              if (state && typeof state.unreadCount === 'number') {
+                unreadCount.value = state.unreadCount
+                useLocalNotificationState.value = true
+                console.log(`✅ Dashboard: Storage updated to ${state.unreadCount}`)
+              }
+            }
+          } catch (error) {
+            console.error('Error parsing storage event:', error)
           }
         }
       })
+    }
+
+    // ========== FIXED: Clean up event listeners ==========
+    const cleanupEventListeners = () => {
+      console.log('🔔 Dashboard: Cleaning up event listeners')
+      window.removeEventListener('notification-count-updated', null)
+      window.removeEventListener('notification-marked-read', null)
+      window.removeEventListener('all-notifications-marked-read', null)
+      window.removeEventListener('storage', null)
     }
 
     // ========== PROFILE DROPDOWN FIXES ONLY ==========
@@ -428,32 +521,41 @@ export default {
       }
     };
 
-    // Fetch unread notification count from API - NO CHANGES
-    const fetchUnreadCount = async () => {
+    // ========== FIXED: Fetch unread count - ONLY when needed ==========
+    const fetchUnreadCount = async (force = false) => {
+      // If we're using local state and not forcing refresh, skip API call
+      if (useLocalNotificationState.value && !force) {
+        console.log('📊 Dashboard: Using local notification state, skipping API call')
+        return
+      }
+      
       try {
         const providerId = getProviderId();
         if (!providerId) {
-          console.log('⚠️ No provider ID found')
+          console.log('⚠️ Dashboard: No provider ID found')
           unreadCount.value = 0;
           return;
         }
 
-        console.log(`🔔 Dashboard: Fetching notification count for provider: ${providerId}`);
+        console.log(`🔔 Dashboard: Fetching from API for provider: ${providerId}`);
 
-        // Use the correct endpoint from your screenshot
         try {
+          const timestamp = new Date().getTime()
           const response = await http.get('/notifications', {
             params: {
               recipientId: providerId,
               recipientType: 'provider',
               read: false,
-              limit: 1 // We only need count, not data
+              limit: 1,
+              _t: timestamp
+            },
+            headers: {
+              'Cache-Control': 'no-cache'
             }
           });
           
           let count = 0;
           
-          // Handle different response formats
           if (Array.isArray(response.data)) {
             count = response.data.length;
           } else if (response.data && typeof response.data === 'object') {
@@ -461,8 +563,6 @@ export default {
               count = response.data.count;
             } else if (response.data.unreadCount !== undefined) {
               count = response.data.unreadCount;
-            } else if (response.data.total !== undefined) {
-              count = response.data.total;
             } else if (Array.isArray(response.data.notifications)) {
               count = response.data.notifications.length;
             } else if (Array.isArray(response.data.data)) {
@@ -470,21 +570,31 @@ export default {
             }
           }
           
-          console.log(`✅ Dashboard: Unread notifications: ${count}`);
-          unreadCount.value = count;
+          console.log(`✅ Dashboard: API returned ${count} unread notifications`);
           
-          // Save to localStorage for other components
-          localStorage.setItem('unread_notification_count', count.toString());
+          // IMPORTANT: Compare with local state
+          if (useLocalNotificationState.value) {
+            console.log(`⚠️ Dashboard: Local state (${unreadCount.value}) differs from API (${count})`)
+            console.log('⚠️ Dashboard: Trusting local state (NotificationSection knows better)')
+            // Keep local state, don't update from API
+          } else {
+            unreadCount.value = count;
+            console.log(`✅ Dashboard: Using API count: ${count}`)
+          }
           
         } catch (apiError) {
           console.error('❌ Dashboard: API fetch failed:', apiError.message);
-          // Use localStorage as fallback
-          updateBadgeFromStorage()
+          // Keep local state if available
+          if (!useLocalNotificationState.value) {
+            unreadCount.value = 0;
+          }
         }
         
       } catch (error) {
-        console.error("❌ Dashboard: Error in fetchUnreadCount:", error);
-        updateBadgeFromStorage()
+        console.error("❌ Dashboard: Error in fetchUnreadCount:", error)
+        if (!useLocalNotificationState.value) {
+          unreadCount.value = 0;
+        }
       }
     };
 
@@ -505,8 +615,10 @@ export default {
           localStorage.setItem("provider_id", res.data._id);
         }
         
-        // Fetch initial notification count
-        fetchUnreadCount();
+        // Only fetch notifications if we don't have local state
+        if (!useLocalNotificationState.value) {
+          fetchUnreadCount();
+        }
       } catch (err) {
         console.error("Profile load failed:", err);
         localStorage.clear();
@@ -519,17 +631,36 @@ export default {
       isMobile.value = window.innerWidth < 768;
     };
 
-    // Watch for route changes - NO CHANGES
+    // ========== FIXED: Watch for route changes ==========
     watch(() => route.name, (newRoute) => {
       const isProviderRoute = newRoute?.includes('Provider') || 
                              route.path.includes('/provider');
       
       if (isProviderRoute && localStorage.getItem("provider_token")) {
-        // If we're coming back from notifications page, update badge
-        if (newRoute !== 'ProviderNotifications') {
-          console.log('🔄 Coming back from notifications, updating badge...')
-          updateBadgeFromStorage()
+        console.log(`🔄 Dashboard: Route changed to ${newRoute}`)
+        
+        // When navigating between sections, trust local state
+        loadNotificationState()
+        
+        // Only fetch from API if:
+        // 1. We don't have local state, OR
+        // 2. It's been more than 2 minutes since last sync
+        if (!useLocalNotificationState.value) {
+          console.log('🔄 Dashboard: No local state, fetching from API...')
+          fetchUnreadCount()
+        } else {
+          const now = new Date()
+          const twoMinutesAgo = new Date(now.getTime() - 2 * 60 * 1000)
+          
+          if (lastNotificationSync.value) {
+            const lastSync = new Date(lastNotificationSync.value)
+            if (lastSync < twoMinutesAgo) {
+              console.log('🔄 Dashboard: Local state is stale (>2min), refreshing...')
+              fetchUnreadCount(true) // Force refresh
+            }
+          }
         }
+        
         fetchProvider();
       }
     });
@@ -540,30 +671,50 @@ export default {
       const hasToken = localStorage.getItem("provider_token");
       
       if (isProviderRoute && hasToken) {
-        // Get badge count from localStorage first (fastest)
-        updateBadgeFromStorage()
+        console.log('🚀 Dashboard: Component mounted')
         
-        // Then fetch provider data
+        // 1. Load notification state FIRST
+        loadNotificationState()
+        
+        // 2. Then fetch provider data
         fetchProvider();
         
-        // Set up real-time listener
+        // 3. Setup real-time listeners
         setupNotificationListener()
         
-        // Check screen size
+        // 4. Check screen size
         checkScreenSize();
         window.addEventListener('resize', checkScreenSize);
         
-        // Poll every 30 seconds for updates (optional)
-        notificationInterval.value = setInterval(fetchUnreadCount, 30000);
+        // 5. Only poll API if we're not using local state
+        if (!useLocalNotificationState.value) {
+          notificationInterval.value = setInterval(() => fetchUnreadCount(true), 120000); // 2 minutes
+        } else {
+          console.log('⏰ Dashboard: Using local state, skipping periodic API polling')
+        }
+        
+        // 6. Listen for visibility changes
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden && !useLocalNotificationState.value) {
+            console.log('👁️ Dashboard: Page became visible, checking API...')
+            fetchUnreadCount(true)
+          }
+        })
       } else if (isProviderRoute && !hasToken) {
         router.push({ name: "Login" });
       }
     });
 
     onBeforeUnmount(() => {
+      console.log('🔔 Dashboard: Component unmounting')
+      
       if (notificationInterval.value) {
         clearInterval(notificationInterval.value);
       }
+      
+      cleanupEventListeners()
+      window.removeEventListener('resize', checkScreenSize)
+      document.removeEventListener('visibilitychange', null)
     });
 
     const handleProfileUpdated = () => {

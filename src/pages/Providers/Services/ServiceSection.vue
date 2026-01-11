@@ -695,25 +695,79 @@ export default {
       return true;
     },
 
-    // ===== SERVICE STATUS =====
+    // ===== SERVICE STATUS - FIXED VERSION =====
     getServiceStatus(service) {
       if (!service) return 'draft';
+      
+      // Debug: Log service structure
+      if (this.debugMode) {
+        console.log('🔍 Service Status Check:', {
+          serviceId: this.getServiceId(service),
+          hasSlots: !!service.slots,
+          slotsCount: service.slots ? service.slots.length : 0,
+          slotsStructure: service.slots ? JSON.stringify(service.slots[0]) : 'no slots'
+        });
+      }
+      
+      // Check if service has slots array
       if (!service.slots || !Array.isArray(service.slots) || service.slots.length === 0) {
         return 'draft';
       }
+      
+      // Check if any slot has a schedule with timeSlots
       const hasRealSlots = service.slots.some(slot => {
-        if (!slot) return false;
-        if (slot.weeklySchedule && Array.isArray(slot.weeklySchedule)) {
-          return slot.weeklySchedule.some(week => 
-            week && 
-            week.timeSlots && 
-            Array.isArray(week.timeSlots) && 
-            week.timeSlots.length > 0
-          );
+        if (!slot || !slot.schedule) return false;
+        
+        // Check if schedule is an array and has items
+        if (Array.isArray(slot.schedule)) {
+          return slot.schedule.some(daySchedule => {
+            if (!daySchedule) return false;
+            
+            // Check if this day has working hours
+            if (daySchedule.isWorkingDay === true) {
+              // Check if timeSlots exist and are not empty
+              if (daySchedule.timeSlots && 
+                  Array.isArray(daySchedule.timeSlots) && 
+                  daySchedule.timeSlots.length > 0) {
+                
+                // Check if any time slot is available
+                return daySchedule.timeSlots.some(timeSlot => 
+                  timeSlot && timeSlot.isAvailable !== false
+                );
+              }
+            }
+            return false;
+          });
         }
         return false;
       });
+      
       return hasRealSlots ? 'active' : 'draft';
+    },
+    
+    // ===== DEBUG METHOD FOR SERVICE SLOTS =====
+    debugServiceSlots(service) {
+      console.log('🔍 Service slots debug:', {
+        serviceId: this.getServiceId(service),
+        title: service.title,
+        hasSlots: !!service.slots,
+        slotsCount: service.slots ? service.slots.length : 0,
+        slots: service.slots ? JSON.stringify(service.slots, null, 2) : 'no slots',
+        status: this.getServiceStatus(service)
+      });
+      
+      if (service.slots && service.slots.length > 0) {
+        service.slots.forEach((slot, index) => {
+          console.log(`  Slot ${index}:`, {
+            hasSchedule: !!slot.schedule,
+            scheduleType: Array.isArray(slot.schedule) ? 'array' : typeof slot.schedule,
+            scheduleLength: Array.isArray(slot.schedule) ? slot.schedule.length : 'N/A',
+            scheduleSample: slot.schedule && Array.isArray(slot.schedule) && slot.schedule.length > 0 
+              ? JSON.stringify(slot.schedule[0]) 
+              : 'no schedule'
+          });
+        });
+      }
     },
     
     hasAnyRealAvailability(service) {
@@ -727,8 +781,8 @@ export default {
       const availableDays = new Set();
       
       service.slots.forEach(slot => {
-        if (slot && slot.weeklySchedule && Array.isArray(slot.weeklySchedule)) {
-          slot.weeklySchedule.forEach(daySchedule => {
+        if (slot && slot.schedule && Array.isArray(slot.schedule)) {
+          slot.schedule.forEach(daySchedule => {
             // Check if this day has any available time slots
             if (this.isDayAvailable(daySchedule)) {
               const dateStr = daySchedule.date || daySchedule.day;
@@ -924,6 +978,17 @@ export default {
           });
           
           console.log(`Loaded ${processedServices.length} valid services`);
+          
+          // Debug: Log service slots structure
+          if (this.debugMode) {
+            processedServices.forEach((service, index) => {
+              console.log(`Service ${index} (${service.title}):`, {
+                id: this.getServiceId(service),
+                slotsCount: service.slots ? service.slots.length : 0,
+                status: this.getServiceStatus(service)
+              });
+            });
+          }
         } else {
           console.warn('Unexpected services data format:', typeof servicesData);
           processedServices = [];
@@ -1161,6 +1226,9 @@ export default {
       this.selectedTimeSlotsService = existingService;
       this.showTimeSlotsModal = true;
       
+      // Debug the service before opening
+      this.debugServiceSlots(existingService);
+      
       console.log('Opening time slots for:', {
         serviceId,
         serviceTitle: existingService.title,
@@ -1173,12 +1241,43 @@ export default {
       this.selectedTimeSlotsService = null;
     },
     
+    // ===== UPDATED: Time Slots Saved Handler =====
     async handleTimeSlotsSaved(result) {
       try {
+        console.log('🎯 Time slots saved result:', result);
+        
+        // Refresh the services list to get updated data
         await this.fetchServices();
-        this.setSuccess("Time slots saved successfully!");
+        
+        // Update the specific service in the local array
+        const serviceId = this.selectedTimeSlotsService ? 
+          this.getServiceId(this.selectedTimeSlotsService) : null;
+        
+        if (serviceId && result.success) {
+          this.setSuccess("Schedule saved successfully! Service is now active.");
+          
+          // Find and update the specific service
+          const index = this.services.findIndex(s => this.getServiceId(s) === serviceId);
+          if (index !== -1) {
+            // Debug the updated service
+            console.log('✅ Updated service after time slots save:', {
+              index,
+              serviceId,
+              title: this.services[index].title,
+              slotsCount: this.services[index].slots ? this.services[index].slots.length : 0,
+              status: this.getServiceStatus(this.services[index])
+            });
+            
+            // Force a re-render by updating the array
+            this.services = [...this.services];
+          }
+        } else {
+          this.setSuccess("Time slots saved successfully!");
+        }
+        
       } catch (error) {
         console.error('Error handling time slots save:', error);
+        this.setError("Failed to update service status. Please refresh the page.");
       } finally {
         this.closeTimeSlotsModal();
       }

@@ -103,52 +103,52 @@ import { onMounted } from "vue";
 
 const steps = [
   {
-    icon: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
-    title: "Create Your Profile",
-    desc: "Sign up with your details and complete your professional profile with services and pricing.",
+    icon: "https://cdn-icons-png.flaticon.com/512/1077/1077114.png",
+    title: "Sign Up & Verify",
+    desc: "Create your account using personal details and verify your phone number through Telegram OTP for platform security.",
   },
   {
-    icon: "https://cdn-icons-png.flaticon.com/512/1040/1040230.png",
-    title: "Get Verified",
-    desc: "Our team reviews your application to ensure quality standards for all providers.",
+    icon: "https://cdn-icons-png.flaticon.com/512/3050/3050525.png",
+    title: "Login & Dashboard Access",
+    desc: "Log in using your registered phone number and password to access your professional dashboard.",
   },
   {
-    icon: "https://cdn-icons-png.flaticon.com/512/1250/1250713.png",
-    title: "List Your Services",
-    desc: "Add your services with descriptions, pricing, availability, and professional photos.",
+    icon: "https://cdn-icons-png.flaticon.com/512/2936/2936748.png",
+    title: "Create & Register Services",
+    desc: "Add and register your services. Note: They're not visible to customers until scheduling is set up.",
   },
   {
     icon: "https://cdn-icons-png.flaticon.com/512/3595/3595458.png",
-    title: "Manage Bookings",
-    desc: "Accept appointments, manage your schedule, and communicate with clients through our platform.",
+    title: "Add Scheduling & Timeslots",
+    desc: "Set up working hours and timeslots for each service. This publishes your services for customers to see.",
   },
   {
-    icon: "https://cdn-icons-png.flaticon.com/512/2721/2721612.png",
-    title: "Grow Your Business",
-    desc: "Build your reputation with reviews and expand your client base with our marketing tools.",
+    icon: "https://cdn-icons-png.flaticon.com/512/1250/1250713.png",
+    title: "Receive & Manage Bookings",
+    desc: "Get booking requests in your dashboard. Review and confirm paid bookings, or ignore requests as needed.",
   },
 ];
 
 const benefits = [
   {
     icon: "📱",
-    title: "Easy Management",
-    description: "Simple dashboard to manage appointments, clients, and payments in one place.",
+    title: "Unified Dashboard",
+    description: "Manage everything from one dashboard - services, bookings, schedule, and payments.",
   },
   {
     icon: "🔒",
-    title: "Verified Clients",
-    description: "Connect with genuine customers through our trusted platform.",
+    title: "Secure Verification",
+    description: "Telegram OTP verification ensures only genuine providers join the platform.",
   },
   {
     icon: "📈",
     title: "Business Growth",
-    description: "Tools and analytics to help you understand and grow your business.",
+    description: "Focus on serving customers while our platform handles booking management and visibility.",
   },
   {
-    icon: "💬",
-    title: "Dedicated Support",
-    description: "24/7 customer support in Amharic and English for all your needs.",
+    icon: "⏰",
+    title: "Smart Scheduling",
+    description: "Easy timeslot management that automatically publishes your services when configured.",
   },
 ];
 

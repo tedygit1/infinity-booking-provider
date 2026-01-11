@@ -345,7 +345,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import http from '@/api/index.js'
 
@@ -353,7 +353,7 @@ const router = useRouter()
 
 // State
 const notifications = ref([])
-const bookingDetails = ref({}) // Store fetched booking details
+const bookingDetails = ref({})
 const loading = ref(false)
 const expandedNotificationId = ref(null)
 const activeFilter = ref('all')
@@ -409,7 +409,156 @@ const filteredNotifications = computed(() => {
   })
 })
 
-// Main methods
+// ============ CRITICAL FIX: SHARED STATE MANAGEMENT ============
+
+// Store ALL notification IDs we've ever seen
+const allSeenNotificationIds = ref(new Set())
+
+// Store IDs that we've marked as read (LOCALLY - doesn't depend on backend)
+const locallyReadNotificationIds = ref(new Set())
+
+// Store IDs that should NEVER appear again (deleted or permanently dismissed)
+const hiddenNotificationIds = ref(new Set())
+
+// Save all tracking to localStorage
+const saveNotificationTracking = () => {
+  try {
+    const trackingData = {
+      allSeen: Array.from(allSeenNotificationIds.value),
+      locallyRead: Array.from(locallyReadNotificationIds.value),
+      hidden: Array.from(hiddenNotificationIds.value),
+      lastSaved: new Date().toISOString()
+    }
+    localStorage.setItem('notification_tracking', JSON.stringify(trackingData))
+    console.log('💾 Saved notification tracking data')
+  } catch (error) {
+    console.error('Error saving notification tracking:', error)
+  }
+}
+
+// Load notification tracking from localStorage
+const loadNotificationTracking = () => {
+  try {
+    const saved = localStorage.getItem('notification_tracking')
+    if (saved) {
+      const trackingData = JSON.parse(saved)
+      allSeenNotificationIds.value = new Set(trackingData.allSeen || [])
+      locallyReadNotificationIds.value = new Set(trackingData.locallyRead || [])
+      hiddenNotificationIds.value = new Set(trackingData.hidden || [])
+      console.log(`📂 Loaded tracking: ${allSeenNotificationIds.value.size} seen, ${locallyReadNotificationIds.value.size} locally read, ${hiddenNotificationIds.value.size} hidden`)
+    }
+  } catch (error) {
+    console.error('Error loading notification tracking:', error)
+  }
+}
+
+// ============ CRITICAL FIX: Save SHARED state for Dashboard ============
+const saveSharedStateForDashboard = () => {
+  try {
+    const sharedState = {
+      unreadCount: unreadCount.value,
+      totalCount: totalCount.value,
+      lastUpdated: new Date().toISOString(),
+      source: 'notification-center',
+      // Also save which notifications are read
+      readNotificationIds: notifications.value
+        .filter(n => n.read)
+        .map(n => n._id || n.id),
+      // Save current notifications for consistency
+      currentNotifications: notifications.value.map(n => ({
+        id: n._id || n.id,
+        read: n.read,
+        title: n.title,
+        type: n.type,
+        createdAt: n.createdAt
+      }))
+    }
+    
+    // CRITICAL: Save to SHARED storage key that Dashboard looks for
+    localStorage.setItem('notification_shared_state', JSON.stringify(sharedState))
+    
+    // Also save to other keys for compatibility
+    localStorage.setItem('current_notification_state', JSON.stringify(sharedState))
+    localStorage.setItem('notification_summary', JSON.stringify({
+      unread: unreadCount.value,
+      total: totalCount.value,
+      lastUpdated: new Date().toISOString()
+    }))
+    localStorage.setItem('unread_notification_count', unreadCount.value.toString())
+    
+    console.log(`💾 Saved shared state: ${unreadCount.value} unread`)
+    
+    // Dispatch storage event so Dashboard knows immediately
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'notification_shared_state',
+      newValue: JSON.stringify(sharedState)
+    }))
+    
+  } catch (error) {
+    console.error('Error saving shared state:', error)
+  }
+}
+
+// Load current notification state (for instant display on refresh)
+const loadCurrentNotificationState = () => {
+  try {
+    // First try shared state
+    const saved = localStorage.getItem('notification_shared_state')
+    if (saved) {
+      const state = JSON.parse(saved)
+      return state
+    }
+    
+    // Fallback to old state
+    const oldSaved = localStorage.getItem('current_notification_state')
+    if (oldSaved) {
+      const state = JSON.parse(oldSaved)
+      return state
+    }
+  } catch (error) {
+    console.error('Error loading current state:', error)
+  }
+  return null
+}
+
+// ============ CRITICAL FIX: Update global notification counts ============
+const updateNotificationCounts = () => {
+  const unread = unreadCount.value
+  const total = totalCount.value
+  
+  // CRITICAL: Save SHARED state for Dashboard
+  saveSharedStateForDashboard()
+  
+  // Save tracking
+  saveNotificationTracking()
+  
+  // Emit event for real-time sync
+  window.dispatchEvent(new CustomEvent('notification-count-updated', {
+    detail: { 
+      unread: unread,
+      total: total,
+      timestamp: new Date().toISOString()
+    }
+  }))
+  
+  console.log(`📢 Notification count updated: ${unread} unread`)
+}
+
+// Setup event listeners
+const setupEventListeners = () => {
+  // Listen for manual refresh from dashboard
+  window.addEventListener('refresh-notifications', () => {
+    console.log('📡 Received refresh request')
+    fetchNotifications(1)
+  })
+}
+
+const cleanupEventListeners = () => {
+  window.removeEventListener('refresh-notifications', null)
+}
+
+// ============ MAIN FETCH METHOD ============
+
 const fetchNotifications = async (page = 1, showLoading = true) => {
   try {
     if (showLoading) loading.value = true
@@ -420,91 +569,155 @@ const fetchNotifications = async (page = 1, showLoading = true) => {
       return
     }
     
-    console.log(`📡 Fetching notifications for provider: ${providerId}`)
+    console.log(`📡 Fetching notifications from API...`)
     
     let response
     try {
-      // Fetch notifications from API
+      // Fetch from API
+      const timestamp = new Date().getTime()
       response = await http.get('/notifications', {
         params: {
           recipientId: providerId,
           recipientType: 'provider',
           page: page,
-          limit: 20,
+          limit: 50,
           sort: '-createdAt',
-          read: activeFilter.value === 'unread' ? false : undefined
+          _t: timestamp
+        },
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         }
       })
       
     } catch (fetchError) {
-      console.error('❌ Fetch error:', fetchError)
-      loadFromLocalStorage()
-      if (notifications.value.length === 0) {
-        showSampleData()
-      }
-      throw fetchError
+      console.error('❌ API fetch failed:', fetchError.message)
+      // If API fails, show cached data
+      showCachedNotifications()
+      return
     }
     
     if (response && response.data) {
-      let notificationsData = []
+      let rawNotifications = []
       
-      // Handle different response formats
+      // Extract notifications from response
       if (Array.isArray(response.data)) {
-        notificationsData = response.data
+        rawNotifications = response.data
       } else if (response.data.notifications) {
-        notificationsData = response.data.notifications
+        rawNotifications = response.data.notifications
       } else if (response.data.data) {
-        notificationsData = response.data.data
+        rawNotifications = response.data.data
       } else if (response.data.results) {
-        notificationsData = response.data.results
+        rawNotifications = response.data.results
       }
       
-      console.log(`📊 Found ${notificationsData.length} notifications`)
+      console.log(`📊 API returned ${rawNotifications.length} raw notifications`)
       
-      // Normalize notifications
-      const normalized = normalizeNotifications(notificationsData)
+      // Normalize them
+      const normalized = normalizeNotifications(rawNotifications)
       
+      // ============ CRITICAL FILTERING LOGIC ============
+      const filteredNotifications = []
+      
+      for (const notification of normalized) {
+        const notificationId = notification._id || notification.id
+        
+        // Track that we've seen this notification
+        allSeenNotificationIds.value.add(notificationId)
+        
+        // RULE 1: If it's hidden, skip it completely
+        if (hiddenNotificationIds.value.has(notificationId)) {
+          console.log(`🚫 Skipping hidden notification: ${notificationId}`)
+          continue
+        }
+        
+        // RULE 2: If we've marked it as read locally, force it to be read
+        if (locallyReadNotificationIds.value.has(notificationId)) {
+          console.log(`✅ Forcing local read: ${notificationId}`)
+          notification.read = true
+        }
+        
+        // RULE 3: If notification from API says it's read, track it
+        if (notification.read) {
+          locallyReadNotificationIds.value.add(notificationId)
+        }
+        
+        filteredNotifications.push(notification)
+      }
+      
+      console.log(`📋 After filtering: ${filteredNotifications.length} notifications to display`)
+      
+      // Update notifications array
       if (page === 1) {
-        notifications.value = normalized
+        notifications.value = filteredNotifications
       } else {
-        notifications.value = [...notifications.value, ...normalized]
+        // Merge avoiding duplicates
+        const existingIds = new Set(notifications.value.map(n => n._id || n.id))
+        const newNotifications = filteredNotifications.filter(n => !existingIds.has(n._id || n.id))
+        notifications.value = [...notifications.value, ...newNotifications]
       }
       
-      hasMore.value = notificationsData.length === 20
+      hasMore.value = rawNotifications.length === 50
       currentPage.value = page
       
-      // Save to localStorage
-      saveToLocalStorage()
-      updateNotificationCounts()
+      // Save everything
+      saveNotificationTracking()
+      updateNotificationCounts() // CRITICAL: This saves shared state
       
-      // Fetch booking details for booking notifications
-      await fetchBookingDetailsForNotifications(normalized)
+      // Fetch booking details if needed
+      await fetchBookingDetailsForNotifications(filteredNotifications)
+      
     }
   } catch (error) {
-    console.error('❌ Error fetching notifications:', error)
-    if (page === 1) {
-      loadFromLocalStorage()
-    }
+    console.error('❌ Error in fetchNotifications:', error)
+    showCachedNotifications()
   } finally {
     if (showLoading) loading.value = false
   }
 }
 
-// NEW: Fetch booking details for booking notifications
+// Show cached notifications when API fails
+const showCachedNotifications = () => {
+  try {
+    const savedState = localStorage.getItem('notification_shared_state') || 
+                       localStorage.getItem('current_notification_state')
+    if (savedState) {
+      const state = JSON.parse(savedState)
+      
+      // Convert back to notification objects
+      const cachedNotifications = state.currentNotifications ? 
+        state.currentNotifications.map(n => ({
+          _id: n.id,
+          id: n.id,
+          title: n.title,
+          type: n.type,
+          read: n.read,
+          createdAt: n.createdAt,
+          message: '',
+          data: {}
+        })) : []
+      
+      notifications.value = cachedNotifications
+      updateNotificationCounts()
+      console.log(`📂 Showing ${cachedNotifications.length} cached notifications`)
+    }
+  } catch (error) {
+    console.error('Error showing cached notifications:', error)
+  }
+}
+
+// Fetch booking details
 const fetchBookingDetailsForNotifications = async (notificationsList) => {
   try {
     for (const notification of notificationsList) {
       if (notification.type === 'booking' && notification.data && notification.data.bookingId) {
         try {
-          console.log(`🔍 Fetching booking details for: ${notification.data.bookingId}`)
-          
-          // Try to fetch booking details
           const bookingResponse = await http.get(`/bookings/${notification.data.bookingId}`)
           
           if (bookingResponse.data) {
             bookingDetails.value[notification._id || notification.id] = {
               ...bookingResponse.data,
-              // Ensure we have the right data structure
               booker: bookingResponse.data.customer || bookingResponse.data.booker || notification.data,
               service: bookingResponse.data.service || {},
               bookingId: notification.data.bookingId,
@@ -513,16 +726,15 @@ const fetchBookingDetailsForNotifications = async (notificationsList) => {
             }
           }
         } catch (bookingError) {
-          console.log(`⚠️ Could not fetch booking details for ${notification.data.bookingId}:`, bookingError.message)
+          // Silent fail - booking details are optional
         }
       }
     }
   } catch (error) {
-    console.error('❌ Error fetching booking details:', error)
+    console.error('Error fetching booking details:', error)
   }
 }
 
-// Fetch booking details when notification is expanded
 const fetchBookingDetails = async (notification) => {
   if (notification.type !== 'booking' || !notification.data || !notification.data.bookingId) {
     return
@@ -530,14 +742,11 @@ const fetchBookingDetails = async (notification) => {
 
   const notificationId = notification._id || notification.id
   
-  // Skip if already fetched
   if (bookingDetails.value[notificationId]) {
     return
   }
 
   try {
-    console.log(`🔍 Fetching booking details for: ${notification.data.bookingId}`)
-    
     const response = await http.get(`/bookings/${notification.data.bookingId}`)
     
     if (response.data) {
@@ -551,7 +760,7 @@ const fetchBookingDetails = async (notification) => {
       }
     }
   } catch (error) {
-    console.error(`❌ Error fetching booking details:`, error)
+    console.error(`Error fetching booking details:`, error)
   }
 }
 
@@ -561,8 +770,6 @@ const getProviderId = () => {
     if (!loggedProvider) return null
     
     const provider = JSON.parse(loggedProvider)
-    
-    // Try different ID fields
     return provider.pid || provider._id || provider.id
   } catch (err) {
     console.error('Error getting provider ID:', err)
@@ -570,116 +777,89 @@ const getProviderId = () => {
   }
 }
 
-// FIXED: Mark as Read - Using PUT method
+// ============ CRITICAL FIX: markAsRead - with shared state ============
 const markAsRead = async (notification) => {
   try {
     const notificationId = notification._id || notification.id
     if (!notificationId) return
     
-    console.log(`📝 Marking notification ${notificationId} as read`)
+    console.log(`✅ MARKING AS READ: ${notificationId}`)
     
-    // Update locally first for instant feedback
     const index = notifications.value.findIndex(n => 
       (n._id === notificationId || n.id === notificationId)
     )
     
     if (index === -1) return
     
-    const wasRead = notifications.value[index].read
+    // CRITICAL: Mark as read LOCALLY
+    locallyReadNotificationIds.value.add(notificationId)
     
-    // Update locally IMMEDIATELY
+    // Update the notification object
     notifications.value[index].read = true
+    
+    // CRITICAL: Save shared state BEFORE anything else
     updateNotificationCounts()
     
-    // Try API call - USE PUT not PATCH
+    // Emit individual read event for Dashboard
+    window.dispatchEvent(new CustomEvent('notification-marked-read', {
+      detail: { notificationId }
+    }))
+    
+    // Try to update server (but don't wait for it)
     try {
-      console.log(`🔄 PUT /notifications/${notificationId}/read`)
       await http.put(`/notifications/${notificationId}/read`, {})
-      console.log('✅ Notification marked as read')
-      
-      saveToLocalStorage()
-      
+      console.log(`🌐 Server updated for ${notificationId}`)
     } catch (apiError) {
-      console.error('❌ PUT /read failed:', apiError.message)
-      
-      // Try alternative: Update the entire notification
-      try {
-        console.log('🔄 Trying alternative: PUT /notifications/{id}')
-        await http.put(`/notifications/${notificationId}`, { 
-          read: true
-        })
-        console.log('✅ Alternative method successful')
-        saveToLocalStorage()
-      } catch (altError) {
-        console.error('❌ Alternative method failed:', altError.message)
-        // Revert local change if all API calls fail
-        notifications.value[index].read = wasRead
-        updateNotificationCounts()
-      }
+      console.log(`⚠️ Server update failed for ${notificationId}, but local state is updated`)
     }
     
   } catch (error) {
-    console.error('❌ Error in markAsRead:', error)
+    console.error('Error in markAsRead:', error)
   }
 }
 
-// FIXED: Mark All as Read
+// ============ CRITICAL FIX: markAllAsRead - with shared state ============
 const markAllAsRead = async () => {
-  if (unreadCount.value === 0) return
+  const currentUnread = unreadCount.value
+  if (currentUnread === 0) return
   
   try {
     const providerId = getProviderId()
     if (!providerId) return
     
-    console.log(`📝 Marking all notifications as read`)
+    console.log(`✅ MARKING ALL ${currentUnread} AS READ`)
     
-    // Update locally first
-    const oldStates = notifications.value.map(n => n.read)
-    notifications.value.forEach(n => n.read = true)
+    // Get all unread notification IDs
+    const unreadNotifications = notifications.value.filter(n => !n.read)
+    const unreadIds = unreadNotifications.map(n => n._id || n.id)
+    
+    // Mark ALL as read LOCALLY
+    unreadIds.forEach(id => locallyReadNotificationIds.value.add(id))
+    
+    // Update ALL notifications locally
+    notifications.value.forEach(n => {
+      if (!n.read) n.read = true
+    })
+    
+    // CRITICAL: Save shared state BEFORE anything else
     updateNotificationCounts()
     
-    // Try API call - USE PUT not PATCH
+    // CRITICAL: Emit event for Dashboard
+    window.dispatchEvent(new CustomEvent('all-notifications-marked-read'))
+    
+    // Try to update server in background
     try {
-      console.log('🔄 PUT /notifications/all/read')
       await http.put('/notifications/all/read', {
         recipientId: providerId,
         recipientType: 'provider'
       })
-      console.log('✅ All notifications marked as read')
-      saveToLocalStorage()
-      
+      console.log(`🌐 Server updated for all notifications`)
     } catch (apiError) {
-      console.error('❌ PUT /all/read failed:', apiError.message)
-      
-      // Try alternative: Mark each individually
-      try {
-        console.log('🔄 Marking each individually')
-        
-        const unreadNotifications = notifications.value.filter(n => !oldStates[notifications.value.indexOf(n)])
-        
-        for (const notification of unreadNotifications) {
-          try {
-            await http.put(`/notifications/${notification._id || notification.id}/read`, {})
-          } catch (err) {
-            console.log(`Failed to mark ${notification._id}:`, err.message)
-          }
-        }
-        
-        saveToLocalStorage()
-        
-      } catch (batchError) {
-        console.error('❌ Batch marking failed:', batchError.message)
-        
-        // Revert all changes
-        notifications.value.forEach((n, index) => {
-          n.read = oldStates[index]
-        })
-        updateNotificationCounts()
-      }
+      console.log(`⚠️ Server update failed, but all marked as read locally`)
     }
     
   } catch (error) {
-    console.error('❌ Error in markAllAsRead:', error)
+    console.error('Error in markAllAsRead:', error)
   }
 }
 
@@ -689,36 +869,27 @@ const markAsUnread = async (notification) => {
     const notificationId = notification._id || notification.id
     if (!notificationId) return
     
-    console.log(`📝 Marking notification ${notificationId} as unread`)
+    console.log(`↩️ Marking as unread: ${notificationId}`)
     
-    // Update locally first
+    // Remove from locally read set
+    locallyReadNotificationIds.value.delete(notificationId)
+    
+    // Update the notification
     const index = notifications.value.findIndex(n => 
       (n._id === notificationId || n.id === notificationId)
     )
     
-    if (index === -1) return
+    if (index !== -1) {
+      notifications.value[index].read = false
+    }
     
-    const wasRead = notifications.value[index].read
-    notifications.value[index].read = false
     updateNotificationCounts()
     
-    // Try API call - USE PUT not PATCH
+    // Try server update
     try {
       await http.put(`/notifications/${notificationId}/unread`, {})
-      saveToLocalStorage()
     } catch (apiError) {
-      console.error('PUT /unread failed:', apiError.message)
-      
-      // Try alternative
-      try {
-        await http.put(`/notifications/${notificationId}`, { read: false })
-        saveToLocalStorage()
-      } catch (altError) {
-        console.error('Alternative failed:', altError.message)
-        // Revert local change
-        notifications.value[index].read = wasRead
-        updateNotificationCounts()
-      }
+      console.error('Server unread update failed:', apiError.message)
     }
     
   } catch (error) {
@@ -728,7 +899,7 @@ const markAsUnread = async (notification) => {
 
 // Delete notification
 const deleteNotification = async (notification) => {
-  if (!confirm('Are you sure you want to delete this notification?')) {
+  if (!confirm('Permanently delete this notification?')) {
     return
   }
   
@@ -740,27 +911,34 @@ const deleteNotification = async (notification) => {
       expandedNotificationId.value = null
     }
     
-    // Remove from array first
+    // HIDE IT PERMANENTLY
+    hiddenNotificationIds.value.add(notificationId)
+    
+    // Remove from other tracking
+    locallyReadNotificationIds.value.delete(notificationId)
+    
+    // Remove from display
     notifications.value = notifications.value.filter(n => 
       n._id !== notificationId && n.id !== notificationId
     )
     
-    // Try API call
-    try {
-      if (notificationId) {
-        await http.delete(`/notifications/${notificationId}`)
-      }
-    } catch (apiError) {
-      console.error('API delete failed:', apiError.message)
-    }
-    
+    // Save everything
+    saveNotificationTracking()
     updateNotificationCounts()
-    saveToLocalStorage()
     
-    // Remove booking details if exists
+    // Remove booking details
     if (bookingDetails.value[notificationId]) {
       delete bookingDetails.value[notificationId]
     }
+    
+    // Try server delete (optional)
+    try {
+      await http.delete(`/notifications/${notificationId}`)
+    } catch (apiError) {
+      console.error('Server delete failed:', apiError.message)
+    }
+    
+    console.log(`🗑️ Notification ${notificationId} permanently hidden`)
     
   } catch (error) {
     console.error('Error deleting notification:', error)
@@ -783,75 +961,9 @@ const normalizeNotifications = (notificationsData) => {
   }))
 }
 
-const updateNotificationCounts = () => {
-  const unread = notifications.value.filter(n => !n.read).length
-  const total = notifications.value.length
-  
-  // Update localStorage for Dashboard
-  localStorage.setItem('notification_count', JSON.stringify({
-    unread: unread,
-    total: total,
-    lastUpdated: new Date().toISOString()
-  }))
-  
-  localStorage.setItem('unread_notification_count', unread.toString())
-  
-  // Dispatch event for real-time updates
-  window.dispatchEvent(new CustomEvent('notification-count-changed', {
-    detail: { unread, total }
-  }))
-  
-  console.log(`📢 Emitted notification count: ${unread} unread`)
-}
-
-const loadFromLocalStorage = () => {
-  try {
-    const savedNotifications = localStorage.getItem('provider_notifications')
-    if (savedNotifications) {
-      const parsed = JSON.parse(savedNotifications)
-      if (parsed.length > 0) {
-        notifications.value = normalizeNotifications(parsed)
-        console.log(`📂 Loaded ${parsed.length} notifications from cache`)
-        return true
-      }
-    }
-  } catch (error) {
-    console.error('Error loading from localStorage:', error)
-  }
-  return false
-}
-
-const saveToLocalStorage = () => {
-  try {
-    localStorage.setItem('provider_notifications', JSON.stringify(notifications.value.slice(0, 100)))
-  } catch (error) {
-    console.error('Error saving to localStorage:', error)
-  }
-}
-
-const showSampleData = () => {
-  const sampleNotifications = [
-    {
-      _id: 'sample1',
-      title: 'New Booking Request',
-      message: 'niga bro wants to book your service',
-      type: 'booking',
-      read: false,
-      createdAt: new Date().toISOString(),
-      data: {
-        bookingId: 'sample_booking_123',
-        bookingDate: new Date().toISOString()
-      }
-    }
-  ]
-  
-  notifications.value = normalizeNotifications(sampleNotifications)
-  updateNotificationCounts()
-  saveToLocalStorage()
-}
-
 // UI methods
 const refreshNotifications = () => {
+  console.log('🔄 Manual refresh')
   fetchNotifications(1)
 }
 
@@ -872,7 +984,7 @@ const toggleNotificationDetail = async (notification) => {
       markAsRead(notification)
     }
     
-    // Fetch booking details if it's a booking notification
+    // Fetch booking details
     if (notification.type === 'booking') {
       await fetchBookingDetails(notification)
     }
@@ -898,16 +1010,48 @@ const clearFilter = () => {
   fetchNotifications(1)
 }
 
+// Debug functions
+const debugState = () => {
+  console.log('=== DEBUG STATE ===')
+  console.log('Displaying:', notifications.value.length, 'notifications')
+  console.log('Unread count:', unreadCount.value)
+  console.log('Locally read IDs:', Array.from(locallyReadNotificationIds.value))
+  console.log('Hidden IDs:', Array.from(hiddenNotificationIds.value))
+  
+  // Check shared state
+  const sharedState = localStorage.getItem('notification_shared_state')
+  if (sharedState) {
+    console.log('Shared state:', JSON.parse(sharedState))
+  }
+}
+
+const resetAllTracking = () => {
+  if (confirm('Reset ALL notification tracking? This will make all notifications appear as new.')) {
+    localStorage.removeItem('notification_tracking')
+    localStorage.removeItem('notification_shared_state')
+    localStorage.removeItem('current_notification_state')
+    localStorage.removeItem('notification_summary')
+    localStorage.removeItem('unread_notification_count')
+    
+    allSeenNotificationIds.value = new Set()
+    locallyReadNotificationIds.value = new Set()
+    hiddenNotificationIds.value = new Set()
+    
+    console.log('🧹 ALL tracking reset')
+    
+    // Refresh
+    fetchNotifications(1)
+  }
+}
+
 // Formatting helpers
 const getNotificationClasses = (notification) => {
   const classes = {
     'unread': !notification.read,
     'expanded': expandedNotificationId.value === (notification._id || notification.id)
   }
-  
   const type = notification.type || 'info'
   classes[`type-${type}`] = true
-  
   return classes
 }
 
@@ -922,9 +1066,7 @@ const formatKey = (key) => {
 
 const formatAmount = (amount) => {
   if (!amount) return '$0'
-  if (typeof amount === 'number') {
-    return `$${amount.toFixed(2)}`
-  }
+  if (typeof amount === 'number') return `$${amount.toFixed(2)}`
   if (typeof amount === 'string') {
     if (amount.includes('$')) return amount
     const num = parseFloat(amount)
@@ -938,7 +1080,6 @@ const formatBookingDate = (dateString) => {
   try {
     const date = new Date(dateString)
     if (isNaN(date.getTime())) return dateString
-    
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -998,22 +1139,17 @@ const formatNotificationType = (type) => {
 
 const formatTime = (timestamp) => {
   if (!timestamp) return 'Just now'
-  
   const date = new Date(timestamp)
   if (isNaN(date.getTime())) return 'Invalid date'
-  
   const now = new Date()
   const diffMs = now - date
-  
   const diffMins = Math.floor(diffMs / 60000)
   const diffHours = Math.floor(diffMs / 3600000)
   const diffDays = Math.floor(diffMs / 86400000)
-  
   if (diffMins < 1) return 'Just now'
   if (diffMins < 60) return `${diffMins}m ago`
   if (diffHours < 24) return `${diffHours}h ago`
   if (diffDays < 7) return `${diffDays}d ago`
-  
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
@@ -1032,26 +1168,49 @@ const goToAction = (notification) => {
 
 // Lifecycle
 onMounted(() => {
-  console.log('🔔 Notifications page mounted')
+  console.log('🚀 Notifications page mounted - SHARED STATE FIX')
   
-  // Load from localStorage first (fast)
-  loadFromLocalStorage()
+  // Load tracking data
+  loadNotificationTracking()
   
-  // Then fetch from API
+  // Load current state for instant display
+  const cachedState = loadCurrentNotificationState()
+  if (cachedState) {
+    // Convert cached state to notifications for instant display
+    const cachedNotifications = cachedState.currentNotifications ? 
+      cachedState.currentNotifications.map(n => ({
+        _id: n.id,
+        id: n.id,
+        title: n.title,
+        type: n.type,
+        read: n.read,
+        createdAt: n.createdAt,
+        message: '',
+        data: {}
+      })) : []
+    
+    notifications.value = cachedNotifications
+    console.log(`📊 Instantly showing ${cachedNotifications.length} cached notifications`)
+  }
+  
+  // Setup event listeners
+  setupEventListeners()
+  
+  // Fetch fresh data from API
   fetchNotifications(1)
+  
+  // Make debug functions available
+  window.debugNotifications = debugState
+  window.resetNotificationTracking = resetAllTracking
 })
 
-// Watch for notification expansion
-watch(expandedNotificationId, async (newId, oldId) => {
-  if (newId) {
-    const notification = notifications.value.find(n => 
-      (n._id === newId || n.id === newId)
-    )
-    
-    if (notification && notification.type === 'booking') {
-      await fetchBookingDetails(notification)
-    }
-  }
+onUnmounted(() => {
+  console.log('🔔 Notifications page unmounted - Saving final state')
+  
+  // CRITICAL: Save final shared state before leaving
+  saveSharedStateForDashboard()
+  
+  cleanupEventListeners()
 })
 </script>
 
