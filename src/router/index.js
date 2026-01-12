@@ -22,12 +22,9 @@ import HomeDashboard from "@/pages/Providers/HomeDashboard.vue";
 import ProfileSection from "@/pages/Providers/ProfileSection.vue";
 import ServiceSection from "@/pages/Providers/Services/ServiceSection.vue";
 import BookingsSection from "@/pages/Providers/BookingsSection.vue";
-import EarningsSection from "@/pages/Providers/EarningsSection.vue";
-import MessagesSection from "@/pages/Providers/MessagesSection.vue";
-import AnalyticsSection from "@/pages/Providers/AnalyticsSection.vue";
+
 import ReviewsSection from "@/pages/Providers/ReviewsSection.vue";
 import SettingsSection from "@/pages/Providers/SettingsSection.vue";
-// NEW: Import NotificationsSection
 import NotificationsSection from "@/pages/Providers/NotificationsSection.vue";
 
 // Footer pages
@@ -80,12 +77,9 @@ const routes = [
       { path: "profile", name: "ProviderProfile", component: ProfileSection },
       { path: "services", name: "ProviderServices", component: ServiceSection },
       { path: "bookings", name: "ProviderBookings", component: BookingsSection },
-      { path: "earnings", name: "ProviderEarnings", component: EarningsSection },
-      { path: "messages", name: "ProviderMessages", component: MessagesSection },
-      { path: "analytics", name: "ProviderAnalytics", component: AnalyticsSection },
+      
       { path: "reviews", name: "ProviderReviews", component: ReviewsSection },
       { path: "settings", name: "ProviderSettings", component: SettingsSection },
-      // NEW: Notifications route
       { path: "notifications", name: "ProviderNotifications", component: NotificationsSection },
     ],
   },

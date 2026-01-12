@@ -1457,79 +1457,85 @@ export default {
   margin-bottom: 20px;
 }
 
-/* TIME SLOT LINE - COMPACT SINGLE LINE */
+/* TIME SLOT LINE */
 .time-slot-line {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 10px 12px;
+  padding: 12px 15px;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
   width: 100%;
+  box-sizing: border-box;
 }
 
-.time-slot-line:hover {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+/* ==== BOOKED TIME SLOTS FIX - RED WITH "Booked" TEXT ==== */
+.time-slot-line.booked-slot {
+  background: #fef2f2 !important; /* Light red background */
+  border: 1px solid #fecaca !important; /* Red border */
 }
 
-/* COMPACT SINGLE LINE LAYOUT - OPTIMIZED */
+.time-slot-line.booked-slot .booked-time-text {
+  color: #dc2626 !important; /* Red text */
+  font-weight: 600;
+}
+
+.time-slot-line.booked-slot .booked-time-text::after {
+  content: " Booked";
+  color: #dc2626;
+  font-weight: 500;
+  font-size: 0.85rem;
+  margin-left: 8px;
+  opacity: 0.9;
+}
+
+/* SINGLE LINE LAYOUT */
 .slot-compact-line {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
   width: 100%;
   flex-wrap: nowrap;
-  min-width: 0;
+  gap: 8px;
 }
 
-/* TIME RANGE COMPACT - FIXED WIDTH FOR DESKTOP */
+/* TIME RANGE */
 .time-range-compact {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   flex: 1;
   min-width: 0;
-  overflow: hidden;
 }
 
+/* BOOKED TIME TEXT */
 .booked-time-text {
   font-weight: 600;
   color: #1e40af;
-  font-size: 0.9rem;
+  font-size: 1rem;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex-shrink: 1;
-  padding: 2px 0;
+  flex-shrink: 0;
 }
 
+/* EDIT TIME RANGE */
 .edit-time-range {
   display: flex;
   align-items: center;
-  gap: 1px;
-  flex-wrap: nowrap;
+  gap: 4px;
   white-space: nowrap;
-  flex-shrink: 1;
   min-width: 0;
-  overflow: hidden;
+  flex: 1;
 }
 
-.time-input-wrapper {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  min-width: 0;
-}
-
-/* OPTIMIZED TIME INPUT - FULL VISIBILITY */
+/* TIME INPUT - SHOW FULL HH:MM */
 .time-input {
-  width: 80px !important;
-  min-width: 80px !important;
-  max-width: 80px !important;
-  padding: 6px 8px !important;
+  width: 100px !important;
+  min-width: 100px !important;
+  padding: 8px 10px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
-  font-size: 0.9rem !important;
+  font-size: 1rem;
   text-align: center;
   font-family: 'Inter', monospace;
   color: #1e293b;
@@ -1537,7 +1543,6 @@ export default {
   box-sizing: border-box;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.5px;
 }
 
 .time-input:focus {
@@ -1548,34 +1553,29 @@ export default {
 
 .time-separator {
   color: #64748b;
-  font-size: 0.9rem;
+  font-size: 1rem;
   flex-shrink: 0;
-  padding: 0 4px;
+  padding: 0 6px;
   white-space: nowrap;
-  margin: 0 2px;
 }
 
-/* STATUS INDICATOR COMPACT */
+/* STATUS INDICATOR */
 .status-indicator-compact {
   display: flex;
   align-items: center;
-  gap: 8px;
   flex-shrink: 0;
-  white-space: nowrap;
-  margin: 0 12px;
+  margin: 0 8px;
 }
 
 .booked-indicator-icon {
   color: #dc2626;
   font-size: 1rem;
   cursor: help;
-  flex-shrink: 0;
 }
 
 /* TOGGLE SWITCH */
 .toggle-container {
   flex-shrink: 0;
-  margin: 0;
 }
 
 .toggle-switch-small {
@@ -1584,7 +1584,6 @@ export default {
   width: 32px;
   height: 20px;
   cursor: pointer;
-  flex-shrink: 0;
 }
 
 .toggle-switch-small input {
@@ -1625,20 +1624,18 @@ export default {
   transform: translateX(12px);
 }
 
-/* ACTIONS COMPACT */
+/* ACTIONS */
 .actions-compact {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
-  white-space: nowrap;
 }
 
 .error-indicator {
   color: #dc2626;
   font-size: 0.85rem;
   cursor: help;
-  flex-shrink: 0;
 }
 
 .remove-btn-compact {
@@ -1653,10 +1650,8 @@ export default {
   justify-content: center;
   cursor: pointer;
   font-size: 0.9rem;
-  flex-shrink: 0;
   transition: all 0.2s ease;
-  padding: 0;
-  margin-left: 0;
+  flex-shrink: 0;
 }
 
 .remove-btn-compact:hover:not(:disabled) {
@@ -1667,7 +1662,6 @@ export default {
 .remove-btn-compact:disabled {
   opacity: 0.3;
   cursor: not-allowed;
-  transform: none;
 }
 
 /* ===== ADD SLOT BUTTON ===== */
@@ -1802,7 +1796,7 @@ export default {
   cursor: not-allowed;
 }
 
-/* ===== DESKTOP OPTIMIZATIONS ===== */
+/* ===== DESKTOP ===== */
 @media (min-width: 768px) {
   .scheduler-container {
     display: flex;
@@ -1810,82 +1804,123 @@ export default {
     gap: 20px;
   }
   
-  .slot-compact-line {
-    gap: 10px;
-  }
-  
   .time-range-compact {
-    flex: 1;
-    min-width: 250px;
-  }
-  
-  .time-input {
-    width: 85px !important;
-    min-width: 85px !important;
-    max-width: 85px !important;
-    padding: 6px 8px !important;
-    font-size: 0.95rem !important;
-  }
-  
-  .booked-time-text {
-    min-width: 150px;
-    font-size: 1rem;
-  }
-  
-  .remove-btn-compact {
-    width: 26px;
-    height: 26px;
-    font-size: 1rem;
-  }
-  
-  .time-separator {
-    margin: 0 4px;
-    font-size: 1rem;
+    min-width: 220px;
   }
 }
 
-/* ===== TABLET OPTIMIZATIONS ===== */
-@media (min-width: 480px) and (max-width: 767px) {
+/* ===== MOBILE - HORIZONTAL SCROLL FIX ===== */
+@media (max-width: 767px) {
   .ultimate-scheduler {
     padding: 15px;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
   .calendar-wrapper,
   .timeslot-panel {
+    width: 100%;
+    min-width: 100%;
     padding: 16px;
+    box-sizing: border-box;
   }
   
+  /* TIME SLOTS CONTAINER - HORIZONTAL SCROLL */
+  .time-slots-list {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+  }
+  
+  /* EACH TIME SLOT LINE */
+  .time-slot-line {
+    width: 100%;
+    min-width: 400px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 0;
+    box-sizing: border-box;
+    flex-shrink: 0;
+  }
+  
+  /* BOOKED SLOT - MOBILE ADJUSTMENT */
+  .time-slot-line.booked-slot {
+    background: #fef2f2 !important;
+    border: 1px solid #fecaca !important;
+  }
+  
+  .time-slot-line.booked-slot .booked-time-text::after {
+    content: " Booked";
+    color: #dc2626;
+    font-size: 0.8rem;
+    margin-left: 6px;
+  }
+  
+  /* SLOT LINE CONTENT */
   .slot-compact-line {
-    gap: 8px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 380px;
+    gap: 6px;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
   }
   
+  /* TIME RANGE */
   .time-range-compact {
-    flex: 1;
-    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    min-width: 160px;
   }
   
+  /* TIME INPUTS - FULL HH:MM VISIBLE */
   .time-input {
-    width: 78px !important;
-    min-width: 78px !important;
-    max-width: 78px !important;
-    padding: 5px 6px !important;
-    font-size: 0.88rem !important;
+    width: 90px !important;
+    min-width: 90px !important;
+    padding: 7px 8px !important;
+    font-size: 0.95rem !important;
+    flex-shrink: 0;
+  }
+  
+  /* BOOKED TIME TEXT */
+  .booked-time-text {
+    font-size: 0.95rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width: 140px;
   }
   
   .time-separator {
-    margin: 0 3px;
-    font-size: 0.88rem;
+    padding: 0 4px;
+    font-size: 0.95rem;
+    flex-shrink: 0;
   }
   
-  .booked-time-text {
-    min-width: 130px;
-    font-size: 0.9rem;
-  }
-  
+  /* TOGGLE - LESS SPACE */
   .status-indicator-compact {
-    margin: 0 10px;
+    margin: 0 6px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    min-width: 45px;
   }
   
+  /* X BUTTON */
+  .actions-compact {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 35px;
+  }
+  
+  /* TOGGLE SWITCH SIZE */
   .toggle-switch-small {
     width: 30px;
     height: 18px;
@@ -1899,22 +1934,15 @@ export default {
   .toggle-switch-small input:checked + .toggle-slider-small:before {
     transform: translateX(12px);
   }
-}
-
-/* ===== MOBILE OPTIMIZATIONS - FIXED FULL WIDTH ===== */
-@media (max-width: 479px) {
-  .ultimate-scheduler {
-    padding: 12px;
+  
+  /* X BUTTON SIZE */
+  .remove-btn-compact {
+    width: 22px;
+    height: 22px;
+    font-size: 0.85rem;
   }
   
-  .calendar-wrapper,
-  .timeslot-panel {
-    padding: 16px;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  
-  /* Mobile Calendar */
+  /* Calendar mobile */
   .day {
     min-height: 40px;
   }
@@ -1923,232 +1951,47 @@ export default {
     font-size: 0.9rem;
   }
   
-  /* MOBILE TIMESLOT - FULL WIDTH FIX */
-  .time-slots-list {
-    width: 100%;
+  /* SCROLLBAR */
+  .time-slots-list::-webkit-scrollbar {
+    height: 4px;
   }
   
+  .time-slots-list::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 2px;
+  }
+  
+  .time-slots-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+  }
+}
+
+/* ===== VERY SMALL PHONES ===== */
+@media (max-width: 374px) {
   .time-slot-line {
-    width: 100% !important;
-    box-sizing: border-box;
-    padding: 10px 12px !important;
-    margin: 0 !important;
+    min-width: 360px;
   }
   
   .slot-compact-line {
-    gap: 6px;
-    padding: 0;
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: nowrap;
-    overflow: visible !important;
+    min-width: 340px;
+    gap: 4px;
   }
   
-  .time-range-compact {
-    flex: 1;
-    min-width: 0;
-    overflow: visible !important;
-    margin-right: 8px;
+  .time-input {
+    width: 85px !important;
+    min-width: 85px !important;
+    padding: 6px 6px !important;
+    font-size: 0.9rem !important;
   }
   
   .booked-time-text {
     min-width: 120px;
-    font-size: 0.88rem;
-    white-space: nowrap;
-    overflow: visible;
-    text-overflow: clip;
-  }
-  
-  .edit-time-range {
-    display: flex;
-    align-items: center;
-    gap: 1px;
-    min-width: 0;
-    overflow: visible;
-    flex-shrink: 1;
-  }
-  
-  /* MOBILE TIME INPUT - FULL VISIBILITY */
-  .time-input {
-    width: 70px !important;
-    min-width: 70px !important;
-    max-width: 70px !important;
-    padding: 5px 5px !important;
-    font-size: 0.85rem !important;
-    letter-spacing: 0.3px;
-    overflow: visible !important;
-  }
-  
-  .time-input-wrapper {
-    overflow: visible !important;
-  }
-  
-  .time-separator {
-    margin: 0 2px;
-    font-size: 0.85rem;
-    padding: 0 2px;
+    font-size: 0.9rem;
   }
   
   .status-indicator-compact {
-    margin: 0 8px;
-    gap: 6px;
-    flex-shrink: 0;
-  }
-  
-  .toggle-switch-small {
-    width: 28px;
-    height: 16px;
-  }
-  
-  .toggle-slider-small:before {
-    height: 12px;
-    width: 12px;
-  }
-  
-  .toggle-switch-small input:checked + .toggle-slider-small:before {
-    transform: translateX(12px);
-  }
-  
-  /* MOBILE ACTIONS - INSIDE THE LINE */
-  .actions-compact {
-    gap: 4px;
-    flex-shrink: 0;
-    margin-left: auto;
-  }
-  
-  .remove-btn-compact {
-    width: 22px;
-    height: 22px;
-    font-size: 0.85rem;
-  }
-  
-  /* Ensure everything stays in one line */
-  .slot-compact-line > * {
-    white-space: nowrap;
-    overflow: visible;
-  }
-  
-  /* Mobile legend */
-  .big-color-legend {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px 12px;
-    font-size: 0.75rem;
-  }
-  
-  .legend-dot-big {
-    width: 16px;
-    height: 16px;
-  }
-}
-
-/* ===== SMALL PHONES (iPhone SE) ===== */
-@media (max-width: 374px) {
-  .day {
-    min-height: 36px;
-  }
-  
-  .slot-compact-line {
-    gap: 4px;
-  }
-  
-  .time-range-compact {
-    flex: 1;
-    min-width: 0;
-  }
-  
-  .time-input {
-    width: 65px !important;
-    min-width: 65px !important;
-    max-width: 65px !important;
-    padding: 4px 4px !important;
-    font-size: 0.8rem !important;
-  }
-  
-  .booked-time-text {
-    min-width: 110px;
-    font-size: 0.8rem;
-  }
-  
-  .toggle-switch-small {
-    width: 26px;
-    height: 14px;
-  }
-  
-  .toggle-slider-small:before {
-    height: 10px;
-    width: 10px;
-    left: 2px;
-    bottom: 2px;
-  }
-  
-  .toggle-switch-small input:checked + .toggle-slider-small:before {
-    transform: translateX(12px);
-  }
-  
-  .remove-btn-compact {
-    width: 20px;
-    height: 20px;
-    font-size: 0.8rem;
-  }
-  
-  .time-separator {
-    font-size: 0.8rem;
-  }
-}
-
-/* ===== EXTRA SMALL DEVICES ===== */
-@media (max-width: 320px) {
-  .time-input {
-    width: 60px !important;
-    min-width: 60px !important;
-    max-width: 60px !important;
-    font-size: 0.75rem !important;
-    padding: 3px 3px !important;
-  }
-  
-  .booked-time-text {
-    min-width: 100px;
-    font-size: 0.75rem;
-  }
-  
-  .slot-compact-line {
-    gap: 3px;
-  }
-  
-  .toggle-switch-small {
-    width: 24px;
-    height: 12px;
-  }
-  
-  .toggle-slider-small:before {
-    height: 8px;
-    width: 8px;
-  }
-  
-  .remove-btn-compact {
-    width: 18px;
-    height: 18px;
-    font-size: 0.75rem;
-  }
-}
-
-/* ===== PRINT STYLES ===== */
-@media print {
-  .ultimate-scheduler {
-    background: white;
-    padding: 10px;
-  }
-  
-  .calendar-wrapper,
-  .timeslot-panel {
-    box-shadow: none;
-    border: 1px solid #ddd;
-  }
-  
-  .nav-btn,
-  .add-slot-btn,
-  .save-btn {
-    display: none;
+    margin: 0 4px;
   }
 }
 </style>

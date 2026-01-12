@@ -113,80 +113,43 @@
         </div>
       </div>
 
-      <!-- Security Card -->
+      <!-- Security Card (Updated without password fields) -->
       <div class="setting-card">
         <div class="card-header">
           <i class="fa-solid fa-shield-halved card-icon"></i>
           <h3>Security Settings</h3>
         </div>
         <div class="card-body">
-          <div class="form-group">
-            <label class="form-label">
-              <i class="fa-solid fa-key"></i>
-              New Password
-            </label>
-            <div class="password-input">
-              <input
-                :type="showNewPassword ? 'text' : 'password'"
-                v-model="security.newPassword"
-                placeholder="Enter new password"
-                autocomplete="new-password"
-                class="form-input"
-              />
-              <button type="button" class="password-toggle" @click="showNewPassword = !showNewPassword">
-                <i :class="showNewPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-              </button>
-            </div>
-            <div class="password-strength" v-if="security.newPassword">
-              <div class="strength-bar" :class="getPasswordStrengthClass()"></div>
-              <span class="strength-text">{{ getPasswordStrengthText() }}</span>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">
-              <i class="fa-solid fa-key"></i>
-              Confirm New Password
-            </label>
-            <div class="password-input">
-              <input
-                :type="showConfirmPassword ? 'text' : 'password'"
-                v-model="security.confirmPassword"
-                placeholder="Confirm new password"
-                autocomplete="new-password"
-                class="form-input"
-              />
-              <button type="button" class="password-toggle" @click="showConfirmPassword = !showConfirmPassword">
-                <i :class="showConfirmPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-              </button>
-            </div>
-            <div v-if="security.newPassword && security.confirmPassword && !passwordsMatch()" 
-                 class="error-message">
-              <i class="fa-solid fa-exclamation-circle"></i>
-              Passwords do not match
-            </div>
-          </div>
-          <div class="toggle-item">
-            <div class="toggle-label">
-              <i class="fa-solid fa-shield"></i>
-              <div>
-                <div class="toggle-title">Two-Factor Authentication</div>
-                <div class="toggle-description">Coming soon for enhanced security</div>
+          <div class="security-info">
+            <div class="security-item">
+              <i class="fa-solid fa-key security-icon"></i>
+              <div class="security-content">
+                <div class="security-title">Password Management</div>
+                <div class="security-description">
+                  To change your password, please contact the system administrator or use the password reset feature on the login page.
+                </div>
               </div>
             </div>
-            <label class="toggle-switch">
-              <input type="checkbox" v-model="security.twoFactor" disabled />
-              <span class="toggle-slider"></span>
-            </label>
+            
+            <div class="security-item">
+              <i class="fa-solid fa-shield security-icon"></i>
+              <div class="security-content">
+                <div class="security-title">Account Security</div>
+                <div class="security-description">
+                  For enhanced security features, please contact the system administrator.
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="card-footer">
-            <button
-              class="btn btn-primary"
-              @click="changePassword"
-              :disabled="!security.newPassword || !passwordsMatch()"
-            >
-              <i v-if="changingPassword" class="fa-solid fa-spinner fa-spin"></i>
-              <i v-else class="fa-solid fa-lock"></i>
-              {{ changingPassword ? 'Updating...' : 'Update Password' }}
+          
+          <div class="security-actions">
+            <button class="btn btn-secondary" @click="goToLoginPage">
+              <i class="fa-solid fa-arrow-right-to-bracket"></i>
+              Go to Login Page
+            </button>
+            <button class="btn btn-primary" @click="contactAdmin">
+              <i class="fa-solid fa-headset"></i>
+              Contact Admin
             </button>
           </div>
         </div>
@@ -374,10 +337,7 @@ export default {
     const showLogoutModal = ref(false);
     const savingPrivacy = ref(false);
     const savingNotifications = ref(false);
-    const changingPassword = ref(false);
     const savingLocalization = ref(false);
-    const showNewPassword = ref(false);
-    const showConfirmPassword = ref(false);
     const toasts = ref([]);
 
     // Settings state
@@ -389,11 +349,6 @@ export default {
       email: true,
       sms: false,
       inApp: true,
-    });
-    const security = ref({
-      newPassword: "",
-      confirmPassword: "",
-      twoFactor: false,
     });
     const localization = ref({
       language: "en",
@@ -418,30 +373,13 @@ export default {
       return icons[type] || icons.info;
     };
 
-    // Password strength methods
-    const getPasswordStrength = () => {
-      const password = security.value.newPassword;
-      if (!password) return 0;
-      let strength = 0;
-      if (password.length >= 8) strength++;
-      if (/[A-Z]/.test(password)) strength++;
-      if (/[a-z]/.test(password)) strength++;
-      if (/[0-9]/.test(password)) strength++;
-      if (/[^A-Za-z0-9]/.test(password)) strength++;
-      return Math.min(strength, 4);
+    // Helper methods
+    const goToLoginPage = () => {
+      router.push({ name: "Login" });
     };
-    const getPasswordStrengthClass = () => {
-      const strength = getPasswordStrength();
-      const classes = ['strength-1', 'strength-2', 'strength-3', 'strength-4'];
-      return classes[strength - 1] || '';
-    };
-    const getPasswordStrengthText = () => {
-      const strength = getPasswordStrength();
-      const texts = ['Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong'];
-      return texts[strength];
-    };
-    const passwordsMatch = () => {
-      return security.value.newPassword === security.value.confirmPassword;
+
+    const contactAdmin = () => {
+      showToast('Please contact system administrator for security-related changes.', 'info');
     };
 
     // Logout
@@ -569,36 +507,6 @@ export default {
       }
     };
 
-    const changePassword = async () => {
-      const { newPassword, confirmPassword } = security.value;
-      if (!newPassword) return showToast('Please enter a new password.', 'error');
-      if (newPassword.length < 6) return showToast('Password must be at least 6 characters long.', 'error');
-      if (!passwordsMatch()) return showToast('Passwords do not match.', 'error');
-
-      changingPassword.value = true;
-      try {
-        const token = localStorage.getItem("provider_token") || localStorage.getItem("token");
-        if (!token) throw new Error("Authentication required");
-        const response = await fetch(`/api/auth/change-password`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ newPassword, confirmPassword })
-        });
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || "Failed to update password");
-        }
-        security.value.newPassword = "";
-        security.value.confirmPassword = "";
-        showToast('Password updated successfully!', 'success');
-      } catch (error) {
-        console.error("Change password error:", error);
-        showToast(error.message || 'Failed to update password. Please try again.', 'error');
-      } finally {
-        changingPassword.value = false;
-      }
-    };
-
     const deactivateAccount = () => {
       if (confirm("Are you sure you want to deactivate your account? You can reactivate within 30 days.")) {
         showToast('Account deactivation request sent. Check your email for confirmation.', 'info');
@@ -618,29 +526,23 @@ export default {
       showLogoutModal,
       savingPrivacy,
       savingNotifications,
-      changingPassword,
       savingLocalization,
-      showNewPassword,
-      showConfirmPassword,
       toasts,
       privacy,
       notifications,
-      security,
       localization,
       showToast,
       removeToast,
       getToastIcon,
-      getPasswordStrengthClass,
-      getPasswordStrengthText,
-      passwordsMatch,
       confirmLogout,
       performLogout,
       savePrivacy,
       saveNotifications,
       saveLocalization,
-      changePassword,
       deactivateAccount,
       deleteAccount,
+      goToLoginPage,
+      contactAdmin,
     };
   }
 };
@@ -752,6 +654,71 @@ export default {
   padding: 28px;
 }
 
+/* Security Card Specific Styles */
+.security-info {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.security-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.security-icon {
+  color: #6366f1;
+  font-size: 1.2rem;
+  background: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.security-content {
+  flex: 1;
+}
+
+.security-title {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 6px;
+  font-size: 1rem;
+}
+
+.security-description {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.security-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+@media (max-width: 640px) {
+  .security-actions {
+    flex-direction: column;
+  }
+  
+  .security-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* Toggle Items */
 .toggle-item {
   display: flex;
@@ -848,7 +815,6 @@ export default {
   margin-bottom: 10px;
   font-size: 0.95rem;
 }
-.form-input,
 .form-select {
   width: 100%;
   padding: 14px 16px;
@@ -860,62 +826,10 @@ export default {
   color: #1f2937;
   font-family: inherit;
 }
-.form-input:focus,
 .form-select:focus {
   outline: none;
   border-color: #6366f1;
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-}
-.password-input {
-  position: relative;
-}
-.password-toggle {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: #6b7280;
-  cursor: pointer;
-  padding: 8px;
-}
-.password-strength {
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.strength-bar {
-  flex: 1;
-  height: 6px;
-  background: #e5e7eb;
-  border-radius: 3px;
-  overflow: hidden;
-  position: relative;
-}
-.strength-bar::after {
-  content: '';
-  position: absolute;
-  left: 0; top: 0; height: 100%; width: 0;
-  transition: width 0.3s ease;
-}
-.strength-bar.strength-1::after { width: 25%; background: #ef4444; }
-.strength-bar.strength-2::after { width: 50%; background: #f59e0b; }
-.strength-bar.strength-3::after { width: 75%; background: #3b82f6; }
-.strength-bar.strength-4::after { width: 100%; background: #10b981; }
-.strength-text {
-  font-size: 0.85rem;
-  font-weight: 600;
-  min-width: 80px;
-}
-.error-message {
-  color: #ef4444;
-  font-size: 0.85rem;
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 .select-wrapper {
   position: relative;

@@ -57,13 +57,13 @@
               </div>
               <p>  <strong>The platform is designed to support efficient daily operations, reduce scheduling friction, and create a smooth booking experience for clients. Whether you are an individual professional, a growing business, or a multi-location enterprise, Infinity-Booking provides the infrastructure, visibility, and control needed to operate confidently and scale sustainably</strong></p>
               <div class="secondary-actions">
-                <a href="#how-it-works" class="action-link">
-                  <i class="fas fa-info-circle"></i>
-                  See How It Works
+                <a href="#categories" class="action-link">
+                  <i class="fas fa-list"></i>
+                  Explore Services
                 </a>
                 <a href="#features" class="action-link">
-                  <i class="fas fa-list"></i>
-                  Explore Features
+                  <i class="fas fa-star"></i>
+                  Platform Features
                 </a>
               </div>
             </div>
@@ -190,70 +190,8 @@
       </div>
     </section>
 
-    <!-- Stats Section -->
-    <section class="stats-section">
-      <div class="stats-container">
-        <div class="stat-card" v-for="stat in stats" :key="stat.id">
-          <h2><span ref="statCounter">{{ stat.start }}</span>{{ stat.suffix }}</h2>
-          <p>{{ stat.label }}</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- How It Works Section -->
-    <section id="how-it-works" class="process-section">
-      <div class="container">
-        <h2 class="section-title">Get Started in 4 Simple Steps</h2>
-        <p class="section-subtitle">
-          Join thousands of providers who have transformed their business with our platform.
-        </p>
-        
-        <div class="process-steps">
-          <div class="process-step">
-            <div class="step-icon">
-              <i class="fas fa-user-plus"></i>
-            </div>
-            <div class="step-content">
-              <h3>Create Your Profile</h3>
-              <p>Sign up and showcase your services, experience, and portfolio to attract clients.</p>
-            </div>
-          </div>
-          
-          <div class="process-step">
-            <div class="step-icon">
-              <i class="fas fa-calendar-alt"></i>
-            </div>
-            <div class="step-content">
-              <h3>Set Your Availability</h3>
-              <p>Define your working hours and customize your schedule to match your lifestyle.</p>
-            </div>
-          </div>
-          
-          <div class="process-step">
-            <div class="step-icon">
-              <i class="fas fa-bell"></i>
-            </div>
-            <div class="step-content">
-              <h3>Receive Bookings</h3>
-              <p>Get instant notifications when clients book your services and manage everything in one place.</p>
-            </div>
-          </div>
-          
-          <div class="process-step">
-            <div class="step-icon">
-              <i class="fas fa-money-bill-wave"></i>
-            </div>
-            <div class="step-content">
-              <h3>Get Paid Securely</h3>
-              <p>Receive payments through multiple secure options and track your earnings effortlessly.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- Service Categories Section -->
-    <section class="categories-section">
+    <section id="categories" class="categories-section">
       <h2 class="section-title">Our Core Service Categories</h2>
       <p class="section-subtitle">
         Infinity-Booking starts with these essential sectors and continuously expands as new providers join the movement.
@@ -356,7 +294,7 @@
     </section>
 
     <!-- Platform Features Section -->
-    <section class="features-section">
+    <section id="features" class="features-section">
       <div class="container">
         <h2 class="section-title">Powerful Platform Features</h2>
         <p class="section-subtitle">
@@ -584,16 +522,7 @@ const testimonials = [
   }
 ]
 
-const stats = ref([
-  { id: 1, start: 0, end: 150, suffix: '+', label: 'Providers Onboarded' },
-  { id: 2, start: 0, end: 500, suffix: '+', label: 'Services Listed' },
-  { id: 3, start: 0, end: 1200, suffix: '+', label: 'Bookings Completed' },
-  { id: 4, start: 0, end: 25, suffix: '+', label: 'Cities Covered' }
-])
-
 // New variables for hero enhancements
-const activeFaq = ref(1)
-const currentTestimonial = ref(0)
 const activeTestimonialSlide = ref(0)
 const liveBookingCount = ref(0)
 const bookingProgress = ref(75)
@@ -628,25 +557,6 @@ const particleStyle = (index) => {
 }
 
 onMounted(() => {
-  // Animate stats counters
-  stats.value.forEach((stat, index) => {
-    setTimeout(() => {
-      let current = stat.start
-      const increment = Math.ceil(stat.end / 100)
-      const timer = setInterval(() => {
-        current += increment
-        if (current >= stat.end) {
-          current = stat.end
-          clearInterval(timer)
-        }
-        const element = document.querySelectorAll('.stat-card h2 span')[index]
-        if (element) {
-          element.textContent = current
-        }
-      }, 30)
-    }, index * 300)
-  })
-
   // Setup testimonial auto-slide
   setInterval(() => {
     nextTestimonial()
@@ -843,161 +753,31 @@ onMounted(() => {
   font-weight: 600;
 }
 
-/* Benefits */
-.hero-premium-benefits {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
-  padding: 2rem 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.benefit-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.benefit-item i {
-  font-size: 1.5rem;
-  color: #6366f1;
-  background: rgba(99, 102, 241, 0.1);
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.benefit-item h4 {
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-}
-
-.benefit-item p {
-  font-size: 0.875rem;
-  opacity: 0.8;
-}
-
-/* ========== NEW ADDITIONS STYLES ========== */
-
-/* Featured Stats Ribbon */
-.featured-stats-ribbon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(99, 102, 241, 0.1);
-  border-radius: 1rem;
-  padding: 1rem;
-  margin: 2rem 0;
-  border: 1px solid rgba(99, 102, 241, 0.2);
-}
-
-.stat-ribbon-item {
-  text-align: center;
-  padding: 0 1.5rem;
-}
-
-.stat-ribbon-value {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: #6366f1;
-  line-height: 1;
-  margin-bottom: 0.25rem;
-}
-
-.stat-ribbon-label {
-  font-size: 0.75rem;
-  opacity: 0.9;
-  font-weight: 500;
-}
-
-.stat-ribbon-divider {
-  width: 1px;
-  height: 30px;
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* Service Type Selector */
-.service-type-selector {
-  margin: 2rem 0;
-  padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.selector-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.selector-buttons {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.5rem;
-}
-
-.selector-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1rem 0.5rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.75rem;
-  color: rgba(255, 255, 255, 0.7);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.selector-btn i {
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
-  color: #818cf8;
-}
-
-.selector-btn span {
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-align: center;
-}
-
-.selector-btn.active,
-.selector-btn:hover {
-  background: rgba(99, 102, 241, 0.2);
-  border-color: #6366f1;
-  color: white;
-  transform: translateY(-2px);
-}
-
 /* Hero Actions */
 .hero-premium-actions {
   margin-bottom: 3rem;
 }
 
+.cta-buttons-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
 .hero-premium-cta {
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
+  gap: 0.75rem;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white;
-  padding: 1.5rem 3rem;
+  padding: 1rem 2rem;
   border-radius: 1rem;
   text-decoration: none;
   font-weight: 600;
-  margin-bottom: 1rem;
+  transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
 }
 
 .hero-premium-cta::before {
@@ -1020,16 +800,21 @@ onMounted(() => {
   box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
 }
 
-.hero-premium-cta .cta-sub {
-  font-size: 0.75rem;
-  opacity: 0.9;
-  font-weight: normal;
-  margin-top: 0.5rem;
+.hero-premium-cta.secondary {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hero-premium-cta.secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .secondary-actions {
   display: flex;
   gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .action-link {
@@ -1044,142 +829,6 @@ onMounted(() => {
 
 .action-link:hover {
   color: white;
-}
-
-/* Quick Search Widget */
-.quick-search-widget {
-  background: rgba(15, 23, 42, 0.8);
-  backdrop-filter: blur(10px);
-  border-radius: 1rem;
-  padding: 1.5rem;
-  margin: 2rem 0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.search-widget-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.search-input-group {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.search-input {
-  flex: 1;
-  position: relative;
-}
-
-.search-input i {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #818cf8;
-  font-size: 0.875rem;
-}
-
-.search-input input {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 0.75rem;
-  color: white;
-  font-size: 0.875rem;
-}
-
-.search-input input:focus {
-  outline: none;
-  border-color: #6366f1;
-}
-
-.search-btn {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border: none;
-  border-radius: 0.75rem;
-  color: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.search-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
-}
-
-.popular-searches {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
-}
-
-.popular-tag {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.popular-tag:hover {
-  background: rgba(99, 102, 241, 0.3);
-  color: white;
-}
-
-/* Social Proof */
-.hero-premium-social-proof {
-  display: flex;
-  gap: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.proof-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.proof-icon {
-  width: 40px;
-  height: 40px;
-  background: rgba(16, 185, 129, 0.1);
-  border-radius: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #10b981;
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-
-.proof-text {
-  flex: 1;
-}
-
-.proof-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  margin-bottom: 0.125rem;
-}
-
-.proof-desc {
-  font-size: 0.75rem;
-  opacity: 0.7;
 }
 
 /* Provider Testimonials Carousel */
@@ -1535,27 +1184,10 @@ onMounted(() => {
     max-width: 100%;
   }
   
-  .hero-premium-benefits {
-    justify-content: center;
-  }
-  
   .preview-container {
     transform: none !important;
-  }
-  
-  .selector-buttons {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .featured-stats-ribbon {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .stat-ribbon-divider {
-    width: 80%;
-    height: 1px;
-    margin: 0.5rem 0;
+    max-width: 600px;
+    margin: 0 auto;
   }
 }
 
@@ -1568,8 +1200,19 @@ onMounted(() => {
     font-size: 1.125rem;
   }
   
-  .hero-premium-benefits {
-    grid-template-columns: 1fr;
+  .hero-premium-content {
+    padding: 2rem 0;
+  }
+  
+  .cta-buttons-row {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .hero-premium-cta {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
   }
   
   .secondary-actions {
@@ -1578,33 +1221,13 @@ onMounted(() => {
     gap: 1rem;
   }
   
-  .hero-premium-social-proof {
+  .trust-badges {
     flex-direction: column;
-    gap: 1.5rem;
+    align-items: center;
   }
   
-  .selector-buttons {
+  .quick-stats {
     grid-template-columns: 1fr;
-  }
-  
-  .search-input-group {
-    flex-direction: column;
-  }
-  
-  .search-btn {
-    width: 100%;
-  }
-  
-  .featured-stats-ribbon {
-    padding: 0.75rem;
-  }
-  
-  .stat-ribbon-item {
-    padding: 0 0.75rem;
-  }
-  
-  .stat-ribbon-value {
-    font-size: 1.5rem;
   }
 }
 
@@ -1613,61 +1236,55 @@ onMounted(() => {
     font-size: 2rem;
   }
   
-  .hero-premium-cta {
-    width: 100%;
+  .hero-premium-subtitle {
+    font-size: 1rem;
+  }
+  
+  .provider-testimonials {
+    padding: 1rem;
+  }
+  
+  .notification-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .notification-details {
     text-align: center;
   }
   
-  .trust-badges {
-    flex-direction: column;
-    align-items: center;
+  .categories-tags {
+    justify-content: center;
   }
   
-  .service-type-selector {
-    padding: 1rem;
-  }
-  
-  .quick-search-widget {
-    padding: 1rem;
-  }
-  
-  .search-input input {
-    padding: 0.625rem 1rem 0.625rem 2.25rem;
-  }
-  
-  .popular-searches {
-    justify-content: flex-start;
-    overflow-x: auto;
-    padding-bottom: 0.5rem;
-  }
-  
-  .popular-tag {
-    white-space: nowrap;
+  .preview-container {
+    margin: 0 -10px;
+    border-radius: 1rem 1rem 0 0;
   }
 }
 
 /* Touch-friendly adjustments */
 @media (hover: none) and (pointer: coarse) {
-  .selector-btn,
-  .search-btn,
-  .popular-tag {
+  .hero-premium-cta,
+  .action-link,
+  .carousel-dots .dot {
     min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
   
-  .selector-btn {
-    padding: 1rem 0.25rem;
+  .hero-premium-cta {
+    padding: 1.25rem 2rem;
   }
   
-  .search-input input {
-    min-height: 44px;
-    font-size: 16px;
+  .notification-item {
+    min-height: 60px;
   }
 }
 
-/* ========== YOUR EXISTING SECTIONS STYLES - KEPT EXACTLY AS THEY ARE ========== */
+/* ========== EXISTING SECTIONS STYLES ========== */
 
 * {
   margin: 0;
@@ -1681,55 +1298,15 @@ html {
 
 .home {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  color: #8f8888;
+  color: #1e293b;
   overflow-x: hidden;
+  background: #ffffff;
 }
 
-/* Stats Section */
-.stats-section {
+/* Categories Section */
+.categories-section {
+  padding: 100px 20px;
   background: #f8fafc;
-  padding: 80px 20px;
-}
-
-.stats-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 30px;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.stat-card {
-  text-align: center;
-  padding: 30px 20px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.stat-card h2 {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: #3b82f6;
-  margin-bottom: 10px;
-}
-
-.stat-card p {
-  font-size: 1.1rem;
-  color: #64748b;
-  font-weight: 500;
-}
-
-/* Process Section */
-.process-section {
-  padding: 100px 0;
-  background: white;
 }
 
 .section-title {
@@ -1747,60 +1324,6 @@ html {
   max-width: 600px;
   margin: 0 auto 50px;
   line-height: 1.6;
-}
-
-.process-steps {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 30px;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.process-step {
-  text-align: center;
-  padding: 30px;
-  background: #f8fafc;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  transition: all 0.3s ease;
-}
-
-.process-step:hover {
-  border-color: #3b82f6;
-  transform: translateY(-5px);
-}
-
-.step-icon {
-  width: 70px;
-  height: 70px;
-  background: #dbeafe;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px;
-  color: #1d4ed8;
-  font-size: 1.8rem;
-}
-
-.step-content h3 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 10px;
-}
-
-.step-content p {
-  font-size: 1rem;
-  color: #64748b;
-  line-height: 1.6;
-}
-
-/* Categories Section */
-.categories-section {
-  padding: 100px 20px;
-  background: #f8fafc;
 }
 
 .categories-grid {
@@ -2172,190 +1695,6 @@ html {
   transform: scale(1.1);
 }
 
-/* Pricing Section */
-.pricing-section {
-  padding: 100px 20px;
-  background: #f8fafc;
-}
-
-.pricing-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.pricing-card {
-  background: white;
-  border-radius: 16px;
-  padding: 30px;
-  border: 2px solid #e2e8f0;
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.pricing-card.popular {
-  border-color: #3b82f6;
-  transform: scale(1.05);
-  box-shadow: 0 20px 40px rgba(59, 130, 246, 0.1);
-}
-
-.popular-badge {
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #3b82f6;
-  color: white;
-  padding: 6px 20px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.plan-header {
-  text-align: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.plan-header h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 15px;
-}
-
-.price {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 5px;
-}
-
-.amount {
-  font-size: 3rem;
-  font-weight: 800;
-  color: #1e293b;
-}
-
-.period {
-  font-size: 1rem;
-  color: #64748b;
-}
-
-.plan-features {
-  list-style: none;
-  margin-bottom: 30px;
-}
-
-.plan-features li {
-  font-size: 1rem;
-  color: #475569;
-  margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.plan-features li i {
-  color: #10b981;
-}
-
-.plan-btn {
-  width: 100%;
-  padding: 15px;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 10px;
-  border: 2px solid #3b82f6;
-  background: white;
-  color: #3b82f6;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.plan-btn:hover {
-  background: #3b82f6;
-  color: white;
-  transform: translateY(-2px);
-}
-
-.plan-btn.primary {
-  background: #3b82f6;
-  color: white;
-}
-
-.plan-btn.primary:hover {
-  background: #2563eb;
-  border-color: #2563eb;
-}
-
-/* FAQ Section */
-.faq-section {
-  padding: 100px 20px;
-  background: white;
-}
-
-.faq-grid {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.faq-item {
-  background: #f8fafc;
-  border-radius: 12px;
-  margin-bottom: 15px;
-  border: 1px solid #e2e8f0;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.faq-item.active {
-  border-color: #3b82f6;
-  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.1);
-}
-
-.faq-question {
-  padding: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  background: white;
-}
-
-.faq-question h4 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0;
-  flex: 1;
-}
-
-.faq-question i {
-  color: #64748b;
-  transition: transform 0.3s ease;
-  font-size: 1rem;
-}
-
-.faq-item.active .faq-question i {
-  transform: rotate(180deg);
-}
-
-.faq-answer {
-  padding: 0 20px 20px;
-}
-
-.faq-answer p {
-  font-size: 1rem;
-  color: #475569;
-  line-height: 1.6;
-  margin: 0;
-}
-
 /* CTA Section */
 .cta-section {
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
@@ -2442,30 +1781,8 @@ html {
   color: #ffcc00;
 }
 
-/* Animations */
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* ========== RESPONSIVE DESIGN FOR ALL SECTIONS ========== */
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Responsive Design for Existing Sections */
 @media (max-width: 1024px) {
   .features-content {
     grid-template-columns: 1fr;
@@ -2479,10 +1796,6 @@ html {
   .feature-list {
     order: 1;
   }
-  
-  .pricing-card.popular {
-    transform: none;
-  }
 }
 
 @media (max-width: 768px) {
@@ -2490,16 +1803,17 @@ html {
     font-size: 1.8rem;
   }
   
-  .stats-container {
-    grid-template-columns: repeat(2, 1fr);
+  .section-subtitle {
+    font-size: 1rem;
+    padding: 0 20px;
   }
   
-  .process-steps,
   .categories-grid,
   .benefits-grid,
-  .testimonial-slider,
-  .pricing-grid {
+  .testimonial-slider {
     grid-template-columns: 1fr;
+    max-width: 500px;
+    margin: 0 auto;
   }
   
   .cta-buttons {
@@ -2520,17 +1834,27 @@ html {
   .metric-row {
     flex-direction: column;
   }
+  
+  .feature-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+  
+  .feature-icon {
+    margin: 0 auto;
+  }
+  
+  .service-list {
+    text-align: center;
+  }
+  
+  .service-list li {
+    justify-content: center;
+  }
 }
 
 @media (max-width: 480px) {
-  .stats-container {
-    grid-template-columns: 1fr;
-  }
-  
-  .stat-card h2 {
-    font-size: 2rem;
-  }
-  
   .section-title {
     font-size: 1.6rem;
   }
@@ -2543,14 +1867,46 @@ html {
     font-size: 1.1rem;
   }
   
-  .feature-item {
-    flex-direction: column;
-    text-align: center;
-    gap: 15px;
+  .benefit-card,
+  .category-card,
+  .testimonial-card {
+    padding: 20px;
   }
   
-  .feature-icon {
-    margin: 0 auto;
+  .user-info {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .user-info img {
+    margin-bottom: 10px;
+  }
+  
+  .categories-section,
+  .benefits-section,
+  .features-section,
+  .testimonials-section,
+  .cta-section {
+    padding: 60px 15px;
+  }
+}
+
+/* Mobile Navigation for testimonials */
+@media (max-width: 640px) {
+  .testimonial-slider {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    grid-template-columns: repeat(3, 300px);
+    padding-bottom: 20px;
+  }
+  
+  .testimonial-card {
+    scroll-snap-align: center;
+    min-width: 280px;
+  }
+  
+  .testimonial-navigation {
+    display: none;
   }
 }
 
@@ -2562,17 +1918,18 @@ html {
     min-height: auto;
   }
   
-  .overlay {
+  .hero-gradient,
+  .hero-particles {
     display: none;
   }
   
-  .btn, .cta-btn, .plan-btn, .nav-btn {
-    display: none;
+  .btn, .cta-btn, .nav-btn, .hero-premium-cta {
+    display: none !important;
   }
   
-  .pricing-card.popular {
-    border: 1px solid #ccc !important;
+  .preview-container {
     box-shadow: none !important;
+    border: 1px solid #ddd !important;
   }
 }
 </style>

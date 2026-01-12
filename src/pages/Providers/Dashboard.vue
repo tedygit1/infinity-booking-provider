@@ -115,7 +115,7 @@
           <div class="logo-icon">💼</div>
           <div class="logo-text">
             <h2 class="sidebar-title">Provider Hub</h2>
-            <p class="sidebar-subtitle">Business Dashboard</p>
+         
           </div>
         </div>
 
@@ -261,9 +261,7 @@ export default {
       home: { label: "Dashboard", icon: "fa-solid fa-house", route: "ProviderHome", category: "main" },
       services: { label: "My Services", icon: "fa-solid fa-briefcase", route: "ProviderServices", category: "dashboard" },
       bookings: { label: "Bookings", icon: "fa-solid fa-calendar-check", route: "ProviderBookings", category: "dashboard" },
-      earnings: { label: "Earnings", icon: "fa-solid fa-wallet", route: "ProviderEarnings", category: "dashboard" },
-      analytics: { label: "Analytics", icon: "fa-solid fa-chart-line", route: "ProviderAnalytics", category: "dashboard" },
-      messages: { label: "Messages", icon: "fa-solid fa-envelope", route: "ProviderMessages", category: "dashboard" },
+      
       reviews: { label: "Reviews", icon: "fa-solid fa-star", route: "ProviderReviews", category: "dashboard" },
       notifications: { label: "Notifications", icon: "fa-solid fa-bell", route: "ProviderNotifications", category: "dashboard" },
       profile: { label: "My Profile", icon: "fa-solid fa-user", route: "ProviderProfile", category: "account" },
@@ -756,7 +754,7 @@ export default {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: #f8fafc;
+  background: #e2e7eb;
   font-family: 'Inter', 'Poppins', sans-serif;
   overflow-x: hidden;
 }
@@ -773,6 +771,8 @@ export default {
   top: 0;
   z-index: 100;
   box-shadow: 0 2px 20px rgba(30, 64, 175, 0.2);
+ 
+
  
 }
 
@@ -794,10 +794,12 @@ export default {
 }
 
 .mobile-title {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: 700;
   margin: 0;
   letter-spacing: -0.02em;
+ 
+ 
 }
 
 /* ===== HEADER ACTIONS ===== */

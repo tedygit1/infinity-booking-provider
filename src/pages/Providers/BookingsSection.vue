@@ -1,4 +1,3 @@
-<!-- src/pages/Providers/BookingsSection.vue -->
 <template>
   <div class="bookings-section">
     <!-- Header Section -->
@@ -69,7 +68,7 @@
 
     <!-- Main Content - When Bookings Exist -->
     <div v-else class="main-content">
-      <!-- Statistics Overview - COMPACT & AMAZING -->
+      <!-- Statistics Overview -->
       <div class="stats-overview-compact">
         <div class="stat-card-compact">
           <div class="stat-icon-compact total">
@@ -107,15 +106,6 @@
             <p>Completed</p>
           </div>
         </div>
-        <div class="stat-card-compact">
-          <div class="stat-icon-compact revenue">
-            <i class="fa-solid fa-money-bill"></i>
-          </div>
-          <div class="stat-content-compact">
-            <h3>ETB {{ stats.revenue }}</h3>
-            <p>Revenue</p>
-          </div>
-        </div>
       </div>
 
       <!-- Search and Filters -->
@@ -132,8 +122,9 @@
           </div>
           <select v-model="statusFilter" class="filter-select">
             <option value="all">All Status</option>
-            <option value="confirmed">Confirmed</option>
+            <option value="upcoming">Upcoming</option>
             <option value="completed">Completed</option>
+            <option value="confirmed">Confirmed</option>
             <option value="pending">Pending</option>
             <option value="cancelled">Cancelled</option>
           </select>
@@ -143,7 +134,7 @@
         </div>
       </div>
 
-      <!-- Timeline Filter Section - WITHOUT "All Bookings" -->
+      <!-- Timeline Filter Section -->
       <div class="timeline-filter-section">
         <div class="timeline-filter-header">
           <h3><i class="fa-solid fa-filter"></i> Filter by Service Date</h3>
@@ -204,7 +195,7 @@
           </div>
         </div>
 
-        <!-- AMAZING PROFESSIONAL BOOKING CARDS - ENHANCED -->
+        <!-- Professional Booking Cards - UPDATED -->
         <div v-if="viewMode === 'grid'" class="professional-cards-grid">
           <div 
             v-for="booking in paginatedBookings" 
@@ -213,14 +204,13 @@
             :class="{
               'today-card': isTodayBooking(booking),
               'admin-card': booking.isAdminBooking,
-              'completed-card': booking.status === 'completed',
+              'completed-card': getBookingDisplayStatus(booking) === 'completed',
               'past-card': isPastBooking(booking)
             }"
           >
-            <!-- Card Header with Customer Info - ENHANCED WITH DIRECT PROFILE -->
+            <!-- Card Header - UPDATED: Removed booking ID -->
             <div class="card-header-enhanced">
               <div class="customer-avatar-enhanced">
-                <!-- Display Customer Profile Photo or Initials - LARGER & CLEARER -->
                 <div v-if="booking.customerProfilePhoto && booking.customerProfilePhoto.trim() !== ''" class="customer-profile-photo-enhanced">
                   <img 
                     :src="booking.customerProfilePhoto" 
@@ -233,7 +223,6 @@
                 </div>
               </div>
               <div class="customer-info-enhanced">
-                <!-- Customer's Name - BOLD & CLEAR -->
                 <h4 class="customer-name-enhanced">{{ booking.customerName }}</h4>
                 <div class="customer-meta-enhanced">
                   <span v-if="booking.customerEmail && booking.customerEmail.trim() !== ''">
@@ -244,17 +233,15 @@
                   </span>
                 </div>
               </div>
+              <!-- Status Badge Only - No ID -->
               <div class="booking-status-enhanced">
-                <div class="status-badge-enhanced" :class="booking.status">
-                  {{ formatStatus(booking.status) }}
-                </div>
-                <div class="booking-id-enhanced">
-                  #{{ booking._id.substring(0, 6) }}
+                <div class="status-badge-enhanced" :class="getBookingDisplayStatus(booking)">
+                  {{ formatStatus(getBookingDisplayStatus(booking)) }}
                 </div>
               </div>
             </div>
 
-            <!-- Service Details - CLEAN & BRIEF -->
+            <!-- Service Details -->
             <div class="service-details-enhanced">
               <div class="service-icon-circle-enhanced">
                 <i class="fa-solid" :class="getServiceIcon(booking.serviceCategory)"></i>
@@ -267,12 +254,11 @@
                 </div>
               </div>
               <div class="service-amount-enhanced">
-                <!-- UPDATED: Show service price from service details if available -->
                 <span class="amount-value-enhanced">{{ booking.servicePriceUnit || 'ETB' }} {{ booking.serviceTotalPrice || booking.serviceBookingPrice || booking.actualPrice || booking.servicePrice || booking.amount }}</span>
               </div>
             </div>
 
-            <!-- Date & Time Section - CLEAN LAYOUT -->
+            <!-- Date & Time Section -->
             <div class="datetime-section-enhanced">
               <div class="datetime-item">
                 <i class="fa-solid fa-calendar-days"></i>
@@ -284,15 +270,15 @@
               </div>
             </div>
 
-            <!-- Additional Info - MINIMAL -->
+            <!-- Additional Info -->
             <div class="additional-info-minimal">
               <span><i class="fa-solid fa-calendar-plus"></i> Booked {{ formatRelativeTime(booking.createdAt) }}</span>
             </div>
 
-            <!-- Action Buttons - UPDATED: Added Service Details Button -->
+            <!-- Action Buttons -->
             <div class="action-buttons-enhanced">
               <button 
-                v-if="!isPastBooking(booking) && booking.status === 'confirmed'"
+                v-if="isTodayBooking(booking) && booking.status === 'confirmed'"
                 class="action-btn-enhanced complete"
                 @click="completeBooking(booking)"
               >
@@ -306,7 +292,6 @@
                 <i class="fa-solid fa-user-circle"></i>
                 User Details
               </button>
-              <!-- NEW: Service Details Button -->
               <button 
                 class="action-btn-enhanced service-details"
                 @click="viewServiceDetailsModal(booking)"
@@ -319,7 +304,7 @@
           </div>
         </div>
 
-        <!-- Bookings List View -->
+        <!-- Bookings List View - UPDATED -->
         <div v-else class="bookings-list">
           <div class="bookings-table">
             <div class="table-header">
@@ -383,12 +368,11 @@
                 </div>
               </div>
               <div class="table-cell status-cell">
-                <span class="status-badge-list" :class="booking.status">
-                  {{ formatStatus(booking.status) }}
+                <span class="status-badge-list" :class="getBookingDisplayStatus(booking)">
+                  {{ formatStatus(getBookingDisplayStatus(booking)) }}
                 </span>
               </div>
               <div class="table-cell amount-cell">
-                <!-- UPDATED: Show service price from service details if available -->
                 <div class="amount-container">
                   <i class="fa-solid fa-money-bill"></i>
                   <strong>{{ booking.servicePriceUnit || 'ETB' }} {{ booking.serviceTotalPrice || booking.serviceBookingPrice || booking.actualPrice || booking.servicePrice || booking.amount }}</strong>
@@ -397,7 +381,7 @@
               <div class="table-cell actions-cell">
                 <div class="action-buttons-list">
                   <button 
-                    v-if="!isPastBooking(booking) && booking.status === 'confirmed'"
+                    v-if="isTodayBooking(booking) && booking.status === 'confirmed'"
                     class="btn-action complete"
                     @click="completeBooking(booking)"
                     title="Mark Complete"
@@ -411,7 +395,6 @@
                   >
                     <i class="fa-solid fa-user-circle"></i>
                   </button>
-                  <!-- NEW: Service Details Button in List View -->
                   <button 
                     class="btn-action service-details"
                     @click="viewServiceDetailsModal(booking)"
@@ -541,7 +524,7 @@
       </div>
     </div>
 
-    <!-- NEW: Service Details Modal -->
+    <!-- Service Details Modal -->
     <div v-if="selectedService" class="modal-overlay" @click.self="closeServiceModal">
       <div class="modal-content service-details-modal">
         <div class="modal-header">
@@ -569,7 +552,7 @@
               <div class="service-title-section">
                 <h3>{{ selectedService.title || 'Service' }}</h3>
                 <div class="service-status-badge" :class="selectedService.status || 'draft'">
-                  {{ formatServiceStatus(selectedService.status) }}
+                  {{ selectedService.status ? selectedService.status.charAt(0).toUpperCase() + selectedService.status.slice(1) : 'Draft' }}
                 </div>
               </div>
               
@@ -621,16 +604,6 @@
               <div class="detail-row">
                 <div class="detail-item">
                   <div class="detail-label">
-                    <i class="fa-solid fa-hashtag"></i>
-                    Service ID
-                  </div>
-                  <div class="detail-value">
-                    {{ selectedService.serviceId || selectedService._id || 'N/A' }}
-                  </div>
-                </div>
-                
-                <div class="detail-item">
-                  <div class="detail-label">
                     <i class="fa-solid fa-chart-line"></i>
                     Total Bookings
                   </div>
@@ -638,9 +611,7 @@
                     {{ selectedService.totalBookings || 0 }}
                   </div>
                 </div>
-              </div>
-              
-              <div class="detail-row">
+                
                 <div class="detail-item">
                   <div class="detail-label">
                     <i class="fa-solid fa-star"></i>
@@ -650,7 +621,9 @@
                     {{ selectedService.rating || 0 }}/5 ({{ selectedService.reviews?.length || 0 }} reviews)
                   </div>
                 </div>
-                
+              </div>
+              
+              <div class="detail-row">
                 <div class="detail-item">
                   <div class="detail-label">
                     <i class="fa-solid fa-eye"></i>
@@ -674,21 +647,6 @@
                   </div>
                 </div>
               </div>
-              
-              <!-- Featured Status -->
-              <div class="detail-row">
-                <div class="detail-item">
-                  <div class="detail-label">
-                    <i class="fa-solid fa-crown"></i>
-                    Featured
-                  </div>
-                  <div class="detail-value">
-                    <span class="featured-badge" :class="{ 'featured': selectedService.isFeatured }">
-                      {{ selectedService.isFeatured ? 'Yes' : 'No' }}
-                    </span>
-                  </div>
-                </div>
-              </div>
             </div>
             
             <!-- Close Button -->
@@ -702,7 +660,7 @@
       </div>
     </div>
 
-    <!-- Booking Details Modal (Original - kept for reference) -->
+    <!-- Booking Details Modal -->
     <div v-if="selectedBooking" class="modal-overlay" @click.self="closeBookingModal">
       <div class="modal-content">
         <div class="modal-header">
@@ -764,7 +722,6 @@
                 </div>
                 <div class="service-detail-item">
                   <strong>Amount:</strong>
-                  <!-- UPDATED: Show service price from service details if available -->
                   <span class="service-amount-highlight">{{ selectedBooking.servicePriceUnit || 'ETB' }} {{ selectedBooking.serviceTotalPrice || selectedBooking.serviceBookingPrice || selectedBooking.actualPrice || selectedBooking.servicePrice || selectedBooking.amount }}</span>
                 </div>
               </div>
@@ -795,8 +752,8 @@
               <div class="status-details">
                 <div class="status-item">
                   <strong>Status:</strong>
-                  <span class="status-value" :class="selectedBooking.status">
-                    {{ formatStatus(selectedBooking.status) }}
+                  <span class="status-value" :class="getBookingDisplayStatus(selectedBooking)">
+                    {{ formatStatus(getBookingDisplayStatus(selectedBooking)) }}
                   </span>
                 </div>
                 <div class="status-item">
@@ -838,7 +795,7 @@ export default {
     const itemsPerPage = ref(12);
     const selectedBooking = ref(null);
     const selectedCustomer = ref(null);
-    const selectedService = ref(null); // NEW: for service details modal
+    const selectedService = ref(null);
     const lastUpdatedTime = ref("");
 
     // Service details cache
@@ -848,12 +805,11 @@ export default {
     // Customer cache
     const customerCache = ref({});
 
-    // Timeline periods - WITHOUT "All Bookings"
+    // Timeline periods
     const timelinePeriods = ref([
       { id: "past", label: "Past Bookings", icon: "fa-solid fa-calendar-minus" },
       { id: "today", label: "Today's Bookings", icon: "fa-solid fa-calendar-day" },
-      { id: "tomorrow", label: "Tomorrow", icon: "fa-solid fa-calendar-plus" },
-      { id: "next5days", label: "Next 5 Days", icon: "fa-solid fa-calendar-week" }
+      { id: "future", label: "Future Bookings", icon: "fa-solid fa-calendar-plus" }
     ]);
 
     // Statistics
@@ -861,195 +817,134 @@ export default {
       totalBookings: 0,
       today: 0,
       upcoming: 0,
-      completed: 0,
-      revenue: 0
+      completed: 0
     });
 
-    // ==================== NEW: SERVICE DETAILS FUNCTIONS ====================
-    const fetchServiceDetails = async (serviceId) => {
-      if (!serviceId || serviceId === 'unknown') {
-        console.log("⚠️ No service ID provided");
-        return null;
+    // ==================== SIMPLIFIED STATUS LOGIC ====================
+    // NEW: Simplified display status based ONLY on date
+    const getBookingDisplayStatus = (booking) => {
+      if (!booking || !booking.bookingDate) return 'pending';
+      
+      try {
+        const bookingDate = new Date(booking.bookingDate);
+        const todayStart = getTodayStart();
+        
+        // SIMPLE RULE: If service date has passed, it's "Completed"
+        // If service date is today or future, it's "Upcoming"
+        if (bookingDate < todayStart) {
+          return 'completed'; // Past service date = Completed
+        } else {
+          return 'upcoming'; // Today or future service date = Upcoming
+        }
+      } catch (err) {
+        return 'pending';
+      }
+    };
+
+    // Updated formatStatus to handle our simplified statuses
+    const formatStatus = (status) => {
+      const statusMap = {
+        completed: 'Completed',
+        upcoming: 'Upcoming',
+        pending: 'Pending',
+        confirmed: 'Confirmed',
+        cancelled: 'Cancelled'
+      };
+      return statusMap[status] || 'Pending';
+    };
+
+    // ==================== DATE HELPERS ====================
+    const getTodayStart = () => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return today;
+    };
+
+    const getTomorrowStart = () => {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      return tomorrow;
+    };
+
+    const isPastBooking = (booking) => {
+      if (!booking || !booking.bookingDate) return false;
+      try {
+        const bookingDate = new Date(booking.bookingDate);
+        const todayStart = getTodayStart();
+        return bookingDate < todayStart;
+      } catch (err) {
+        return false;
+      }
+    };
+
+    const isTodayBooking = (booking) => {
+      if (!booking || !booking.bookingDate) return false;
+      try {
+        const bookingDate = new Date(booking.bookingDate);
+        const todayStart = getTodayStart();
+        const tomorrowStart = getTomorrowStart();
+        return bookingDate >= todayStart && bookingDate < tomorrowStart;
+      } catch (err) {
+        return false;
+      }
+    };
+
+    const isFutureBooking = (booking) => {
+      if (!booking || !booking.bookingDate) return false;
+      try {
+        const bookingDate = new Date(booking.bookingDate);
+        const tomorrowStart = getTomorrowStart();
+        return bookingDate >= tomorrowStart;
+      } catch (err) {
+        return false;
+      }
+    };
+
+    // ==================== CALCULATE STATS ====================
+    const calculateStats = () => {
+      if (bookings.value.length === 0) {
+        stats.value = { totalBookings: 0, today: 0, upcoming: 0, completed: 0 };
+        return;
       }
       
-      // Check cache first
-      if (serviceDetailsCache.value[serviceId]) {
-        console.log(`✅ Service ${serviceId} found in cache`);
-        return serviceDetailsCache.value[serviceId];
-      }
-
-      try {
-        console.log(`🔍 Fetching service details for: ${serviceId}`);
+      let todayCount = 0;
+      let upcomingCount = 0;
+      let completedCount = 0;
+      
+      const todayStart = getTodayStart();
+      
+      bookings.value.forEach(booking => {
+        if (!booking.bookingDate) return;
         
-        // Try different service endpoints
-        const endpoints = [
-          `/services/${serviceId}`,
-          `/api/services/${serviceId}`,
-          `/services/find/${serviceId}`,
-          `/services?id=${serviceId}`
-        ];
-        
-        for (const endpoint of endpoints) {
-          try {
-            const response = await http.get(endpoint);
-            if (response.data) {
-              let serviceData = response.data;
-              
-              // Handle different response formats
-              if (Array.isArray(serviceData) && serviceData.length > 0) {
-                serviceData = serviceData[0];
-              } else if (serviceData.data && Array.isArray(serviceData.data)) {
-                serviceData = serviceData.data[0];
-              } else if (serviceData.service) {
-                serviceData = serviceData.service;
-              }
-              
-              if (serviceData) {
-                // Store in cache
-                serviceDetailsCache.value[serviceId] = serviceData;
-                console.log(`✅ Successfully loaded service: ${serviceData.title || serviceData.name}`);
-                
-                // Debug: Log service structure
-                console.log("Service structure:", {
-                  title: serviceData.title,
-                  totalPrice: serviceData.totalPrice,
-                  bookingPrice: serviceData.bookingPrice,
-                  priceUnit: serviceData.priceUnit,
-                  banner: serviceData.banner,
-                  categoryName: serviceData.categoryName
-                });
-                
-                return serviceData;
-              }
-            }
-          } catch (err) {
-            console.log(`⚠️ Service endpoint ${endpoint} failed:`, err.message);
-          }
-        }
-        
-        console.log(`ℹ️ Could not fetch service details for ${serviceId}`);
-        return null;
-      } catch (err) {
-        console.error(`❌ Error fetching service ${serviceId}:`, err);
-        return null;
-      }
-    };
-
-    const preloadServiceDetails = async (booking) => {
-      if (!booking.serviceId || booking.serviceId === 'unknown') {
-        console.log(`⚠️ No service ID for booking ${booking._id}`);
-        return null;
-      }
-
-      try {
-        const serviceDetails = await fetchServiceDetails(booking.serviceId);
-        if (serviceDetails) {
-          // Update booking with service details
-          booking.serviceName = serviceDetails.title || serviceDetails.name || booking.serviceName;
-          booking.serviceCategory = serviceDetails.categoryName || serviceDetails.category || booking.serviceCategory;
-          booking.serviceTotalPrice = serviceDetails.totalPrice;
-          booking.serviceBookingPrice = serviceDetails.bookingPrice;
-          booking.servicePriceUnit = serviceDetails.priceUnit;
-          booking.serviceBanner = serviceDetails.banner;
-          booking.serviceDescription = serviceDetails.description;
-          booking.serviceStatus = serviceDetails.status;
-          booking.serviceType = serviceDetails.serviceType;
-          booking.isFeatured = serviceDetails.isFeatured;
-          booking.totalBookings = serviceDetails.totalBookings;
-          booking.rating = serviceDetails.rating;
-          booking.reviews = serviceDetails.reviews;
-          booking.views = serviceDetails.views;
-          booking.paymentMethod = serviceDetails.paymentMethod;
+        try {
+          const bookingDate = new Date(booking.bookingDate);
           
-          // Also update the price display in the booking
-          if (serviceDetails.totalPrice && !booking.actualPrice) {
-            booking.actualPrice = serviceDetails.totalPrice;
+          if (isTodayBooking(booking)) {
+            todayCount++;
+          } else if (bookingDate < todayStart) {
+            // Past booking = Completed
+            completedCount++;
+          } else {
+            // Future booking = Upcoming
+            upcomingCount++;
           }
-          
-          console.log(`✅ Updated booking ${booking._id} with service details`);
+        } catch (err) {
+          // Skip booking if date parsing fails
         }
-        return serviceDetails;
-      } catch (err) {
-        console.error(`❌ Error preloading service for booking ${booking._id}:`, err);
-        return null;
-      }
-    };
-
-    const viewServiceDetailsModal = async (booking) => {
-      try {
-        // Try to load fresh service details
-        let serviceDetails = null;
-        if (booking.serviceId && booking.serviceId !== 'unknown') {
-          serviceDetails = await preloadServiceDetails(booking);
-        }
-        
-        if (!serviceDetails) {
-          // Use existing booking data if service fetch failed
-          serviceDetails = {
-            title: booking.serviceName,
-            categoryName: booking.serviceCategory,
-            totalPrice: booking.serviceTotalPrice || booking.actualPrice || booking.servicePrice || booking.amount,
-            bookingPrice: booking.serviceBookingPrice,
-            priceUnit: booking.servicePriceUnit || 'ETB',
-            banner: booking.serviceBanner,
-            description: booking.serviceDescription,
-            status: booking.serviceStatus,
-            serviceType: booking.serviceType,
-            isFeatured: booking.isFeatured,
-            totalBookings: booking.totalBookings,
-            rating: booking.rating,
-            reviews: booking.reviews,
-            views: booking.views,
-            paymentMethod: booking.paymentMethod,
-            serviceId: booking.serviceId
-          };
-        }
-        
-        selectedService.value = serviceDetails;
-        console.log("🔧 Showing service details:", selectedService.value);
-      } catch (err) {
-        console.error("❌ Error loading service details:", err);
-        // Still show modal with available data
-        selectedService.value = {
-          title: booking.serviceName,
-          categoryName: booking.serviceCategory,
-          totalPrice: booking.actualPrice || booking.servicePrice || booking.amount,
-          priceUnit: 'ETB',
-          description: 'Service details could not be loaded',
-          status: 'unknown'
-        };
-      }
-    };
-
-    const closeServiceModal = () => {
-      selectedService.value = null;
-    };
-
-    const handleServiceImageError = (event) => {
-      if (event.target) {
-        event.target.style.display = 'none';
-        const parent = event.target.parentElement;
-        parent.innerHTML = `
-          <div class="service-banner-fallback">
-            <i class="fa-solid fa-scissors"></i>
-            <p>Service Banner</p>
-          </div>
-        `;
-      }
-    };
-
-    const formatServiceStatus = (status) => {
-      const statusMap = {
-        draft: 'Draft',
-        published: 'Published',
-        active: 'Active',
-        inactive: 'Inactive',
-        archived: 'Archived'
+      });
+      
+      stats.value = {
+        totalBookings: bookings.value.length,
+        today: todayCount,
+        upcoming: upcomingCount,
+        completed: completedCount
       };
-      return statusMap[status] || (status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown');
+      
+      console.log("📊 Updated stats:", stats.value);
     };
 
-    // ==================== ENHANCED PROCESS SINGLE BOOKING ====================
+    // ==================== PROCESS SINGLE BOOKING ====================
     const processSingleBooking = async (booking) => {
       try {
         const isAdminBooking = booking.createdBy === 'admin' || booking.adminId || booking.isAdminBooking;
@@ -1108,7 +1003,6 @@ export default {
         let serviceName = booking.serviceName || 'Service';
         let serviceCategory = booking.serviceCategory || 'General';
         
-        // UPDATED: Try to get actual service price from service details if available
         let actualPrice = booking.servicePrice || booking.amount || 0;
         
         // Get booking date and times
@@ -1116,7 +1010,7 @@ export default {
         let startTime = booking.startTime || '09:00';
         let endTime = booking.endTime || '10:00';
         
-        // Get status
+        // Store actual status from database
         let status = booking.status ? booking.status.toLowerCase() : 'pending';
         
         // Get created date
@@ -1140,24 +1034,24 @@ export default {
           bookingDate: bookingDate,
           startTime: startTime,
           endTime: endTime,
-          status: status,
+          status: status, // Actual database status
           amount: actualPrice.toFixed(2),
           createdAt: createdAt,
           originalData: booking
         };
         
-        // PRE-LOAD CUSTOMER DETAILS IMMEDIATELY
+        // Pre-load customer details
         if (customerId && customerId !== 'unknown') {
           setTimeout(() => {
             preloadCustomerDetails(processedBooking);
           }, 0);
         }
         
-        // NEW: PRE-LOAD SERVICE DETAILS IMMEDIATELY
+        // Pre-load service details
         if (serviceId && serviceId !== 'unknown') {
           setTimeout(() => {
             preloadServiceDetails(processedBooking);
-          }, 100); // Small delay to avoid blocking
+          }, 100);
         }
         
         return processedBooking;
@@ -1167,7 +1061,7 @@ export default {
       }
     };
 
-    // ==================== CUSTOMER DETAILS FUNCTIONS (PRESERVED) ====================
+    // ==================== CUSTOMER DETAILS FUNCTIONS ====================
     const preloadCustomerDetails = async (booking) => {
       if (!booking.customerId || booking.customerId === 'unknown') return;
       
@@ -1185,7 +1079,6 @@ export default {
         
         for (const endpoint of endpoints) {
           try {
-            console.log(`🔍 Fetching customer details from: ${endpoint}`);
             const response = await http.get(endpoint);
             if (response.data) {
               const user = response.data;
@@ -1222,13 +1115,11 @@ export default {
               return customerData;
             }
           } catch (err) {
-            console.log(`⚠️ Endpoint ${endpoint} failed:`, err.message);
+            // Continue to next endpoint
           }
         }
-        
-        console.log(`ℹ️ Could not fetch customer details for ${booking.customerId}`);
       } catch (err) {
-        console.log(`⚠️ Error preloading customer ${booking.customerId}:`, err.message);
+        // Silently fail
       }
     };
 
@@ -1244,28 +1135,113 @@ export default {
           ...(customerDetails || {})
         };
       } catch (err) {
-        console.error("❌ Error loading customer details:", err);
         selectedCustomer.value = booking;
       }
     };
 
-    const closeModal = () => {
-      selectedCustomer.value = null;
-      selectedBooking.value = null;
+    // ==================== SERVICE DETAILS FUNCTIONS ====================
+    const preloadServiceDetails = async (booking) => {
+      if (!booking.serviceId || booking.serviceId === 'unknown') return null;
+      
+      if (serviceDetailsCache.value[booking.serviceId]) {
+        return serviceDetailsCache.value[booking.serviceId];
+      }
+
+      try {
+        const serviceDetails = await fetchServiceDetails(booking.serviceId);
+        if (serviceDetails) {
+          booking.serviceName = serviceDetails.title || serviceDetails.name || booking.serviceName;
+          booking.serviceCategory = serviceDetails.categoryName || serviceDetails.category || booking.serviceCategory;
+          booking.serviceTotalPrice = serviceDetails.totalPrice;
+          booking.serviceBookingPrice = serviceDetails.bookingPrice;
+          booking.servicePriceUnit = serviceDetails.priceUnit;
+          
+          if (serviceDetails.totalPrice && !booking.actualPrice) {
+            booking.actualPrice = serviceDetails.totalPrice;
+          }
+          
+          return serviceDetails;
+        }
+      } catch (err) {
+        return null;
+      }
     };
 
-    const closeBookingModal = () => {
-      selectedBooking.value = null;
+    const fetchServiceDetails = async (serviceId) => {
+      if (!serviceId || serviceId === 'unknown') return null;
+      
+      if (serviceDetailsCache.value[serviceId]) {
+        return serviceDetailsCache.value[serviceId];
+      }
+
+      try {
+        const endpoints = [
+          `/services/${serviceId}`,
+          `/api/services/${serviceId}`,
+          `/services/find/${serviceId}`,
+          `/services?id=${serviceId}`
+        ];
+        
+        for (const endpoint of endpoints) {
+          try {
+            const response = await http.get(endpoint);
+            if (response.data) {
+              let serviceData = response.data;
+              
+              if (Array.isArray(serviceData) && serviceData.length > 0) {
+                serviceData = serviceData[0];
+              } else if (serviceData.data && Array.isArray(serviceData.data)) {
+                serviceData = serviceData.data[0];
+              } else if (serviceData.service) {
+                serviceData = serviceData.service;
+              }
+              
+              if (serviceData) {
+                serviceDetailsCache.value[serviceId] = serviceData;
+                return serviceData;
+              }
+            }
+          } catch (err) {
+            continue;
+          }
+        }
+        return null;
+      } catch (err) {
+        return null;
+      }
     };
 
-    const handleCustomerImageError = (event) => {
-      event.target.style.display = 'none';
-      const parent = event.target.parentElement;
-      const customerName = selectedCustomer.value?.customerName || 'Customer';
-      parent.innerHTML = `<div class="fallback-initials-simple" style="background-color: ${getAvatarColor(customerName)}">${getCleanInitials(customerName)}</div>`;
+    const viewServiceDetailsModal = async (booking) => {
+      try {
+        let serviceDetails = null;
+        if (booking.serviceId && booking.serviceId !== 'unknown') {
+          serviceDetails = await preloadServiceDetails(booking);
+        }
+        
+        if (!serviceDetails) {
+          serviceDetails = {
+            title: booking.serviceName,
+            categoryName: booking.serviceCategory,
+            totalPrice: booking.serviceTotalPrice || booking.actualPrice || booking.servicePrice || booking.amount,
+            bookingPrice: booking.serviceBookingPrice,
+            priceUnit: booking.servicePriceUnit || 'ETB',
+            description: 'Service details'
+          };
+        }
+        
+        selectedService.value = serviceDetails;
+      } catch (err) {
+        selectedService.value = {
+          title: booking.serviceName,
+          categoryName: booking.serviceCategory,
+          totalPrice: booking.actualPrice || booking.servicePrice || booking.amount,
+          priceUnit: 'ETB',
+          description: 'Service details could not be loaded'
+        };
+      }
     };
 
-    // ==================== HELPER FUNCTIONS (PRESERVED) ====================
+    // ==================== OTHER HELPER FUNCTIONS ====================
     const getAvatarColor = (name) => {
       const colors = [
         '#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', 
@@ -1332,16 +1308,6 @@ export default {
         .join(' ');
     };
 
-    const formatStatus = (status) => {
-      const statusMap = {
-        confirmed: 'Confirmed',
-        completed: 'Completed',
-        pending: 'Pending',
-        cancelled: 'Cancelled'
-      };
-      return statusMap[status] || status.charAt(0).toUpperCase() + status.slice(1);
-    };
-
     const formatRelativeTime = (dateString) => {
       if (!dateString) return '';
       try {
@@ -1373,75 +1339,7 @@ export default {
       }
     };
 
-    // ==================== DATE HELPERS (PRESERVED) ====================
-    const getTodayStart = () => {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return today;
-    };
-
-    const getTomorrowStart = () => {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(0, 0, 0, 0);
-      return tomorrow;
-    };
-
-    const getNextDayStart = (daysAhead) => {
-      const date = new Date();
-      date.setDate(date.getDate() + daysAhead);
-      date.setHours(0, 0, 0, 0);
-      return date;
-    };
-
-    const isPastBooking = (booking) => {
-      if (!booking || !booking.bookingDate) return false;
-      try {
-        const bookingDate = new Date(booking.bookingDate);
-        const todayStart = getTodayStart();
-        return bookingDate < todayStart;
-      } catch (err) {
-        return false;
-      }
-    };
-
-    const isTodayBooking = (booking) => {
-      if (!booking || !booking.bookingDate) return false;
-      try {
-        const bookingDate = new Date(booking.bookingDate);
-        const todayStart = getTodayStart();
-        const tomorrowStart = getTomorrowStart();
-        return bookingDate >= todayStart && bookingDate < tomorrowStart;
-      } catch (err) {
-        return false;
-      }
-    };
-
-    const isTomorrowBooking = (booking) => {
-      if (!booking || !booking.bookingDate) return false;
-      try {
-        const bookingDate = new Date(booking.bookingDate);
-        const tomorrowStart = getTomorrowStart();
-        const dayAfterTomorrow = getNextDayStart(2);
-        return bookingDate >= tomorrowStart && bookingDate < dayAfterTomorrow;
-      } catch (err) {
-        return false;
-      }
-    };
-
-    const isNext5DaysBooking = (booking) => {
-      if (!booking || !booking.bookingDate) return false;
-      try {
-        const bookingDate = new Date(booking.bookingDate);
-        const todayStart = getTodayStart();
-        const fiveDaysFromNow = getNextDayStart(5);
-        return bookingDate >= todayStart && bookingDate < fiveDaysFromNow;
-      } catch (err) {
-        return false;
-      }
-    };
-
-    // ==================== CORE FUNCTIONS (PRESERVED) ====================
+    // ==================== CORE FUNCTIONS ====================
     const getProviderId = () => {
       const providerId = localStorage.getItem('providerId');
       if (providerId) return providerId;
@@ -1490,7 +1388,7 @@ export default {
               break;
             }
           } catch (err) {
-            console.log(`Endpoint ${endpoint} failed:`, err.message);
+            continue;
           }
         }
         
@@ -1519,6 +1417,7 @@ export default {
         
         loadingProgress.value = 90;
         
+        // Sort by booking date (most recent first)
         processedBookings.sort((a, b) => {
           const dateA = a.bookingDate ? new Date(a.bookingDate) : new Date();
           const dateB = b.bookingDate ? new Date(b.bookingDate) : new Date();
@@ -1542,25 +1441,107 @@ export default {
       }
     };
 
-    const calculateStats = () => {
+    // ==================== ACTION FUNCTIONS ====================
+    const completeBooking = async (booking) => {
+      try {
+        await http.patch(`/bookings/${booking._id}/status`, { status: 'completed' });
+        booking.status = 'completed';
+        calculateStats();
+        alert("✅ Booking marked as completed!");
+      } catch (err) {
+        alert("Failed to complete booking. Please try again.");
+      }
+    };
+
+    const viewBookingDetailsModal = async (booking) => {
+      selectedBooking.value = booking;
+    };
+
+    const closeModal = () => {
+      selectedCustomer.value = null;
+      selectedBooking.value = null;
+    };
+
+    const closeBookingModal = () => {
+      selectedBooking.value = null;
+    };
+
+    const closeServiceModal = () => {
+      selectedService.value = null;
+    };
+
+    const selectTimelinePeriod = (periodId) => {
+      selectedPeriod.value = periodId;
+      currentPage.value = 1;
+    };
+
+    const clearTimelinePeriod = () => {
+      selectedPeriod.value = "all";
+      currentPage.value = 1;
+    };
+
+    const clearFilters = () => {
+      searchQuery.value = "";
+      statusFilter.value = "all";
+      clearTimelinePeriod();
+      currentPage.value = 1;
+    };
+
+    const promoteServices = () => {
+      alert("🎯 Share your booking link to get more bookings!");
+    };
+
+    const getActiveFilterLabel = () => {
+      const period = timelinePeriods.value.find(p => p.id === selectedPeriod.value);
+      return period ? period.label : "";
+    };
+
+    const handleImageError = (booking, event) => {
+      event.target.style.display = 'none';
+      const parent = event.target.parentElement;
+      parent.innerHTML = `<div class="fallback-initials" style="background-color: ${getAvatarColor(booking.customerName)}">${getCleanInitials(booking.customerName)}</div>`;
+    };
+
+    const handleCustomerImageError = (event) => {
+      event.target.style.display = 'none';
+    };
+
+    const handleServiceImageError = (event) => {
+      if (event.target) {
+        event.target.style.display = 'none';
+      }
+    };
+
+    const exportBookings = () => {
       if (bookings.value.length === 0) {
-        stats.value = { totalBookings: 0, today: 0, upcoming: 0, completed: 0, revenue: 0 };
+        alert("No bookings to export.");
         return;
       }
       
-      stats.value = {
-        totalBookings: bookings.value.length,
-        today: bookings.value.filter(b => isTodayBooking(b)).length,
-        upcoming: bookings.value.filter(b => !isPastBooking(b) && b.status !== 'cancelled').length,
-        completed: bookings.value.filter(b => b.status === 'completed').length,
-        revenue: bookings.value
-          .filter(b => b.status !== 'cancelled')
-          .reduce((sum, booking) => sum + (parseFloat(booking.actualPrice || booking.servicePrice || booking.amount) || 0), 0)
-          .toFixed(2)
-      };
+      const csvContent = [
+        ['Customer Name', 'Email', 'Service', 'Category', 'Date', 'Time', 'Status', 'Amount'].join(','),
+        ...bookings.value.map(b => [
+          `"${b.customerName}"`,
+          `"${b.customerEmail || ''}"`,
+          `"${b.serviceName}"`,
+          `"${b.serviceCategory || ''}"`,
+          `"${formatCleanDate(b.bookingDate)}"`,
+          `"${formatTimeSlot(b.startTime, b.endTime)}"`,
+          `"${formatStatus(getBookingDisplayStatus(b))}"`,
+          `"${b.servicePriceUnit || 'ETB'} ${b.serviceTotalPrice || b.serviceBookingPrice || b.actualPrice || b.servicePrice || b.amount}"`
+        ].join(','))
+      ].join('\n');
+      
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `bookings-${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
     };
 
-    // ==================== FILTERING (PRESERVED) ====================
+    // ==================== COMPUTED PROPERTIES ====================
     const timelineFilteredBookings = computed(() => {
       if (selectedPeriod.value === "all") {
         return bookings.value;
@@ -1571,10 +1552,8 @@ export default {
             return isPastBooking(booking);
           case "today":
             return isTodayBooking(booking);
-          case "tomorrow":
-            return isTomorrowBooking(booking);
-          case "next5days":
-            return isNext5DaysBooking(booking);
+          case "future":
+            return isFutureBooking(booking);
           default:
             return true;
         }
@@ -1594,7 +1573,10 @@ export default {
       }
       
       if (statusFilter.value !== 'all') {
-        filtered = filtered.filter(booking => booking.status === statusFilter.value);
+        // For status filter, use display status
+        filtered = filtered.filter(booking => 
+          getBookingDisplayStatus(booking) === statusFilter.value
+        );
       }
       
       return filtered;
@@ -1609,83 +1591,6 @@ export default {
     });
 
     const totalPages = computed(() => Math.ceil(displayBookings.value.length / itemsPerPage.value));
-
-    // ==================== ACTION FUNCTIONS (PRESERVED) ====================
-    const selectTimelinePeriod = (periodId) => {
-      selectedPeriod.value = periodId;
-      currentPage.value = 1;
-    };
-
-    const clearTimelinePeriod = () => {
-      selectedPeriod.value = "all";
-      currentPage.value = 1;
-    };
-
-    const clearFilters = () => {
-      searchQuery.value = "";
-      statusFilter.value = "all";
-      clearTimelinePeriod();
-      currentPage.value = 1;
-    };
-
-    const completeBooking = async (booking) => {
-      try {
-        await http.patch(`/bookings/${booking._id}/status`, { status: 'completed' });
-        booking.status = 'completed';
-        calculateStats();
-        alert("✅ Booking marked as completed!");
-      } catch (err) {
-        alert("Failed to complete booking. Please try again.");
-      }
-    };
-
-    const viewBookingDetailsModal = async (booking) => {
-      selectedBooking.value = booking;
-    };
-
-    const promoteServices = () => {
-      alert("🎯 Share your booking link to get more bookings!");
-    };
-
-    const getActiveFilterLabel = () => {
-      const period = timelinePeriods.value.find(p => p.id === selectedPeriod.value);
-      return period ? period.label : "";
-    };
-
-    const handleImageError = (booking, event) => {
-      event.target.style.display = 'none';
-      const parent = event.target.parentElement;
-      parent.innerHTML = `<div class="fallback-initials" style="background-color: ${getAvatarColor(booking.customerName)}">${getCleanInitials(booking.customerName)}</div>`;
-    };
-
-    const exportBookings = () => {
-      if (bookings.value.length === 0) {
-        alert("No bookings to export.");
-        return;
-      }
-      
-      const csvContent = [
-        ['Customer Name', 'Email', 'Service', 'Category', 'Date', 'Time', 'Status', 'Amount'].join(','),
-        ...bookings.value.map(b => [
-          `"${b.customerName}"`,
-          `"${b.customerEmail || ''}"`,
-          `"${b.serviceName}"`,
-          `"${b.serviceCategory || ''}"`,
-          `"${formatCleanDate(b.bookingDate)}"`,
-          `"${formatTimeSlot(b.startTime, b.endTime)}"`,
-          `"${formatStatus(b.status)}"`,
-          `"${b.servicePriceUnit || 'ETB'} ${b.serviceTotalPrice || b.serviceBookingPrice || b.actualPrice || b.servicePrice || b.amount}"`
-        ].join(','))
-      ].join('\n');
-      
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `bookings-${new Date().toISOString().split('T')[0]}.csv`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    };
 
     // ==================== LIFECYCLE ====================
     onMounted(() => {
@@ -1739,12 +1644,13 @@ export default {
       formatCleanDate,
       formatServiceName,
       formatStatus,
-      formatServiceStatus,
       calculateDuration,
       formatTimeSlot,
       formatRelativeTime,
       isTodayBooking,
       isPastBooking,
+      isFutureBooking,
+      getBookingDisplayStatus,
       getServiceIcon,
       handleImageError,
       handleCustomerImageError,
@@ -1755,7 +1661,7 @@ export default {
 </script>
 
 <style scoped>
-/* ==================== NEW SERVICE DETAILS MODAL STYLES ==================== */
+/* ==================== UPDATED SERVICE DETAILS MODAL STYLES ==================== */
 .service-details-modal {
   max-width: 700px;
   width: 95%;
@@ -1960,7 +1866,7 @@ export default {
   margin: 0;
 }
 
-/* Extra Details */
+/* Extra Details - UPDATED: Removed Featured section */
 .service-extra-details {
   padding: 20px;
 }
@@ -1998,25 +1904,6 @@ export default {
   color: #1f2937;
   font-size: 1rem;
   font-weight: 600;
-}
-
-.featured-badge {
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.featured-badge.featured {
-  background: linear-gradient(135deg, #fef3c7, #fcd34d);
-  color: #92400e;
-}
-
-.featured-badge:not(.featured) {
-  background: linear-gradient(135deg, #f3f4f6, #d1d5db);
-  color: #6b7280;
 }
 
 /* ==================== UPDATED ACTION BUTTON STYLES ==================== */
@@ -2060,7 +1947,6 @@ export default {
   transform: translateY(-2px);
 }
 
-/* NEW: Service Details Button Style */
 .action-btn-enhanced.service-details {
   background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   color: white;
@@ -2100,7 +1986,6 @@ export default {
   color: #374151;
 }
 
-/* NEW: Service Details Button in List View */
 .btn-action.service-details {
   background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   color: white;
@@ -2111,9 +1996,63 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* ==================== EXISTING STYLES (PRESERVED) ==================== */
-/* All existing CSS remains exactly the same as before */
-/* Only new styles added above */
+/* ==================== UPDATED STATS OVERVIEW ==================== */
+.stats-overview-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* UPDATED: Removed revenue stat card */
+.stat-card-compact {
+  background: white;
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+  transition: all 0.3s ease;
+}
+
+.stat-card-compact:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.stat-icon-compact {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.stat-icon-compact.total { background: linear-gradient(135deg, #dbeafe, #93c5fd); color: #1e40af; }
+.stat-icon-compact.today { background: linear-gradient(135deg, #fef3c7, #fcd34d); color: #d97706; }
+.stat-icon-compact.upcoming { background: linear-gradient(135deg, #dcfce7, #86efac); color: #16a34a; }
+.stat-icon-compact.completed { background: linear-gradient(135deg, #f3e8ff, #d8b4fe); color: #9333ea; }
+
+.stat-content-compact h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 2px;
+  line-height: 1;
+}
+
+.stat-content-compact p {
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
 /* ==================== RESPONSIVE ENHANCEMENTS ==================== */
 @media (max-width: 768px) {
@@ -2324,351 +2263,7 @@ export default {
   font-size: 2.5rem;
 }
 
-/* ==================== EXISTING STYLES (Preserved with Contact button removed) ==================== */
-.stats-overview-compact {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.stat-card-compact {
-  background: white;
-  border-radius: 14px;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f1f5f9;
-  transition: all 0.3s ease;
-}
-
-.stat-card-compact:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-}
-
-.stat-icon-compact {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-
-.stat-icon-compact.total { background: linear-gradient(135deg, #dbeafe, #93c5fd); color: #1e40af; }
-.stat-icon-compact.today { background: linear-gradient(135deg, #fef3c7, #fcd34d); color: #d97706; }
-.stat-icon-compact.upcoming { background: linear-gradient(135deg, #dcfce7, #86efac); color: #16a34a; }
-.stat-icon-compact.completed { background: linear-gradient(135deg, #f3e8ff, #d8b4fe); color: #9333ea; }
-.stat-icon-compact.revenue { background: linear-gradient(135deg, #fce7f3, #f9a8d4); color: #db2777; }
-
-.stat-content-compact h3 {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #1e293b;
-  margin-bottom: 2px;
-  line-height: 1;
-}
-
-.stat-content-compact p {
-  color: #64748b;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Professional Cards Grid - UPDATED: Contact button removed */
-.professional-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-  gap: 18px;
-  margin-bottom: 30px;
-}
-
-.professional-card-enhanced {
-  background: white;
-  border-radius: 18px;
-  padding: 20px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e5e7eb;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.professional-card-enhanced:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-  border-color: #3b82f6;
-}
-
-/* Card Header Enhanced */
-.card-header-enhanced {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.customer-avatar-enhanced {
-  position: relative;
-}
-
-.customer-profile-photo-enhanced {
-  width: 70px;
-  height: 70px;
-  border-radius: 18px;
-  overflow: hidden;
-  border: 3px solid white;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-  background: #f3f4f6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.customer-profile-photo-enhanced img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.customer-initials-enhanced {
-  width: 70px;
-  height: 70px;
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 800;
-  font-size: 1.8rem;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-}
-
-.customer-info-enhanced {
-  flex: 1;
-}
-
-.customer-name-enhanced {
-  color: #1f2937;
-  font-size: 1.3rem;
-  font-weight: 800;
-  margin: 0 0 6px 0;
-  line-height: 1.2;
-}
-
-.customer-meta-enhanced {
-  color: #6b7280;
-  font-size: 0.85rem;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.customer-meta-enhanced i {
-  width: 14px;
-  margin-right: 6px;
-  color: #9ca3af;
-}
-
-.booking-status-enhanced {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-}
-
-.status-badge-enhanced {
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: inline-block;
-}
-
-.status-badge-enhanced.confirmed {
-  background: linear-gradient(135deg, #dbeafe, #93c5fd);
-  color: #1e40af;
-}
-
-.status-badge-enhanced.completed {
-  background: linear-gradient(135deg, #f3f4f6, #d1d5db);
-  color: #374151;
-}
-
-.status-badge-enhanced.pending {
-  background: linear-gradient(135deg, #fef3c7, #fcd34d);
-  color: #92400e;
-}
-
-.booking-id-enhanced {
-  color: #9ca3af;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-
-/* Service Details Enhanced */
-.service-details-enhanced {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px;
-  background: #f9fafb;
-  border-radius: 14px;
-  border: 1px solid #f3f4f6;
-}
-
-.service-icon-circle-enhanced {
-  width: 46px;
-  height: 46px;
-  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-
-.service-info-enhanced {
-  flex: 1;
-}
-
-.service-name-enhanced {
-  color: #1f2937;
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin: 0 0 6px 0;
-}
-
-.service-meta-enhanced {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.service-category-enhanced {
-  background: white;
-  color: #6b7280;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border: 1px solid #e5e7eb;
-}
-
-.service-duration-enhanced {
-  color: #d97706;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.service-amount-enhanced {
-  text-align: right;
-}
-
-.amount-value-enhanced {
-  color: #059669;
-  font-size: 1.4rem;
-  font-weight: 800;
-}
-
-/* Date & Time Enhanced */
-.datetime-section-enhanced {
-  display: flex;
-  gap: 12px;
-}
-
-.datetime-item {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
-  background: #f8fafc;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  color: #4b5563;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.datetime-item i {
-  color: #3b82f6;
-  font-size: 1rem;
-}
-
-/* Additional Info Minimal */
-.additional-info-minimal {
-  padding: 10px 14px;
-  background: #f9fafb;
-  border-radius: 10px;
-  color: #6b7280;
-  font-size: 0.85rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.additional-info-minimal i {
-  color: #9ca3af;
-}
-
-/* Action Buttons Enhanced - UPDATED: Contact button removed */
-.action-buttons-enhanced {
-  display: flex;
-  gap: 10px;
-}
-
-.action-btn-enhanced {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 0.85rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.3s ease;
-}
-
-.action-btn-enhanced.complete {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-}
-
-.action-btn-enhanced.complete:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.action-btn-enhanced.details {
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.action-btn-enhanced.details:hover {
-  background: #e5e7eb;
-  transform: translateY(-2px);
-}
-
-/* ==================== BASE STYLES (Unchanged) ==================== */
+/* ==================== BASE STYLES ==================== */
 .bookings-section {
   max-width: 1400px;
   margin: 0 auto;
@@ -2989,6 +2584,251 @@ export default {
   color: white;
 }
 
+/* Professional Cards Grid */
+.professional-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 18px;
+  margin-bottom: 30px;
+}
+
+.professional-card-enhanced {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.professional-card-enhanced:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  border-color: #3b82f6;
+}
+
+/* Card Header Enhanced */
+.card-header-enhanced {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.customer-avatar-enhanced {
+  position: relative;
+}
+
+.customer-profile-photo-enhanced {
+  width: 70px;
+  height: 70px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 3px solid white;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.customer-profile-photo-enhanced img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.customer-initials-enhanced {
+  width: 70px;
+  height: 70px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 800;
+  font-size: 1.8rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.customer-info-enhanced {
+  flex: 1;
+}
+
+.customer-name-enhanced {
+  color: #1f2937;
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+  line-height: 1.2;
+}
+
+.customer-meta-enhanced {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.customer-meta-enhanced i {
+  width: 14px;
+  margin-right: 6px;
+  color: #9ca3af;
+}
+
+.booking-status-enhanced {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.status-badge-enhanced {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+}
+
+.status-badge-enhanced.confirmed {
+  background: linear-gradient(135deg, #dbeafe, #93c5fd);
+  color: #1e40af;
+}
+
+.status-badge-enhanced.completed {
+  background: linear-gradient(135deg, #f3f4f6, #d1d5db);
+  color: #374151;
+}
+
+.status-badge-enhanced.pending {
+  background: linear-gradient(135deg, #fef3c7, #fcd34d);
+  color: #92400e;
+}
+
+.booking-id-enhanced {
+  color: #9ca3af;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* Service Details Enhanced */
+.service-details-enhanced {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: #f9fafb;
+  border-radius: 14px;
+  border: 1px solid #f3f4f6;
+}
+
+.service-icon-circle-enhanced {
+  width: 46px;
+  height: 46px;
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.service-info-enhanced {
+  flex: 1;
+}
+
+.service-name-enhanced {
+  color: #1f2937;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+}
+
+.service-meta-enhanced {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.service-category-enhanced {
+  background: white;
+  color: #6b7280;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid #e5e7eb;
+}
+
+.service-duration-enhanced {
+  color: #d97706;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.service-amount-enhanced {
+  text-align: right;
+}
+
+.amount-value-enhanced {
+  color: #059669;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+/* Date & Time Enhanced */
+.datetime-section-enhanced {
+  display: flex;
+  gap: 12px;
+}
+
+.datetime-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  color: #4b5563;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.datetime-item i {
+  color: #3b82f6;
+  font-size: 1rem;
+}
+
+/* Additional Info Minimal */
+.additional-info-minimal {
+  padding: 10px 14px;
+  background: #f9fafb;
+  border-radius: 10px;
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.additional-info-minimal i {
+  color: #9ca3af;
+}
+
 /* Table View */
 .bookings-table {
   border-radius: 14px;
@@ -3153,7 +2993,7 @@ export default {
   padding: 20px;
 }
 
-/* Original Modal Styles (preserved) */
+/* Original Modal Styles */
 .customer-profile-header {
   display: flex;
   align-items: center;
