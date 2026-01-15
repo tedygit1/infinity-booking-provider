@@ -16,55 +16,76 @@
             <div class="trust-badges">
               <span class="badge-industry">
                 <i class="fas fa-trophy"></i>
-               Infinity-Booking ......Infinity Advantage 
+                Infinity-Booking  
               </span>
               <span class="badge-trusted">
                 <i class="fas fa-shield-alt"></i>
-                system operated, clean scheduler
+                Smart Scheduling System
               </span>
             </div>
             
             <!-- Main Headline -->
             <h1 class="hero-premium-title">
-              <span class="title-line-1">Infinity-Bookings</span>
+              <span class="title-line-1">Infinity-Bookings-provider to customer way </span>
               <span class="title-line-2">
                 <span class="text-rotating">
-                  <span class="rotating-text active">Service Providers</span>
-                  <span class="rotating-text">Business Growth</span>
-                  <span class="rotating-text">Client Success</span>
+                  <span class="rotating-text active">Connect. Book. Grow.</span>
+                  <span class="rotating-text">Your Service Platform</span>
+                  <span class="rotating-text">Seamless Operations</span>
                 </span>
               </span>
             </h1>
             
-            <!-- Value Proposition -->
-            <p class="hero-premium-subtitle">
-              Infinity-Booking is a professional service-booking platform built to connect service providers with clients through a clear, calendar-driven scheduling system. It enables providers to list services, define availability with precision, and manage bookings in an organized and reliable way.
-              
-            </p>
+            <!-- Improved Value Proposition -->
+            <div class="improved-proposition">
+              <div class="proposition-grid">
+                <div class="proposition-item">
+                  <i class="fas fa-bolt"></i>
+                  <div>
+                    <h4>Instant Connections</h4>
+                    <p>Meet clients who need your services, right now.</p>
+                  </div>
+                </div>
+                <div class="proposition-item">
+                  <i class="fas fa-calendar-check"></i>
+                  <div>
+                    <h4>Smart Booking</h4>
+                    <p>Calendar-driven scheduling that works for you.</p>
+                  </div>
+                </div>
+                <div class="proposition-item">
+                  <i class="fas fa-chart-line"></i>
+                  <div>
+                    <h4>Grow Your Business</h4>
+                    <p>Tools to scale from solo to enterprise.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
             
             <!-- Primary CTA -->
             <div class="hero-premium-actions">
               <div class="cta-buttons-row">
                 <router-link to="/register" class="hero-premium-cta">
-                  <i class="fas fa-user-plus"></i>
-                  Start Free Account
+                  <i class="fas fa-rocket"></i>
+                  Start Free Now
                 </router-link>
                 
                 <router-link to="/login" class="hero-premium-cta secondary">
-                  <i class="fas fa-sign-in-alt"></i>
-                  Login to Dashboard
+                  <i class="fas fa-play-circle"></i>
+                  View Live Demo
                 </router-link>
               </div>
-              <p>  <strong>The platform is designed to support efficient daily operations, reduce scheduling friction, and create a smooth booking experience for clients. Whether you are an individual professional, a growing business, or a multi-location enterprise, Infinity-Booking provides the infrastructure, visibility, and control needed to operate confidently and scale sustainably</strong></p>
-              <div class="secondary-actions">
-                <a href="#categories" class="action-link">
-                  <i class="fas fa-list"></i>
-                  Explore Services
-                </a>
-                <a href="#features" class="action-link">
-                  <i class="fas fa-star"></i>
-                  Platform Features
-                </a>
+              
+              <div class="value-highlights">
+                <div class="highlight">
+                  <i class="fas fa-check-circle"></i>
+                  <span>No setup fees • Free plan available</span>
+                </div>
+                <div class="highlight">
+                  <i class="fas fa-check-circle"></i>
+                  <span>Setup in 10 minutes • Mobile-ready</span>
+                </div>
               </div>
             </div>
             
@@ -73,16 +94,16 @@
               <div class="testimonial-carousel">
                 <div class="testimonial-slide" :class="{ active: activeTestimonialSlide === 0 }">
                   <div class="testimonial-content">
-                    "Tripled my client base in 3 months!"
+                    "Tripled bookings in 3 months!"
                   </div>
                   <div class="testimonial-author">
                     <span class="author-name">Sarah M.</span>
-                    <span class="author-role">• Home Cleaning Provider</span>
+                    <span class="author-role">• Home Cleaning</span>
                   </div>
                 </div>
                 <div class="testimonial-slide" :class="{ active: activeTestimonialSlide === 1 }">
                   <div class="testimonial-content">
-                    "Best platform for managing my salon business"
+                    "Effortless client management"
                   </div>
                   <div class="testimonial-author">
                     <span class="author-name">James L.</span>
@@ -107,7 +128,7 @@
                     <span class="dot"></span>
                     <span class="dot"></span>
                   </div>
-                  <div class="window-title">Infinity-Booking Dashboard</div>
+                  <div class="window-title">Live Dashboard</div>
                 </div>
                 
                 <div class="preview-content">
@@ -161,7 +182,7 @@
                   
                   <!-- Service Categories -->
                   <div class="service-categories-preview">
-                    <div class="categories-title">Active Services</div>
+                    <div class="categories-title">Top Services</div>
                     <div class="categories-tags">
                       <span class="category-tag">Cleaning</span>
                       <span class="category-tag">Repairs</span>
@@ -190,255 +211,287 @@
       </div>
     </section>
 
-    <!-- Service Categories Section -->
-    <section id="categories" class="categories-section">
-      <h2 class="section-title">Our Core Service Categories</h2>
-      <p class="section-subtitle">
-        Infinity-Booking starts with these essential sectors and continuously expands as new providers join the movement.
-      </p>
-      <div class="categories-grid">
-        <div class="category-card">
-          <img src="https://cdn-icons-png.flaticon.com/512/706/706164.png" alt="Home Services" />
-          <h3>Home Services</h3>
-          <p>From repairs to cleaning — find skilled home experts ready to serve your neighborhood.</p>
-          <ul class="service-list">
-            <li><i class="fas fa-check"></i> Cleaning Services</li>
-            <li><i class="fas fa-check"></i> Plumbing & Electrical</li>
-            <li><i class="fas fa-check"></i> Gardening & Landscaping</li>
-            <li><i class="fas fa-check"></i> Home Repairs</li>
-          </ul>
-        </div>
-        <div class="category-card">
-          <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Beauty Services" />
-          <h3>Beauty & Salon</h3>
-          <p>Book professional stylists, barbers, and beauty specialists who bring confidence to your doorstep.</p>
-          <ul class="service-list">
-            <li><i class="fas fa-check"></i> Hair Styling</li>
-            <li><i class="fas fa-check"></i> Nail Care</li>
-            <li><i class="fas fa-check"></i> Skin Treatments</li>
-            <li><i class="fas fa-check"></i> Makeup Services</li>
-          </ul>
-        </div>
-        <div class="category-card">
-          <img src="https://cdn-icons-png.flaticon.com/512/3135/3135789.png" alt="Tutoring" />
-          <h3>Education & Tutoring</h3>
-          <p>Connect with experienced tutors and educators to support lifelong learning and growth.</p>
-          <ul class="service-list">
-            <li><i class="fas fa-check"></i> Academic Tutoring</li>
-            <li><i class="fas fa-check"></i> Language Lessons</li>
-            <li><i class="fas fa-check"></i> Music & Arts</li>
-            <li><i class="fas fa-check"></i> Professional Training</li>
-          </ul>
-        </div>
-        <div class="category-card">
-          <img src="https://cdn-icons-png.flaticon.com/512/2972/2972185.png" alt="Professional Services" />
-          <h3>Professional Services</h3>
-          <p>Access skilled professionals for your business and personal needs.</p>
-          <ul class="service-list">
-            <li><i class="fas fa-check"></i> IT Support</li>
-            <li><i class="fas fa-check"></i> Consulting</li>
-            <li><i class="fas fa-check"></i> Event Planning</li>
-            <li><i class="fas fa-check"></i> Photography</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- Benefits Section -->
-    <section class="benefits-section">
-      <h2 class="section-title">Why Providers Choose Infinity-Booking</h2>
-      <div class="benefits-grid">
-        <div class="benefit-card">
-          <div class="benefit-icon">
-            <i class="fas fa-chart-line"></i>
-          </div>
-          <h3>Business Growth</h3>
-          <p>Reach new customers and grow your client base with our powerful marketing tools and platform visibility.</p>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">
-            <i class="fas fa-tools"></i>
-          </div>
-          <h3>Smart Management</h3>
-          <p>Organize schedules, track bookings, and manage your business with our intuitive dashboard.</p>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">
-            <i class="fas fa-shield-alt"></i>
-          </div>
-          <h3>Secure Payments</h3>
-          <p>Receive payments instantly via <strong>Telebirr</strong> with future integrations for <strong>PayPal</strong> and cards.</p>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">
-            <i class="fas fa-mobile-alt"></i>
-          </div>
-          <h3>Mobile Access</h3>
-          <p>Manage your business on the go with our mobile-optimized platform accessible from any device.</p>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">
-            <i class="fas fa-headset"></i>
-          </div>
-          <h3>24/7 Support</h3>
-          <p>Get help whenever you need it with our dedicated customer support team available round the clock.</p>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-icon">
-            <i class="fas fa-star"></i>
-          </div>
-          <h3>Build Reputation</h3>
-          <p>Collect genuine reviews and build trust with our verified rating system that showcases your quality.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Platform Features Section -->
-    <section id="features" class="features-section">
+    <!-- Collapsible Service Categories -->
+    <section class="collapsible-section categories-collapsible">
       <div class="container">
-        <h2 class="section-title">Powerful Platform Features</h2>
-        <p class="section-subtitle">
-          Everything you need to run and grow your service business efficiently.
-        </p>
+        <button class="collapsible-toggle hint-animation" @click="toggleCategories">
+          <span class="toggle-title">
+            <i class="fas fa-layer-group"></i>
+            <span class="hint-text">Click to explore</span>
+            Our Core Service Categories
+          </span>
+          <span class="toggle-icon">
+            <i class="fas" :class="categoriesVisible ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+          </span>
+        </button>
         
-        <div class="features-content">
-          <div class="feature-image">
-            <div class="dashboard-preview">
-              <div class="preview-header">
-                <div class="preview-dots">
-                  <span class="dot red"></span>
-                  <span class="dot yellow"></span>
-                  <span class="dot green"></span>
-                </div>
+        <div class="collapsible-content" :class="{ expanded: categoriesVisible }">
+          <p class="section-subtitle">
+            Professional services, beautifully organized. Start with these sectors and expand as you grow.
+          </p>
+          <div class="categories-grid">
+            <div class="category-card">
+              <img src="https://cdn-icons-png.flaticon.com/512/706/706164.png" alt="Home Services" />
+              <h3>Home Services</h3>
+              <p>Skilled experts for repairs, cleaning, and home maintenance.</p>
+              <ul class="service-list">
+                <li><i class="fas fa-check"></i> Cleaning Services</li>
+                <li><i class="fas fa-check"></i> Plumbing & Electrical</li>
+                <li><i class="fas fa-check"></i> Gardening & Landscaping</li>
+                <li><i class="fas fa-check"></i> Home Repairs</li>
+              </ul>
+            </div>
+            <div class="category-card">
+              <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Beauty Services" />
+              <h3>Beauty & Salon</h3>
+              <p>Professional stylists and beauty specialists at your service.</p>
+              <ul class="service-list">
+                <li><i class="fas fa-check"></i> Hair Styling</li>
+                <li><i class="fas fa-check"></i> Nail Care</li>
+                <li><i class="fas fa-check"></i> Skin Treatments</li>
+                <li><i class="fas fa-check"></i> Makeup Services</li>
+              </ul>
+            </div>
+            <div class="category-card">
+              <img src="https://cdn-icons-png.flaticon.com/512/3135/3135789.png" alt="Tutoring" />
+              <h3>Education & Tutoring</h3>
+              <p>Connect with experienced tutors for learning and growth.</p>
+              <ul class="service-list">
+                <li><i class="fas fa-check"></i> Academic Tutoring</li>
+                <li><i class="fas fa-check"></i> Language Lessons</li>
+                <li><i class="fas fa-check"></i> Music & Arts</li>
+                <li><i class="fas fa-check"></i> Professional Training</li>
+              </ul>
+            </div>
+            <div class="category-card">
+              <img src="https://cdn-icons-png.flaticon.com/512/2972/2972185.png" alt="Professional Services" />
+              <h3>Professional Services</h3>
+              <p>Skilled professionals for business and personal needs.</p>
+              <ul class="service-list">
+                <li><i class="fas fa-check"></i> IT Support</li>
+                <li><i class="fas fa-check"></i> Consulting</li>
+                <li><i class="fas fa-check"></i> Event Planning</li>
+                <li><i class="fas fa-check"></i> Photography</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Collapsible Benefits Section -->
+    <section class="collapsible-section benefits-collapsible">
+      <div class="container">
+        <button class="collapsible-toggle hint-animation" @click="toggleBenefits">
+          <span class="toggle-title">
+            <i class="fas fa-star"></i>
+            <span class="hint-text">Click to explore</span>
+            Why Providers Choose Infinity-Booking
+          </span>
+          <span class="toggle-icon">
+            <i class="fas" :class="benefitsVisible ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+          </span>
+        </button>
+        
+        <div class="collapsible-content" :class="{ expanded: benefitsVisible }">
+          <div class="benefits-grid">
+            <div class="benefit-card">
+              <div class="benefit-icon">
+                <i class="fas fa-chart-line"></i>
               </div>
-              <div class="preview-body">
-                <div class="metric-row">
-                  <div class="metric">
-                    <div class="metric-icon"><i class="fas fa-calendar-check"></i></div>
-                    <div class="metric-info">
-                      <div class="metric-value">24</div>
-                      <div class="metric-label">Today's Bookings</div>
+              <h3>Business Growth</h3>
+              <p>Reach new customers with powerful marketing tools and platform visibility.</p>
+            </div>
+            <div class="benefit-card">
+              <div class="benefit-icon">
+                <i class="fas fa-tools"></i>
+              </div>
+              <h3>Smart Management</h3>
+              <p>Organize schedules, track bookings, manage your business efficiently.</p>
+            </div>
+            <div class="benefit-card">
+              <div class="benefit-icon">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <h3>Secure Payments</h3>
+              <p>Instant payments via <strong>Telebirr</strong>, with PayPal and cards coming soon.</p>
+            </div>
+            <div class="benefit-card">
+              <div class="benefit-icon">
+                <i class="fas fa-mobile-alt"></i>
+              </div>
+              <h3>Mobile Access</h3>
+              <p>Manage your business on the go with our mobile-optimized platform.</p>
+            </div>
+            <div class="benefit-card">
+              <div class="benefit-icon">
+                <i class="fas fa-headset"></i>
+              </div>
+              <h3>24/7 Support</h3>
+              <p>Get help whenever you need it with our dedicated support team.</p>
+            </div>
+            <div class="benefit-card">
+              <div class="benefit-icon">
+                <i class="fas fa-star"></i>
+              </div>
+              <h3>Build Reputation</h3>
+              <p>Collect genuine reviews and build trust with our verified rating system.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Collapsible Platform Features -->
+    <section class="collapsible-section features-collapsible">
+      <div class="container">
+        <button class="collapsible-toggle hint-animation" @click="toggleFeatures">
+          <span class="toggle-title">
+            <i class="fas fa-cogs"></i>
+            <span class="hint-text">Click to explore</span>
+            Powerful Platform Features
+          </span>
+          <span class="toggle-icon">
+            <i class="fas" :class="featuresVisible ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+          </span>
+        </button>
+        
+        <div class="collapsible-content" :class="{ expanded: featuresVisible }">
+          <p class="section-subtitle">
+            Everything you need to run and grow your service business efficiently.
+          </p>
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-calendar"></i>
+              </div>
+              <h3>Smart Scheduling</h3>
+              <p>Automated calendar management with real-time availability updates.</p>
+              <ul class="feature-list">
+                <li><i class="fas fa-check"></i> Auto-sync calendars</li>
+                <li><i class="fas fa-check"></i> Buffer time management</li>
+                <li><i class="fas fa-check"></i> Recurring bookings</li>
+              </ul>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-bell"></i>
+              </div>
+              <h3>Instant Notifications</h3>
+              <p>Get alerts for new bookings, messages, and payment confirmations.</p>
+              <ul class="feature-list">
+                <li><i class="fas fa-check"></i> SMS & Email alerts</li>
+                <li><i class="fas fa-check"></i> Push notifications</li>
+                <li><i class="fas fa-check"></i> Custom alert rules</li>
+              </ul>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-chart-pie"></i>
+              </div>
+              <h3>Business Analytics</h3>
+              <p>Track performance with detailed reports and actionable insights.</p>
+              <ul class="feature-list">
+                <li><i class="fas fa-check"></i> Revenue reports</li>
+                <li><i class="fas fa-check"></i> Customer insights</li>
+                <li><i class="fas fa-check"></i> Performance trends</li>
+              </ul>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <h3>Customer Management</h3>
+              <p>Keep track of client information and complete booking history.</p>
+              <ul class="feature-list">
+                <li><i class="fas fa-check"></i> Client profiles</li>
+                <li><i class="fas fa-check"></i> Booking history</li>
+                <li><i class="fas fa-check"></i> Notes & preferences</li>
+              </ul>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-star"></i>
+              </div>
+              <h3>Review System</h3>
+              <p>Collect and showcase customer reviews to build credibility.</p>
+              <ul class="feature-list">
+                <li><i class="fas fa-check"></i> Automated review requests</li>
+                <li><i class="fas fa-check"></i> Public rating display</li>
+                <li><i class="fas fa-check"></i> Response management</li>
+              </ul>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-file-invoice-dollar"></i>
+              </div>
+              <h3>Invoicing & Payments</h3>
+              <p>Generate professional invoices and accept multiple payment methods.</p>
+              <ul class="feature-list">
+                <li><i class="fas fa-check"></i> Custom invoices</li>
+                <li><i class="fas fa-check"></i> Auto-payment reminders</li>
+                <li><i class="fas fa-check"></i> Multi-currency support</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Compact Testimonials Section -->
+    <section class="compact-testimonials">
+      <div class="container">
+        <h2 class="section-title">What Our Service Providers & Customers Say</h2>
+        <p class="section-subtitle">
+          Real stories from real people who transformed their service business.
+        </p>
+
+        <div class="testimonials-slider">
+          <button class="slider-nav prev" @click="prevTestimonials" :disabled="testimonialIndex === 0">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          
+          <div class="testimonials-viewport">
+            <div class="testimonials-track" :style="{ transform: `translateX(-${testimonialIndex * 100}%)` }">
+              <div class="testimonial-pair" v-for="(pair, pairIndex) in testimonialPairs" :key="pairIndex">
+                <div class="testimonial-item" v-for="testimonial in pair" :key="testimonial.id">
+                  <div class="testimonial-content">
+                    <div class="quote-mark">"</div>
+                    <p class="feedback">{{ testimonial.feedback }}</p>
+                  </div>
+                  <div class="testimonial-author">
+                    <img :src="testimonial.image" alt="User" class="author-avatar" />
+                    <div class="author-info">
+                      <h4>{{ testimonial.name }}</h4>
+                      <p>{{ testimonial.role }}</p>
+                      <div class="rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                      </div>
                     </div>
                   </div>
-                  <div class="metric">
-                    <div class="metric-icon"><i class="fas fa-dollar-sign"></i></div>
-                    <div class="metric-info">
-                      <div class="metric-value">$1,240</div>
-                      <div class="metric-label">Today's Revenue</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="chart-placeholder">
-                  <div class="chart-bar" style="height: 80%;"></div>
-                  <div class="chart-bar" style="height: 60%;"></div>
-                  <div class="chart-bar" style="height: 90%;"></div>
-                  <div class="chart-bar" style="height: 70%;"></div>
-                  <div class="chart-bar" style="height: 85%;"></div>
                 </div>
               </div>
             </div>
           </div>
           
-          <div class="feature-list">
-            <div class="feature-item">
-              <div class="feature-icon">
-                <i class="fas fa-calendar"></i>
-              </div>
-              <div class="feature-text">
-                <h4>Smart Scheduling</h4>
-                <p>Automated calendar management with real-time availability updates</p>
-              </div>
-            </div>
-            
-            <div class="feature-item">
-              <div class="feature-icon">
-                <i class="fas fa-bell"></i>
-              </div>
-              <div class="feature-text">
-                <h4>Instant Notifications</h4>
-                <p>Get alerts for new bookings, messages, and payment confirmations</p>
-              </div>
-            </div>
-            
-            <div class="feature-item">
-              <div class="feature-icon">
-                <i class="fas fa-chart-pie"></i>
-              </div>
-              <div class="feature-text">
-                <h4>Business Analytics</h4>
-                <p>Track your performance with detailed reports and insights</p>
-              </div>
-            </div>
-            
-            <div class="feature-item">
-              <div class="feature-icon">
-                <i class="fas fa-users"></i>
-              </div>
-              <div class="feature-text">
-                <h4>Customer Management</h4>
-                <p>Keep track of client information and booking history</p>
-              </div>
-            </div>
-            
-            <div class="feature-item">
-              <div class="feature-icon">
-                <i class="fas fa-star"></i>
-              </div>
-              <div class="feature-text">
-                <h4>Review System</h4>
-                <p>Collect and showcase customer reviews to build credibility</p>
-              </div>
-            </div>
-            
-            <div class="feature-item">
-              <div class="feature-icon">
-                <i class="fas fa-file-invoice-dollar"></i>
-              </div>
-              <div class="feature-text">
-                <h4>Invoicing & Payments</h4>
-                <p>Generate professional invoices and accept multiple payment methods</p>
-              </div>
-            </div>
-          </div>
+          <button class="slider-nav next" @click="nextTestimonials" :disabled="testimonialIndex >= testimonialPairs.length - 1">
+            <i class="fas fa-chevron-right"></i>
+          </button>
         </div>
-      </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section class="testimonials-section">
-      <h2 class="section-title">What Our Service Providers & Customers Say</h2>
-      <p class="section-subtitle">
-        Hear from providers and customers who have transformed their service experience with Infinity-Booking.
-      </p>
-
-      <div class="testimonial-slider">
-        <div class="testimonial-card" v-for="(item, index) in testimonials" :key="index">
-          <div class="quote">"</div>
-          <p class="feedback">{{ item.feedback }}</p>
-          <div class="user-info">
-            <img :src="item.image" alt="user photo" />
-            <div>
-              <h4>{{ item.name }}</h4>
-              <p>{{ item.role }}</p>
-              <div class="rating">
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-                <i class="fas fa-star"></i>
-              </div>
-            </div>
-          </div>
+        
+        <div class="testimonial-dots">
+          <span 
+            v-for="i in testimonialPairs.length" 
+            :key="i" 
+            class="dot" 
+            :class="{ active: testimonialIndex === i-1 }"
+            @click="testimonialIndex = i-1"
+          ></span>
         </div>
-      </div>
-      
-      <div class="testimonial-navigation">
-        <button class="nav-btn prev" @click="prevTestimonial">
-          <i class="fas fa-chevron-left"></i>
-        </button>
-        <button class="nav-btn next" @click="nextTestimonial">
-          <i class="fas fa-chevron-right"></i>
-        </button>
       </div>
     </section>
 
@@ -447,29 +500,32 @@
       <div class="container">
         <h2>Ready to Grow Your Service Business?</h2>
         <p>
-          Join thousands of successful providers who trust Infinity-Booking to power their business growth.
-          Start your journey today — it's free to begin.
+          Join thousands of successful providers. Start your journey today — it's free to begin.
         </p>
         <div class="cta-buttons">
           <router-link to="/register" class="cta-btn primary">
-            <i class="fas fa-user-plus"></i> Start Free Account
+            <i class="fas fa-rocket"></i> Start Free Now
           </router-link>
           <router-link to="/login" class="cta-btn secondary">
-            <i class="fas fa-sign-in-alt"></i> Login to Dashboard
+            <i class="fas fa-play-circle"></i> See Live Demo
           </router-link>
         </div>
-        <div class="cta-features">
-          <div class="feature">
-            <i class="fas fa-check-circle"></i>
+        <div class="cta-highlights">
+          <div class="highlight-item">
+            <i class="fas fa-bolt"></i>
+            <span>Setup in 10 minutes</span>
+          </div>
+          <div class="highlight-item">
+            <i class="fas fa-user-friends"></i>
             <span>No credit card required</span>
           </div>
-          <div class="feature">
-            <i class="fas fa-check-circle"></i>
-            <span>Free forever plan available</span>
+          <div class="highlight-item">
+            <i class="fas fa-mobile-alt"></i>
+            <span>Mobile-ready platform</span>
           </div>
-          <div class="feature">
-            <i class="fas fa-check-circle"></i>
-            <span>Setup in under 10 minutes</span>
+          <div class="highlight-item">
+            <i class="fas fa-headset"></i>
+            <span>24/7 support</span>
           </div>
         </div>
       </div>
@@ -478,69 +534,104 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, computed } from 'vue'
 
-const router = useRouter()
-
-const testimonials = [
+// Testimonials data
+const testimonials = ref([
   {
+    id: 1,
     name: 'Sophia L.',
     role: 'Home Service Provider',
     feedback: 'Infinity-Booking helped me reach hundreds of customers without any marketing hassle. The platform feels modern, easy, and powerful.',
     image: 'https://randomuser.me/api/portraits/women/68.jpg',
   },
   {
+    id: 2,
     name: 'Michael B.',
     role: 'Salon Owner',
     feedback: 'I love how simple it is to manage bookings and payments! My clients now book me directly — it has boosted my business visibility.',
     image: 'https://randomuser.me/api/portraits/men/64.jpg',
   },
   {
+    id: 3,
     name: 'Sara T.',
     role: 'Tutor & Educator',
     feedback: 'The system made it so easy for me to offer online and in-person sessions. Infinity-Booking really connects us with learners everywhere!',
     image: 'https://randomuser.me/api/portraits/women/65.jpg',
   },
   {
+    id: 4,
     name: 'Daniel K.',
     role: 'Customer',
     feedback: 'Booking home and beauty services has never been smoother. I appreciate the trust and quality providers I can find here.',
     image: 'https://randomuser.me/api/portraits/men/56.jpg',
   },
   {
+    id: 5,
     name: 'Jessica M.',
     role: 'Beauty Specialist',
     feedback: 'My bookings increased by 300% in just two months. The platform handles everything from scheduling to payments perfectly.',
     image: 'https://randomuser.me/api/portraits/women/44.jpg',
   },
   {
+    id: 6,
     name: 'Robert K.',
     role: 'IT Consultant',
     feedback: 'As a professional service provider, I needed a platform that understood my business needs. Infinity-Booking delivered beyond expectations.',
     image: 'https://randomuser.me/api/portraits/men/32.jpg',
   }
-]
+])
 
-// New variables for hero enhancements
+// Group testimonials into pairs of 2
+const testimonialPairs = computed(() => {
+  const pairs = []
+  for (let i = 0; i < testimonials.value.length; i += 2) {
+    pairs.push(testimonials.value.slice(i, i + 2))
+  }
+  return pairs
+})
+
+const testimonialIndex = ref(0)
+const benefitsVisible = ref(false)
+const categoriesVisible = ref(false)
+const featuresVisible = ref(false)
+
+// Navigation for testimonials
+const nextTestimonials = () => {
+  if (testimonialIndex.value < testimonialPairs.value.length - 1) {
+    testimonialIndex.value++
+  }
+}
+
+const prevTestimonials = () => {
+  if (testimonialIndex.value > 0) {
+    testimonialIndex.value--
+  }
+}
+
+// Toggle functions
+const toggleBenefits = () => {
+  benefitsVisible.value = !benefitsVisible.value
+}
+
+const toggleCategories = () => {
+  categoriesVisible.value = !categoriesVisible.value
+}
+
+const toggleFeatures = () => {
+  featuresVisible.value = !featuresVisible.value
+}
+
+// Hero section variables
 const activeTestimonialSlide = ref(0)
 const liveBookingCount = ref(0)
 const bookingProgress = ref(75)
 
-const nextTestimonial = () => {
-  currentTestimonial.value = (currentTestimonial.value + 1) % testimonials.length
-}
-
-const prevTestimonial = () => {
-  currentTestimonial.value = currentTestimonial.value === 0 ? testimonials.length - 1 : currentTestimonial.value - 1
-}
-
-// New methods for hero enhancements
+// Hero section methods
 const nextTestimonialSlide = () => {
   activeTestimonialSlide.value = (activeTestimonialSlide.value + 1) % 2
 }
 
-// Enhanced hero section animations
 const particleStyle = (index) => {
   const size = Math.random() * 4 + 1
   const left = Math.random() * 100
@@ -557,11 +648,6 @@ const particleStyle = (index) => {
 }
 
 onMounted(() => {
-  // Setup testimonial auto-slide
-  setInterval(() => {
-    nextTestimonial()
-  }, 5000)
-  
   // Text rotation for hero section
   const rotatingText = document.querySelector('.text-rotating')
   if (rotatingText) {
@@ -588,6 +674,15 @@ onMounted(() => {
       clearInterval(counterInterval)
     }
   }, 50)
+  
+  // Auto rotate testimonials every 5 seconds
+  setInterval(() => {
+    if (testimonialIndex.value < testimonialPairs.value.length - 1) {
+      testimonialIndex.value++
+    } else {
+      testimonialIndex.value = 0
+    }
+  }, 5000)
 })
 </script>
 
@@ -701,7 +796,7 @@ onMounted(() => {
   font-size: 3.5rem;
   font-weight: 800;
   line-height: 1.1;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .title-line-1 {
@@ -740,17 +835,51 @@ onMounted(() => {
   transform: translateY(0);
 }
 
-/* Hero Subtitle */
-.hero-premium-subtitle {
-  font-size: 1.25rem;
-  line-height: 1.7;
-  opacity: 0.9;
+/* Improved Value Proposition */
+.improved-proposition {
   margin-bottom: 2.5rem;
 }
 
-.hero-premium-subtitle strong {
-  color: #818cf8;
-  font-weight: 600;
+.proposition-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.proposition-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.proposition-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(5px);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.proposition-item i {
+  color: #6366f1;
+  font-size: 1.5rem;
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+}
+
+.proposition-item h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.25rem;
+}
+
+.proposition-item p {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
 }
 
 /* Hero Actions */
@@ -811,24 +940,22 @@ onMounted(() => {
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-.secondary-actions {
+.value-highlights {
   display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.action-link {
+.highlight {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
   font-size: 0.875rem;
-  transition: color 0.3s ease;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.action-link:hover {
-  color: white;
+.highlight i {
+  color: #10b981;
 }
 
 /* Provider Testimonials Carousel */
@@ -1171,150 +1298,190 @@ onMounted(() => {
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* ========== RESPONSIVE DESIGN FOR HERO SECTION ========== */
+/* ========== COLLAPSIBLE SECTIONS ========== */
 
-@media (max-width: 1200px) {
-  .hero-premium-content {
-    grid-template-columns: 1fr;
-    text-align: center;
-    gap: 3rem;
-  }
-  
-  .hero-premium-text {
-    max-width: 100%;
-  }
-  
-  .preview-container {
-    transform: none !important;
-    max-width: 600px;
-    margin: 0 auto;
-  }
+.collapsible-section {
+  padding: 50px 20px;
+  background: white;
 }
 
-@media (max-width: 768px) {
-  .hero-premium-title {
-    font-size: 2.5rem;
-  }
-  
-  .hero-premium-subtitle {
-    font-size: 1.125rem;
-  }
-  
-  .hero-premium-content {
-    padding: 2rem 0;
-  }
-  
-  .cta-buttons-row {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .hero-premium-cta {
-    width: 100%;
-    max-width: 300px;
-    justify-content: center;
-  }
-  
-  .secondary-actions {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-  
-  .trust-badges {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .quick-stats {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-premium-title {
-    font-size: 2rem;
-  }
-  
-  .hero-premium-subtitle {
-    font-size: 1rem;
-  }
-  
-  .provider-testimonials {
-    padding: 1rem;
-  }
-  
-  .notification-item {
-    flex-direction: column;
-    text-align: center;
-    gap: 0.5rem;
-  }
-  
-  .notification-details {
-    text-align: center;
-  }
-  
-  .categories-tags {
-    justify-content: center;
-  }
-  
-  .preview-container {
-    margin: 0 -10px;
-    border-radius: 1rem 1rem 0 0;
-  }
-}
-
-/* Touch-friendly adjustments */
-@media (hover: none) and (pointer: coarse) {
-  .hero-premium-cta,
-  .action-link,
-  .carousel-dots .dot {
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .hero-premium-cta {
-    padding: 1.25rem 2rem;
-  }
-  
-  .notification-item {
-    min-height: 60px;
-  }
-}
-
-/* ========== EXISTING SECTIONS STYLES ========== */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-.home {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  color: #1e293b;
-  overflow-x: hidden;
-  background: #ffffff;
-}
-
-/* Categories Section */
-.categories-section {
-  padding: 100px 20px;
+.categories-collapsible {
   background: #f8fafc;
 }
 
-.section-title {
-  font-size: 2.2rem;
-  font-weight: 800;
+.benefits-collapsible {
+  background: white;
+}
+
+.features-collapsible {
+  background: #f8fafc;
+}
+
+.collapsible-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 30px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 1.3rem;
+  font-weight: 700;
   color: #1e293b;
-  text-align: center;
-  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.categories-collapsible .collapsible-toggle {
+  background: #ffffff;
+  border-color: #dbeafe;
+  border-width: 3px;
+}
+
+.benefits-collapsible .collapsible-toggle {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.features-collapsible .collapsible-toggle {
+  background: #ffffff;
+  border-color: #fef3c7;
+  border-width: 3px;
+}
+
+.hint-animation {
+  animation: hintPulse 2s infinite;
+}
+
+.hint-animation:hover {
+  animation: none;
+}
+
+@keyframes hintPulse {
+  0%, 100% {
+    border-color: #e2e8f0;
+    transform: translateY(0);
+  }
+  50% {
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15);
+  }
+}
+
+.categories-collapsible .hint-animation {
+  animation: hintPulseBlue 2s infinite;
+}
+
+@keyframes hintPulseBlue {
+  0%, 100% {
+    border-color: #dbeafe;
+    transform: translateY(0);
+  }
+  50% {
+    border-color: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(29, 78, 216, 0.15);
+  }
+}
+
+.features-collapsible .hint-animation {
+  animation: hintPulseYellow 2s infinite;
+}
+
+@keyframes hintPulseYellow {
+  0%, 100% {
+    border-color: #fef3c7;
+    transform: translateY(0);
+  }
+  50% {
+    border-color: #f59e0b;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.15);
+  }
+}
+
+.collapsible-toggle:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(59, 130, 246, 0.15);
+}
+
+.toggle-title {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  position: relative;
+}
+
+.toggle-title i {
+  color: #6366f6;
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.features-collapsible .toggle-title i {
+  color: #f59e0b;
+}
+
+.collapsible-toggle:hover .toggle-title i {
+  transform: scale(1.2) rotate(5deg);
+}
+
+.hint-text {
+  position: absolute;
+  top: -25px;
+  left: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #3b82f6;
+  background: #dbeafe;
+  padding: 4px 10px;
+  border-radius: 20px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.features-collapsible .hint-text {
+  color: #d97706;
+  background: #fef3c7;
+}
+
+.collapsible-toggle:hover .hint-text {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toggle-icon i {
+  color: #64748b;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+
+.collapsible-toggle:hover .toggle-icon i {
+  color: #3b82f6;
+  transform: scale(1.2);
+}
+
+.collapsible-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.collapsible-content.expanded {
+  max-height: 3000px;
+  margin-top: 30px;
 }
 
 .section-subtitle {
@@ -1326,12 +1493,14 @@ html {
   line-height: 1.6;
 }
 
+/* ========== CATEGORIES GRID ========== */
+
 .categories-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 30px;
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 30px auto 0;
 }
 
 .category-card {
@@ -1341,6 +1510,20 @@ html {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   border: 1px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+}
+
+.category-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
 }
 
 .category-card:hover {
@@ -1349,11 +1532,20 @@ html {
   border-color: #3b82f6;
 }
 
+.category-card:hover::before {
+  transform: translateY(0);
+}
+
 .category-card img {
   width: 80px;
   height: 80px;
   margin-bottom: 20px;
   object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.category-card:hover img {
+  transform: scale(1.1) rotate(5deg);
 }
 
 .category-card h3 {
@@ -1382,25 +1574,32 @@ html {
   display: flex;
   align-items: center;
   gap: 10px;
+  transition: transform 0.2s ease;
+}
+
+.service-list li:hover {
+  transform: translateX(5px);
+  color: #3b82f6;
 }
 
 .service-list li i {
   color: #10b981;
   font-size: 0.9rem;
+  transition: transform 0.2s ease;
 }
 
-/* Benefits Section */
-.benefits-section {
-  padding: 100px 20px;
-  background: white;
+.service-list li:hover i {
+  transform: scale(1.2);
+  color: #059669;
 }
+
+/* ========== BENEFITS GRID ========== */
 
 .benefits-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 30px;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 20px 0;
 }
 
 .benefit-card {
@@ -1409,11 +1608,29 @@ html {
   padding: 30px;
   border: 1px solid #e2e8f0;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.benefit-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
 }
 
 .benefit-card:hover {
   border-color: #3b82f6;
   transform: translateY(-5px);
+}
+
+.benefit-card:hover::before {
+  transform: translateY(0);
 }
 
 .benefit-icon {
@@ -1427,6 +1644,12 @@ html {
   margin-bottom: 20px;
   color: #1d4ed8;
   font-size: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.benefit-card:hover .benefit-icon {
+  transform: scale(1.1) rotate(5deg);
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
 }
 
 .benefit-card h3 {
@@ -1442,239 +1665,136 @@ html {
   line-height: 1.6;
 }
 
-/* Features Section */
-.features-section {
-  padding: 100px 0;
-  background: #f8fafc;
-}
+/* ========== FEATURES GRID ========== */
 
-.features-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 60px;
-  align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.feature-image {
-  padding: 20px;
-}
-
-.dashboard-preview {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-}
-
-.preview-header {
-  margin-bottom: 20px;
-}
-
-.preview-dots {
-  display: flex;
-  gap: 8px;
-}
-
-.dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-}
-
-.dot.red { background: #ef4444; }
-.dot.yellow { background: #f59e0b; }
-.dot.green { background: #10b981; }
-
-.preview-body {
-  padding: 10px;
-}
-
-.metric-row {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.metric {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 15px;
-  background: #f8fafc;
-  border-radius: 12px;
-}
-
-.metric-icon {
-  width: 40px;
-  height: 40px;
-  background: #3b82f6;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.2rem;
-}
-
-.metric-info {
-  flex: 1;
-}
-
-.metric-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1e293b;
-}
-
-.metric-label {
-  font-size: 0.9rem;
-  color: #64748b;
-}
-
-.chart-placeholder {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  height: 150px;
-  padding: 20px;
-  background: #f8fafc;
-  border-radius: 12px;
-}
-
-.chart-bar {
-  flex: 1;
-  background: linear-gradient(to top, #3b82f6, #60a5fa);
-  border-radius: 6px 6px 0 0;
-  min-height: 10px;
-}
-
-.feature-list {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-.feature-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-}
-
-.feature-icon {
-  width: 50px;
-  height: 50px;
-  background: #dbeafe;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #1d4ed8;
-  font-size: 1.3rem;
-  flex-shrink: 0;
-}
-
-.feature-text h4 {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 8px;
-}
-
-.feature-text p {
-  font-size: 1rem;
-  color: #64748b;
-  line-height: 1.6;
-}
-
-/* Testimonials Section */
-.testimonials-section {
-  padding: 100px 20px;
-  background: white;
-  position: relative;
-}
-
-.testimonial-slider {
+.features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 30px;
-  max-width: 1200px;
-  margin: 50px auto;
+  padding: 20px 0;
 }
 
-.testimonial-card {
-  background: #f8fafc;
-  border-radius: 20px;
+.feature-card {
+  background: white;
+  border-radius: 16px;
   padding: 30px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-  transition: transform 0.4s ease, box-shadow 0.4s ease;
   border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.testimonial-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
 }
 
-.quote {
-  font-size: 3.5rem;
-  color: #3b82f6;
-  opacity: 0.2;
-  line-height: 1;
-  margin-bottom: -15px;
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  border-color: #3b82f6;
 }
 
-.feedback {
-  font-size: 1.05rem;
-  color: #475569;
-  line-height: 1.7;
-  margin-bottom: 25px;
-  font-style: italic;
+.feature-card:hover::before {
+  transform: translateY(0);
 }
 
-.user-info {
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  background: #fef3c7;
+  border-radius: 12px;
   display: flex;
   align-items: center;
-  gap: 15px;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: #d97706;
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
 }
 
-.user-info img {
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #3b82f6;
+.feature-card:hover .feature-icon {
+  transform: scale(1.1) rotate(5deg);
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
 }
 
-.user-info h4 {
-  font-size: 1.1rem;
+.feature-card h3 {
+  font-size: 1.3rem;
   font-weight: 700;
   color: #1e293b;
-  margin-bottom: 5px;
+  margin-bottom: 15px;
 }
 
-.user-info p {
+.feature-card > p {
+  font-size: 1rem;
   color: #64748b;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.feature-list {
+  list-style: none;
+  text-align: left;
+}
+
+.feature-list li {
   font-size: 0.95rem;
-  margin-bottom: 5px;
-}
-
-.rating {
-  color: #fbbf24;
-  font-size: 0.9rem;
-}
-
-.testimonial-navigation {
+  color: #475569;
+  margin-bottom: 8px;
   display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 40px;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.2s ease;
 }
 
-.nav-btn {
+.feature-list li:hover {
+  transform: translateX(5px);
+  color: #3b82f6;
+}
+
+.feature-list li i {
+  color: #10b981;
+  font-size: 0.9rem;
+  transition: transform 0.2s ease;
+}
+
+.feature-list li:hover i {
+  transform: scale(1.2);
+  color: #059669;
+}
+
+/* ========== COMPACT TESTIMONIALS ========== */
+
+.compact-testimonials {
+  padding: 100px 20px;
+  background: white;
+}
+
+.section-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #1e293b;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.testimonials-slider {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  max-width: 1000px;
+  margin: 50px auto;
+  position: relative;
+}
+
+.slider-nav {
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -1687,15 +1807,153 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
-.nav-btn:hover {
+.slider-nav:hover:not(:disabled) {
   border-color: #3b82f6;
+  background: #3b82f6;
+  color: white;
+  transform: scale(1.1);
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+}
+
+.slider-nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.testimonials-viewport {
+  flex: 1;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.testimonials-track {
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.testimonial-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  min-width: 100%;
+  padding: 20px;
+}
+
+.testimonial-item {
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+  border: 1px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+}
+
+.testimonial-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+}
+
+.testimonial-item:hover {
+  transform: translateY(-5px);
+}
+
+.testimonial-item:hover::before {
+  transform: translateY(0);
+}
+
+.quote-mark {
+  font-size: 3.5rem;
   color: #3b82f6;
+  opacity: 0.2;
+  line-height: 1;
+  margin-bottom: -15px;
+}
+
+.testimonial-item .feedback {
+  font-size: 1.05rem;
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 25px;
+  font-style: italic;
+}
+
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.author-avatar {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #3b82f6;
+  transition: transform 0.3s ease;
+}
+
+.testimonial-item:hover .author-avatar {
   transform: scale(1.1);
 }
 
-/* CTA Section */
+.author-info h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 5px;
+}
+
+.author-info p {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-bottom: 5px;
+}
+
+.rating {
+  color: #fbbf24;
+  font-size: 0.9rem;
+}
+
+.testimonial-dots {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 40px;
+}
+
+.testimonial-dots .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.testimonial-dots .dot.active {
+  background: #3b82f6;
+  transform: scale(1.2);
+}
+
+.testimonial-dots .dot:hover {
+  background: #3b82f6;
+  transform: scale(1.2);
+}
+
+/* ========== CTA SECTION ========== */
+
 .cta-section {
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   color: white;
@@ -1761,44 +2019,107 @@ html {
   transform: translateY(-3px);
 }
 
-.cta-features {
+.cta-highlights {
   display: flex;
   justify-content: center;
-  gap: 30px;
+  gap: 40px;
   flex-wrap: wrap;
   margin-top: 30px;
 }
 
-.feature {
+.highlight-item {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
   font-size: 0.95rem;
   opacity: 0.9;
+  text-align: center;
+  min-width: 120px;
 }
 
-.feature i {
+.highlight-item i {
   color: #ffcc00;
+  font-size: 1.5rem;
+  margin-bottom: 5px;
 }
 
-/* ========== RESPONSIVE DESIGN FOR ALL SECTIONS ========== */
+/* ========== RESPONSIVE DESIGN ========== */
+
+@media (max-width: 1200px) {
+  .hero-premium-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 3rem;
+  }
+  
+  .hero-premium-text {
+    max-width: 100%;
+  }
+  
+  .preview-container {
+    transform: none !important;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
 
 @media (max-width: 1024px) {
-  .features-content {
+  .testimonial-pair {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 20px;
   }
   
-  .feature-image {
-    order: 2;
+  .testimonials-slider {
+    max-width: 500px;
   }
   
-  .feature-list {
-    order: 1;
+  .features-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  
+  .hint-text {
+    display: none;
+  }
+  
+  .cta-highlights {
+    gap: 30px;
   }
 }
 
 @media (max-width: 768px) {
+  .hero-premium-title {
+    font-size: 2.5rem;
+  }
+  
+  .hero-premium-content {
+    padding: 2rem 0;
+  }
+  
+  .cta-buttons-row {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .hero-premium-cta {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+  
+  .proposition-item {
+    text-align: left;
+  }
+  
+  .trust-badges {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .quick-stats {
+    grid-template-columns: 1fr;
+  }
+  
   .section-title {
     font-size: 1.8rem;
   }
@@ -1810,10 +2131,14 @@ html {
   
   .categories-grid,
   .benefits-grid,
-  .testimonial-slider {
+  .features-grid {
     grid-template-columns: 1fr;
     max-width: 500px;
     margin: 0 auto;
+  }
+  
+  .testimonial-pair {
+    grid-template-columns: 1fr;
   }
   
   .cta-buttons {
@@ -1826,35 +2151,63 @@ html {
     max-width: 300px;
   }
   
-  .cta-features {
+  .cta-highlights {
     flex-direction: column;
     gap: 15px;
   }
   
-  .metric-row {
-    flex-direction: column;
+  .collapsible-toggle {
+    font-size: 1.1rem;
+    padding: 15px 20px;
   }
   
-  .feature-item {
-    flex-direction: column;
-    text-align: center;
-    gap: 15px;
+  .toggle-title i {
+    font-size: 1.2rem;
   }
   
-  .feature-icon {
-    margin: 0 auto;
+  .slider-nav {
+    display: none;
   }
   
-  .service-list {
-    text-align: center;
+  .testimonials-viewport {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
   }
   
-  .service-list li {
-    justify-content: center;
+  .testimonials-track {
+    display: flex;
+  }
+  
+  .testimonial-pair {
+    min-width: 100%;
+    scroll-snap-align: start;
   }
 }
 
 @media (max-width: 480px) {
+  .hero-premium-title {
+    font-size: 2rem;
+  }
+  
+  .provider-testimonials {
+    padding: 1rem;
+  }
+  
+  .notification-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .notification-details {
+    text-align: center;
+  }
+  
+  .preview-container {
+    margin: 0 -10px;
+    border-radius: 1rem 1rem 0 0;
+  }
+  
   .section-title {
     font-size: 1.6rem;
   }
@@ -1869,44 +2222,68 @@ html {
   
   .benefit-card,
   .category-card,
-  .testimonial-card {
+  .feature-card,
+  .testimonial-item {
     padding: 20px;
   }
   
-  .user-info {
+  .testimonial-author {
     flex-direction: column;
     text-align: center;
   }
   
-  .user-info img {
+  .author-avatar {
     margin-bottom: 10px;
   }
   
-  .categories-section,
-  .benefits-section,
-  .features-section,
-  .testimonials-section,
+  .collapsible-section,
+  .compact-testimonials,
   .cta-section {
     padding: 60px 15px;
   }
+  
+  .collapsible-toggle {
+    font-size: 1rem;
+    padding: 12px 15px;
+  }
+  
+  .toggle-title {
+    gap: 10px;
+  }
+  
+  .toggle-title i {
+    font-size: 1rem;
+  }
 }
 
-/* Mobile Navigation for testimonials */
-@media (max-width: 640px) {
-  .testimonial-slider {
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    grid-template-columns: repeat(3, 300px);
-    padding-bottom: 20px;
+/* Touch-friendly adjustments */
+@media (hover: none) and (pointer: coarse) {
+  .hero-premium-cta,
+  .action-link,
+  .carousel-dots .dot,
+  .slider-nav,
+  .testimonial-dots .dot,
+  .collapsible-toggle {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
-  .testimonial-card {
-    scroll-snap-align: center;
-    min-width: 280px;
+  .hero-premium-cta {
+    padding: 1.25rem 2rem;
   }
   
-  .testimonial-navigation {
-    display: none;
+  .notification-item {
+    min-height: 60px;
+  }
+  
+  .collapsible-toggle {
+    min-height: 60px;
+  }
+  
+  .hint-animation {
+    animation: none;
   }
 }
 
@@ -1923,13 +2300,18 @@ html {
     display: none;
   }
   
-  .btn, .cta-btn, .nav-btn, .hero-premium-cta {
+  .btn, .cta-btn, .slider-nav, .hero-premium-cta, .collapsible-toggle {
     display: none !important;
   }
   
   .preview-container {
     box-shadow: none !important;
     border: 1px solid #ddd !important;
+  }
+  
+  .collapsible-content {
+    max-height: none !important;
+    display: block !important;
   }
 }
 </style>

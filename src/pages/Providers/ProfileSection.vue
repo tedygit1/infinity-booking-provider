@@ -1,4 +1,3 @@
-<!-- src/pages/Providers/ProfileSection.vue - FULLY RESPONSIVE -->
 <template>
   <div class="profile-section">
     <!-- Enhanced Header with Visual Effects -->
@@ -87,7 +86,11 @@
                   :disabled="!editMode" 
                   class="form-input"
                   placeholder="Enter your full name"
-                  :class="{ error: !fullname?.trim() && editMode }"
+                  :class="{ 
+                    'editable-field': editMode,
+                    'disabled-field': !editMode,
+                    'error': !fullname?.trim() && editMode 
+                  }"
                 />
                 <div v-if="!fullname?.trim() && editMode" class="error-message">
                   Full name is required
@@ -99,7 +102,12 @@
                   <i class="fa-solid fa-envelope"></i>
                   Email Address
                 </label>
-                <input v-model="email" disabled class="form-input" />
+                <input 
+                  v-model="email" 
+                  disabled 
+                  class="form-input disabled-field" 
+                  :class="{ 'non-editable-field': true }"
+                />
                 <div class="field-note">Email cannot be changed</div>
               </div>
 
@@ -110,10 +118,12 @@
                 </label>
                 <input 
                   v-model="phonenumber" 
-                  :disabled="!editMode" 
-                  class="form-input"
+                  disabled 
+                  class="form-input disabled-field"
+                  :class="{ 'non-editable-field': true }"
                   placeholder="+1 (555) 123-4567"
                 />
+                <div class="field-note">Contact support to change phone number</div>
               </div>
 
               <div class="form-group">
@@ -125,6 +135,10 @@
                   v-model="location" 
                   :disabled="!editMode" 
                   class="form-input"
+                  :class="{ 
+                    'editable-field': editMode,
+                    'disabled-field': !editMode 
+                  }"
                   placeholder="Your city and country"
                 />
               </div>
@@ -138,6 +152,10 @@
                   v-model="FIN" 
                   :disabled="!editMode" 
                   class="form-input"
+                  :class="{ 
+                    'editable-field': editMode,
+                    'disabled-field': !editMode 
+                  }"
                   placeholder="Your financial identification number"
                 />
               </div>
@@ -151,6 +169,10 @@
                   v-model="workExperience" 
                   :disabled="!editMode" 
                   class="form-textarea"
+                  :class="{ 
+                    'editable-field': editMode,
+                    'disabled-field': !editMode 
+                  }"
                   rows="4"
                   placeholder="Describe your professional experience, skills, and expertise..."
                 ></textarea>
@@ -390,12 +412,12 @@ export default {
       try {
         const payload = {
           fullname: this.fullname.trim(),
-          phonenumber: this.phonenumber?.trim(),
           location: this.location?.trim(),
           FIN: this.FIN?.trim(),
           workExperience: this.workExperience?.trim()
         };
 
+        // Note: Phone number removed from payload since it's not editable
         await http.patch(`/users/${providerId}`, payload);
 
         this.showToast('Profile updated successfully!', 'success');
@@ -666,7 +688,7 @@ export default {
 .edit-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(222, 225, 231, 0.8), rgba(130, 148, 223, 0.8));
+  background: linear-gradient(135deg, rgba(219, 220, 222, 0.8), rgba(230, 231, 236, 0.8));
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -791,7 +813,7 @@ export default {
   }
 }
 
-/* Form Styles */
+/* Form Styles - ENHANCED FOR BETTER VISIBILITY */
 .form-grid {
   display: flex;
   flex-direction: column;
@@ -830,24 +852,25 @@ export default {
   color: #ef4444;
 }
 
+/* ===== FIXED: ENHANCED FIELD STYLES ===== */
 .form-input,
 .form-textarea {
-  padding: 12px 14px;
+  padding: 14px 16px;
   border: 2px solid #e5e7eb;
   border-radius: 12px;
-  font-size: 0.95rem;
+  font-size: 1rem;
   transition: all 0.3s ease;
-  background: #f7f7f9;
   font-family: inherit;
   width: 100%;
   box-sizing: border-box;
+  color: #1f2937;
 }
 
 @media (max-width: 480px) {
   .form-input,
   .form-textarea {
-    padding: 10px 12px;
-    font-size: 0.9rem;
+    padding: 12px 14px;
+    font-size: 0.95rem;
   }
 
   .form-label {
@@ -855,25 +878,54 @@ export default {
   }
 }
 
-.form-input:focus,
-.form-textarea:focus {
+/* Editable fields (when edit mode is ON) */
+.editable-field {
+  background: #ffffff !important;
+  border-color: #d1d5db !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.editable-field:focus {
   outline: none;
-  border-color: #3b82f6;
-  background: rgb(43, 40, 54);
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6 !important;
+  background: #f8fafc !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), 
+              inset 0 2px 4px rgba(0, 0, 0, 0.05) !important;
   transform: translateY(-1px);
 }
 
-.form-input:disabled,
-.form-textarea:disabled {
-  background: #f8fafc;
-  color: #a6adb6;
+/* Disabled fields (when edit mode is OFF) */
+.disabled-field {
+  background: #f3f4f6 !important;
+  border-color: #e5e7eb !important;
+  color: #6b7280 !important;
   cursor: not-allowed;
+  box-shadow: none !important;
+}
+
+/* Non-editable fields (permanently disabled like email and phone) */
+.non-editable-field {
+  background: #f9fafb !important;
+  border-color: #d1d5db !important;
+  color: #4b5563 !important;
+  cursor: not-allowed;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+.non-editable-field::before {
+  content: "🔒";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  opacity: 0.6;
 }
 
 .form-input.error {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
 }
 
 .error-message {
@@ -884,7 +936,7 @@ export default {
 }
 
 .field-note {
-  color: #294782;
+  color: #6b7280;
   font-size: 0.8rem;
   margin-top: 6px;
   font-style: italic;
@@ -892,7 +944,8 @@ export default {
 
 .form-textarea {
   resize: vertical;
-  min-height: 100px;
+  min-height: 120px;
+  line-height: 1.5;
 }
 
 /* Save Button */
@@ -1157,5 +1210,37 @@ export default {
   .subtitle {
     font-size: 1rem;
   }
+}
+
+/* Visual indicator for editable status */
+.form-group:hover .form-label {
+  color: #3b82f6;
+  transition: color 0.3s ease;
+}
+
+.form-group:hover .form-input.editable-field,
+.form-group:hover .form-textarea.editable-field {
+  border-color: #9ca3af;
+}
+
+/* Clear distinction between field states */
+.disabled-field,
+.non-editable-field {
+  position: relative;
+  padding-right: 40px !important;
+}
+
+.disabled-field::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236b7280'%3E%3Cpath d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.5;
 }
 </style>

@@ -609,6 +609,10 @@ export default {
       // Banner Preview State
       showBannerPreview: false,
       previewBannerUrl: '',
+      
+      // ===== NEW: Customer Profile Storage =====
+      customerProfiles: {}, // Store customer profiles by CID
+      loadingCustomerProfiles: {}, // Track loading states
     };
   },
   computed: {
@@ -1283,6 +1287,79 @@ export default {
       }
     },
 
+    // ===== CUSTOMER PROFILE METHODS =====
+    async fetchCustomerProfile(customerId) {
+      if (!customerId) {
+        console.warn('No customer ID provided');
+        return null;
+      }
+      
+      // Check if already loaded
+      if (this.customerProfiles[customerId]) {
+        return this.customerProfiles[customerId];
+      }
+      
+      // Check if already loading
+      if (this.loadingCustomerProfiles[customerId]) {
+        // Wait for existing request to complete
+        return new Promise((resolve) => {
+          const interval = setInterval(() => {
+            if (this.customerProfiles[customerId]) {
+              clearInterval(interval);
+              resolve(this.customerProfiles[customerId]);
+            } else if (!this.loadingCustomerProfiles[customerId]) {
+              // Request failed or was cancelled
+              clearInterval(interval);
+              resolve(null);
+            }
+          }, 100);
+        });
+      }
+      
+      // Set loading state
+      this.loadingCustomerProfiles[customerId] = true;
+      
+      try {
+        // Use the exact endpoint you provided
+        const endpoint = `/users/customers/by-cid/${customerId}`;
+        console.log(`📞 Fetching customer profile for ID: ${customerId} from ${endpoint}`);
+        const response = await http.get(endpoint);
+        const customerData = response.data;
+        
+        // Debug: Log the customer data we received
+        console.log('✅ Customer data received:', customerData);
+        
+        // Store the customer profile with proper structure
+        this.customerProfiles[customerId] = {
+          _id: customerId,
+          name: customerData.fullname || customerData.name || 'Anonymous Customer',
+          email: customerData.email || 'Email not available',
+          phone: customerData.phonenumber || customerData.phone || customerData.mobile || 'Phone not available',
+          location: customerData.address || customerData.location || 'Location not specified',
+          profilePhoto: customerData.profilePhoto || customerData.avatar || customerData.picture,
+          // Add other fields as needed
+        };
+        
+        return this.customerProfiles[customerId];
+      } catch (error) {
+        console.error(`Failed to fetch customer profile for ${customerId}:`, error);
+        
+        // Create a fallback profile
+        this.customerProfiles[customerId] = {
+          _id: customerId,
+          name: 'Anonymous Customer',
+          email: 'Email not available',
+          phone: 'Phone not available',
+          location: 'Location not specified',
+          profilePhoto: null,
+        };
+        
+        return this.customerProfiles[customerId];
+      } finally {
+        this.loadingCustomerProfiles[customerId] = false;
+      }
+    },
+    
     // ===== REVIEWS METHODS =====
     async loadAllReviews() {
       try {
@@ -1307,6 +1384,7 @@ export default {
     
     async loadServiceReviews(serviceId) {
       try {
+        console.log(`📋 Loading reviews for service ID: ${serviceId}`);
         const endpoint = `/reviews/service/${serviceId}`;
         const response = await http.get(endpoint);
         const data = response.data;
@@ -1320,14 +1398,73 @@ export default {
           reviews = data.data;
         }
         
-        const processedReviews = reviews.map(review => ({
-          _id: review._id || review.id || Math.random().toString(36).substr(2, 9),
-          reviewerName: review.customerName || review.reviewerName || review.user?.name || review.customer?.name || 'Anonymous',
-          reviewerEmail: review.customerEmail || review.reviewerEmail || review.user?.email || review.customer?.email,
-          rating: review.rating || 0,
-          message: review.review || review.message || review.comment || review.content || '',
-          createdAt: review.createdAt || review.date || review.timestamp || new Date().toISOString(),
-          reply: review.reply || review.response || ''
+        console.log(`📊 Found ${reviews.length} reviews for service ${serviceId}`);
+        
+        // Process reviews and fetch customer profiles
+        const processedReviews = await Promise.all(reviews.map(async (review) => {
+          // Extract customer ID from review - check all possible fields
+          const customerId = review.customerId || 
+                            review.customer?._id || 
+                            review.userId || 
+                            review.user?._id;
+          
+          console.log(`👤 Review ${review._id} has customer ID: ${customerId}`);
+          
+          // Fetch customer profile if ID exists
+          let customerProfile = null;
+          if (customerId) {
+            try {
+              customerProfile = await this.fetchCustomerProfile(customerId);
+              if (customerProfile) {
+                console.log(`✅ Fetched customer profile for ${customerId}:`, customerProfile.name);
+              }
+            } catch (error) {
+              console.warn(`⚠️ Could not fetch customer profile for ${customerId}:`, error);
+            }
+          }
+          
+          // Create the processed review object with customer data
+          const processedReview = {
+            _id: review._id || review.id || Math.random().toString(36).substr(2, 9),
+            customerId: customerId,
+            reviewerName: customerProfile?.name || 
+                         review.customer?.fullname ||
+                         review.customerName || 
+                         review.reviewerName || 
+                         review.customer?.name || 
+                         review.user?.name || 
+                         'Anonymous',
+            reviewerEmail: customerProfile?.email || 
+                          review.customer?.email ||
+                          review.customerEmail || 
+                          review.reviewerEmail || 
+                          review.user?.email || 
+                          '',
+            reviewerPhone: customerProfile?.phone || 
+                          review.customer?.phonenumber || 
+                          '',
+            reviewerLocation: customerProfile?.location || 
+                             review.customer?.address || 
+                             '',
+            reviewerProfilePhoto: customerProfile?.profilePhoto ||
+                                 review.customer?.profilePhoto ||
+                                 null,
+            rating: review.rating || 0,
+            message: review.review || review.message || review.comment || review.content || '',
+            createdAt: review.createdAt || review.date || review.timestamp || new Date().toISOString(),
+            reply: review.reply || review.response || ''
+          };
+          
+          // Debug: Log what we got for this review
+          console.log(`📝 Processed review:`, {
+            reviewerName: processedReview.reviewerName,
+            phone: processedReview.reviewerPhone,
+            location: processedReview.reviewerLocation,
+            hasCustomerProfile: !!customerProfile,
+            customerId: customerId
+          });
+          
+          return processedReview;
         }));
         
         let averageRating = 0;
@@ -1420,12 +1557,14 @@ export default {
       if (!dateString) return '';
       try {
         const date = new Date(dateString);
+        // Just show the actual date, not relative time
         return date.toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'short',
           day: 'numeric'
         });
       } catch (error) {
+        console.error('Error formatting date:', error, dateString);
         return '';
       }
     },

@@ -147,6 +147,11 @@
             v-for="(slot, index) in activeDayData.slots" 
             :key="index"
             class="time-slot-line"
+            :class="{
+              'booked-slot': slot.isBooked,
+              'disabled-slot': slot.isBooked && isSlotPastBookingTime(slot, activeDate),
+              'past-slot': slot.isBooked && isSlotTimePassed(slot, activeDate)
+            }"
           >
             <!-- COMPACT SINGLE LINE LAYOUT (CLOCK ICON REMOVED) -->
             <div class="slot-compact-line">
@@ -155,6 +160,10 @@
                 <!-- For booked slots -->
                 <span v-if="slot.isBooked" class="booked-time-text">
                   {{ formatTo12Hour(slot.startTime) }} – {{ formatTo12Hour(slot.endTime) }}
+                  <!-- Show "Done" if time has passed -->
+                  <span v-if="slot.isBooked && isSlotTimePassed(slot, activeDate)" class="done-badge">
+                    Done
+                  </span>
                 </span>
                 
                 <!-- For editable slots -->
@@ -165,6 +174,7 @@
                       :value="formatTimeForInput(slot.startTime)"
                       @input="updateSlotTime(index, 'startTime', $event.target.value)"
                       class="time-input"
+                      :disabled="!isSlotEditable(slot, activeDate)"
                       @change="validateActiveSlot(index)"
                     />
                   </div>
@@ -175,6 +185,7 @@
                       :value="formatTimeForInput(slot.endTime)"
                       @input="updateSlotTime(index, 'endTime', $event.target.value)"
                       class="time-input"
+                      :disabled="!isSlotEditable(slot, activeDate)"
                       @change="validateActiveSlot(index)"
                     />
                   </div>
@@ -195,6 +206,7 @@
                       type="checkbox"
                       :checked="slot.isActive"
                       @change="toggleSlotActiveInActiveDay(index)"
+                      :disabled="!isSlotEditable(slot, activeDate)"
                     />
                     <span class="toggle-slider-small"></span>
                   </label>
@@ -209,12 +221,18 @@
                 <button
                   class="remove-btn-compact"
                   @click="removeSlotFromActiveDay(index)"
-                  :disabled="activeDayData.slots.length === 1 || slot.isBooked"
+                  :disabled="activeDayData.slots.length === 1 || slot.isBooked || !isSlotEditable(slot, activeDate)"
                   :title="slot.isBooked ? 'Cannot remove booked slot' : 'Remove time slot'"
                 >
                   <i class="fas fa-times"></i>
                 </button>
               </div>
+            </div>
+            
+            <!-- Warning message for slots past booking time -->
+            <div v-if="slot.isBooked && isSlotPastBookingTime(slot, activeDate) && !isSlotTimePassed(slot, activeDate)" class="booking-closed-warning">
+              <i class="fas fa-exclamation-circle"></i>
+              Booking closed (less than 2 hours before start)
             </div>
           </div>
 
@@ -369,6 +387,53 @@ export default {
     }
   },
   methods: {
+    // ========== NEW METHODS FOR BOOKING VALIDATION ==========
+    
+    // Check if a slot is editable (not within 2 hours of start time)
+    isSlotEditable(slot, dateKey) {
+      // For booked slots: check if within 2 hours of start time
+      if (slot.isBooked) {
+        return !this.isSlotPastBookingTime(slot, dateKey);
+      }
+      
+      // For available slots: check if within 2 hours of start time
+      // Available slots should also become disabled when within 2 hours
+      return !this.isSlotPastBookingTime(slot, dateKey);
+    },
+    
+    // Check if slot's booking time has passed (less than 2 hours before start)
+    isSlotPastBookingTime(slot, dateKey) {
+      const now = new Date();
+      const slotDateTime = this.getSlotDateTime(dateKey, slot.startTime);
+      
+      // Calculate 2 hours before slot start
+      const bookingDeadline = new Date(slotDateTime);
+      bookingDeadline.setHours(bookingDeadline.getHours() - 2);
+      
+      return now >= bookingDeadline;
+    },
+    
+    // Check if slot's actual time has completely passed
+    isSlotTimePassed(slot, dateKey) {
+      const now = new Date();
+      const slotEndTime = this.getSlotDateTime(dateKey, slot.endTime);
+      
+      return now >= slotEndTime;
+    },
+    
+    // Check if slot should be shown as available (not booked AND not past booking time)
+    isSlotAvailable(slot, dateKey) {
+      return !slot.isBooked && !this.isSlotPastBookingTime(slot, dateKey);
+    },
+    
+    // Helper to create Date object from dateKey and time
+    getSlotDateTime(dateKey, timeStr) {
+      const date = new Date(dateKey);
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      date.setHours(hours, minutes, 0, 0);
+      return date;
+    },
+    
     // ========== MULTI-DAY SELECTION ==========
     selectDay(day) {
       const dateKey = this.getDateKey(day);
@@ -418,9 +483,24 @@ export default {
     loadActiveDayData(dateKey) {
       const dayData = this.scheduleData[dateKey];
       if (dayData) {
+        // Mark booked slots
+        const backendDate = this.formatDateForBackend(dateKey);
+        const bookedSlotsForDay = this.bookedSlots.filter(booking => booking.date === backendDate);
+        
+        const slots = JSON.parse(JSON.stringify(dayData.slots));
+        
+        // Mark which slots are booked
+        slots.forEach(slot => {
+          const isBooked = bookedSlotsForDay.some(booking => 
+            this.formatTime(booking.startTime) === this.formatTime(slot.startTime) &&
+            this.formatTime(booking.endTime) === this.formatTime(slot.endTime)
+          );
+          slot.isBooked = isBooked;
+        });
+        
         this.activeDayData = {
           working: dayData.working,
-          slots: JSON.parse(JSON.stringify(dayData.slots))
+          slots: slots
         };
       } else {
         this.activeDayData = {
@@ -831,14 +911,26 @@ export default {
             if (daySchedule.isWorkingDay && Array.isArray(daySchedule.timeSlots)) {
               console.log(`📋 Loading timeSlots for ${dateKey}:`, daySchedule.timeSlots);
               
-              this.scheduleData[dateKey].slots = daySchedule.timeSlots.map(ts => ({
-                startTime: this.formatTime(ts.startTime),
-                endTime: this.formatTime(ts.endTime),
-                isActive: ts.isAvailable !== false,
-                isBooked: ts.isBooked || false,
-                hasError: false,
-                errorMessage: ''
-              }));
+              // Get booked slots for this day
+              const backendDate = this.formatDateForBackend(dateKey);
+              const bookedSlotsForDay = this.bookedSlots.filter(booking => booking.date === backendDate);
+              
+              this.scheduleData[dateKey].slots = daySchedule.timeSlots.map(ts => {
+                // Check if this time slot is booked
+                const isBooked = bookedSlotsForDay.some(booking => 
+                  this.formatTime(booking.startTime) === this.formatTime(ts.startTime) &&
+                  this.formatTime(booking.endTime) === this.formatTime(ts.endTime)
+                );
+                
+                return {
+                  startTime: this.formatTime(ts.startTime),
+                  endTime: this.formatTime(ts.endTime),
+                  isActive: ts.isAvailable !== false,
+                  isBooked: isBooked,
+                  hasError: false,
+                  errorMessage: ''
+                };
+              });
             }
           }
         }
@@ -1465,12 +1557,13 @@ export default {
   padding: 12px 15px;
   transition: all 0.2s ease;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   width: 100%;
   box-sizing: border-box;
 }
 
-/* ==== BOOKED TIME SLOTS FIX - RED WITH "Booked" TEXT ==== */
+/* ==== BOOKED TIME SLOTS - RED COLOR ==== */
 .time-slot-line.booked-slot {
   background: #fef2f2 !important; /* Light red background */
   border: 1px solid #fecaca !important; /* Red border */
@@ -1481,13 +1574,65 @@ export default {
   font-weight: 600;
 }
 
-.time-slot-line.booked-slot .booked-time-text::after {
-  content: " Booked";
-  color: #dc2626;
-  font-weight: 500;
-  font-size: 0.85rem;
+.time-slot-line.booked-slot .booked-indicator-icon {
+  color: #dc2626 !important;
+}
+
+/* ==== DISABLED SLOTS (past booking time) ==== */
+.time-slot-line.disabled-slot {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f3f4f6 !important;
+  border-color: #d1d5db !important;
+}
+
+.time-slot-line.disabled-slot .booked-time-text {
+  color: #6b7280 !important;
+}
+
+.time-slot-line.disabled-slot .time-input {
+  background: #f9fafb;
+  cursor: not-allowed;
+}
+
+/* ==== PAST SLOTS (time has passed) ==== */
+.time-slot-line.past-slot {
+  background: #f3f4f6 !important;
+  border: 1px solid #d1d5db !important;
+  opacity: 0.7;
+}
+
+.time-slot-line.past-slot .booked-time-text {
+  color: #6b7280 !important;
+}
+
+/* ==== DONE BADGE ==== */
+.done-badge {
+  background: #6b7280;
+  color: white;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 12px;
   margin-left: 8px;
-  opacity: 0.9;
+  font-weight: 500;
+  display: inline-block;
+}
+
+/* ==== BOOKING CLOSED WARNING ==== */
+.booking-closed-warning {
+  font-size: 0.8rem;
+  color: #dc2626;
+  margin-top: 4px;
+  padding: 4px 8px;
+  background: #fee2e2;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.booking-closed-warning i {
+  font-size: 0.75rem;
 }
 
 /* SINGLE LINE LAYOUT */
@@ -1512,10 +1657,12 @@ export default {
 /* BOOKED TIME TEXT */
 .booked-time-text {
   font-weight: 600;
-  color: #1e40af;
+  color: #dc2626;
   font-size: 1rem;
   white-space: nowrap;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 
 /* EDIT TIME RANGE */
@@ -1543,6 +1690,13 @@ export default {
   box-sizing: border-box;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
+}
+
+.time-input:disabled {
+  background: #f9fafb;
+  cursor: not-allowed;
+  color: #6b7280;
+  border-color: #d1d5db;
 }
 
 .time-input:focus {
@@ -1620,6 +1774,11 @@ export default {
   background-color: #22c55e;
 }
 
+.toggle-switch-small input:disabled + .toggle-slider-small {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
 .toggle-switch-small input:checked + .toggle-slider-small:before {
   transform: translateX(12px);
 }
@@ -1662,6 +1821,8 @@ export default {
 .remove-btn-compact:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+  background: #f3f4f6;
+  color: #9ca3af;
 }
 
 /* ===== ADD SLOT BUTTON ===== */
@@ -1852,11 +2013,25 @@ export default {
     border: 1px solid #fecaca !important;
   }
   
-  .time-slot-line.booked-slot .booked-time-text::after {
-    content: " Booked";
-    color: #dc2626;
-    font-size: 0.8rem;
+  .time-slot-line.disabled-slot {
+    background: #f3f4f6 !important;
+    border-color: #d1d5db !important;
+  }
+  
+  .time-slot-line.past-slot {
+    background: #f3f4f6 !important;
+    border: 1px solid #d1d5db !important;
+  }
+  
+  .done-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
     margin-left: 6px;
+  }
+  
+  .booking-closed-warning {
+    font-size: 0.75rem;
+    padding: 3px 6px;
   }
   
   /* SLOT LINE CONTENT */

@@ -324,7 +324,7 @@
                       </span>
                     </div>
                     <div class="review-meta">
-                      <span class="review-date">
+                      <span class="review-date" :title="formatFullDate(review.date)">
                         <i class="fa-solid fa-calendar"></i> {{ formatDate(review.date) }}
                       </span>
                       <span class="review-service">
@@ -414,7 +414,9 @@
                   <div class="reply-header">
                     <i class="fa-solid fa-reply"></i>
                     <span>Your Reply</span>
-                    <span class="reply-date">{{ formatDate(review.replyDate) }}</span>
+                    <span class="reply-date" :title="formatFullDate(review.replyDate)">
+                      {{ formatDate(review.replyDate) }}
+                    </span>
                   </div>
                   <div class="reply-content">
                     {{ review.reply }}
@@ -547,11 +549,7 @@
       </div>
     </div>
 
-    <!-- Debug Toggle -->
-    <div class="debug-toggle" @click="debugMode = !debugMode">
-      <i class="fa-solid fa-bug"></i>
-      {{ debugMode ? 'Hide Debug' : 'Show Debug' }}
-    </div>
+   
   </div>
 </template>
 
@@ -1056,7 +1054,7 @@ const fetchReviews = async () => {
           console.log(`   Phone: ${review.customerDetails.phonenumber}`);
         }
         console.log(`   Review: "${review.text.substring(0, 50)}${review.text.length > 50 ? '...' : ''}"`);
-        console.log(`   Date: ${formatDate(review.date)}`);
+        console.log(`   Date: ${formatFullDate(review.date)}`);
       });
     } else {
       console.log("\n📭 No reviews found for any services");
@@ -1166,22 +1164,74 @@ const getAvatar = (review) => {
   return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
 };
 
+// FIXED: Enhanced formatDate function that shows exact time
 const formatDate = (dateString) => {
   try {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now - date);
+    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    // Show relative time for recent reviews
+    if (diffMinutes < 60) {
+      return `${diffMinutes} min ago`;
+    }
+    if (diffHours < 24) {
+      return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+    }
+    if (diffDays === 1) {
+      return `Yesterday at ${date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })}`;
+    }
+    if (diffDays < 7) {
+      return `${diffDays} days ago`;
+    }
     
-    return date.toLocaleDateString('en-US', {
+    // For older reviews, show date and time
+    const isCurrentYear = date.getFullYear() === now.getFullYear();
+    
+    if (isCurrentYear) {
+      // Same year: "Jan 15 at 2:30 PM"
+      return `${date.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+      })} at ${date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })}`;
+    } else {
+      // Different year: "Jan 15, 2023 at 2:30 PM"
+      return `${date.toLocaleDateString('en-US', { 
+        year: 'numeric',
+        month: 'short', 
+        day: 'numeric' 
+      })} at ${date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })}`;
+    }
+  } catch {
+    return dateString;
+  }
+};
+
+// Helper function to show full date in tooltip
+const formatFullDate = (dateString) => {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      weekday: 'long',
       year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'short'
     });
   } catch {
     return dateString;

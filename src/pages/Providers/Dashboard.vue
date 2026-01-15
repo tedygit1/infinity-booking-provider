@@ -69,10 +69,7 @@
               <span>My Profile</span>
             </button>
             
-            <button @click="goToSettings" class="dropdown-item">
-              <i class="fa-solid fa-gear"></i>
-              <span>Settings</span>
-            </button>
+           
             
             <div class="dropdown-divider"></div>
             
@@ -265,7 +262,7 @@ export default {
       reviews: { label: "Reviews", icon: "fa-solid fa-star", route: "ProviderReviews", category: "dashboard" },
       notifications: { label: "Notifications", icon: "fa-solid fa-bell", route: "ProviderNotifications", category: "dashboard" },
       profile: { label: "My Profile", icon: "fa-solid fa-user", route: "ProviderProfile", category: "account" },
-      settings: { label: "Settings", icon: "fa-solid fa-gear", route: "ProviderSettings", category: "account" },
+     
     };
 
     // Computed properties - NO CHANGES
@@ -473,19 +470,100 @@ export default {
       closeProfileDropdown();
     };
 
+    // ========== FIXED: Logout function with correct endpoint ==========
     const performLogout = async () => {
       console.log('🔓 Performing logout');
       showLogoutModal.value = false;
       
       try {
-        await http.post("/infinity-booking/auth/logout");
-        console.log('✅ Logout API successful');
+        console.log('📤 Calling logout API...');
+        
+        // FIX: Based on your API config, we should use JUST "/auth/logout"
+        // Your API base URL already includes the path prefix:
+        // - Development: "/api" + "/auth/logout" = "/api/auth/logout" ✓
+        // - Production: "https://infinity-booking-backend1-1.onrender.com/infinity-booking" + "/auth/logout" = 
+        //   "https://infinity-booking-backend1-1.onrender.com/infinity-booking/auth/logout" ✓
+        
+        console.log('📡 Logout endpoint:', '/auth/logout');
+        console.log('🌐 Base URL from API config:', http.defaults.baseURL);
+        
+        const response = await http.post("/auth/logout");
+        console.log('✅ Logout API successful:', response.data);
+        
       } catch (error) {
-        console.log("⚠️ Logout API call failed", error);
+        console.error("⚠️ Logout API call failed:", error);
+        
+        // Log detailed error info
+        if (error.response) {
+          console.error('📋 Response status:', error.response.status);
+          console.error('📋 Response data:', error.response.data);
+          console.error('📋 Full URL attempted:', error.config?.baseURL + error.config?.url);
+        }
+        
+        // Try alternative endpoints if the main one fails
+        try {
+          console.log('🔄 Trying alternative logout method: GET request...');
+          
+          // Try a GET request instead of POST
+          const getResponse = await http.get("/auth/logout");
+          console.log('✅ GET logout successful:', getResponse.data);
+          
+        } catch (getError) {
+          console.log('⚠️ GET logout also failed, trying basic endpoint...');
+          
+          try {
+            // Try the most basic endpoint
+            const basicResponse = await http.post("/logout");
+            console.log('✅ Basic logout successful:', basicResponse.data);
+            
+          } catch (basicError) {
+            console.log('⚠️ All logout attempts failed, continuing with client-side cleanup');
+          }
+        }
+      } finally {
+        // Always perform client-side cleanup
+        console.log('🧹 Performing client-side cleanup');
+        
+        // Clear all auth-related localStorage items
+        const itemsToRemove = [
+          'provider_token',
+          'loggedProvider',
+          'provider_id',
+          'user_token',
+          'token',
+          'user_id',
+          'user',
+          'notification_shared_state',
+          'unread_notification_count',
+          'notification_summary',
+          'last_notification_check'
+        ];
+        
+        itemsToRemove.forEach(item => {
+          localStorage.removeItem(item);
+        });
+        
+        // Clear session storage
+        sessionStorage.clear();
+        
+        // Clear cookies
+        document.cookie.split(";").forEach(function(c) {
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+        
+        console.log('✅ Client-side cleanup complete');
+        
+        // Clear axios authorization header
+        delete http.defaults.headers.common['Authorization'];
+        
+        // Redirect to login page
+        await router.push({ name: "Login" });
+        
+        // Force page reload to clear any remaining state
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
       }
-      
-      localStorage.clear();
-      await router.push({ name: "Login" });
     };
 
     // Navigation - NO CHANGES

@@ -1,4 +1,4 @@
-<!-- src/pages/Auth/Register.vue - Telegram OTP Version (KEEPS ORIGINAL WORKING CODE) -->
+<!-- src/pages/Auth/Register.vue - Telegram OTP Version -->
 <template>
   <div class="auth-page">
     <!-- Visual Section -->
@@ -80,7 +80,7 @@
           </p>
         </div>
 
-        <!-- STEP 1: Registration Form (EXACTLY AS BEFORE) -->
+        <!-- STEP 1: Registration Form -->
         <form 
           v-if="step === 1" 
           class="auth-form" 
@@ -298,7 +298,7 @@
             <div v-if="fieldErrors.accept" class="field-error">{{ fieldErrors.accept }}</div>
           </div>
 
-          <!-- Send OTP Button (was Create Account) -->
+          <!-- Send OTP Button -->
           <button 
             type="submit" 
             class="submit-btn" 
@@ -322,7 +322,7 @@
           </div>
         </form>
 
-        <!-- STEP 2: OTP Verification (NEW) -->
+        <!-- STEP 2: OTP Verification -->
         <form 
           v-else 
           class="auth-form" 
@@ -426,66 +426,34 @@
       </div>
     </div>
 
-    <!-- Telegram Modal -->
+    <!-- Telegram Modal - SIMPLIFIED VERSION -->
     <div v-if="showTelegramModal" class="telegram-modal-overlay">
       <div class="telegram-modal">
         <div class="telegram-modal-header">
           <span class="telegram-modal-icon">🤖</span>
-          <h3>Link Your Phone with Telegram Bot</h3>
+          <h3>Link Your Phone Number</h3>
           <button @click="closeTelegramModal" class="telegram-modal-close">&times;</button>
         </div>
         
         <div class="telegram-modal-content">
-          <p>To receive verification codes, you need to link your phone number with our Telegram bot.</p>
+          <p class="telegram-modal-text">
+            You need to link your phone number with our Telegram bot to receive verification codes.
+          </p>
           
-          <div class="telegram-steps">
-            <div class="telegram-step">
-              <div class="step-number">1</div>
-              <div class="step-content">
-                <h4>Open Telegram</h4>
-                <p>Make sure Telegram is installed on your phone</p>
-              </div>
-            </div>
-            
-            <div class="telegram-step">
-              <div class="step-number">2</div>
-              <div class="step-content">
-                <h4>Click the button below</h4>
-                <p>It will open our Telegram bot automatically</p>
-              </div>
-            </div>
-            
-            <div class="telegram-step">
-              <div class="step-number">3</div>
-              <div class="step-content">
-                <h4>Start the bot</h4>
-                <p>Click "Start" in the Telegram chat</p>
-              </div>
-            </div>
-            
-            <div class="telegram-step">
-              <div class="step-number">4</div>
-              <div class="step-content">
-                <h4>Register your phone</h4>
-                <p>Follow the bot instructions to register: <strong>{{ formattedPhoneNumber }}</strong></p>
-              </div>
-            </div>
+          <div class="telegram-phone-display">
+            <span class="phone-icon">📱</span>
+            <span class="phone-number">{{ formattedPhoneNumber }}</span>
           </div>
           
           <div class="telegram-modal-actions">
             <button @click="openTelegramBotDirect" class="telegram-open-btn">
               <span class="tg-icon">📱</span>
-              Open Telegram Bot Now
-            </button>
-            
-            <button @click="copyTelegramLink" class="telegram-copy-btn">
-              <span class="copy-icon">📋</span>
-              Copy Bot Link
+              Open Telegram Bot
             </button>
           </div>
           
           <div class="telegram-modal-note">
-            <p><strong>Note:</strong> After linking your phone, come back here and click "Continue Registration"</p>
+            <p>After linking your phone in Telegram, come back here and click "Continue Registration"</p>
           </div>
         </div>
         
@@ -529,14 +497,14 @@ const otpLoading = ref(false);
 const verificationLoading = ref(false);
 const resendLoading = ref(false);
 
-// Reactive data - EXACTLY AS BEFORE
+// Reactive data
 const signup = ref({
   fullname: '',
   email: '',
   phonenumber: '',
   location: '',
   FIN: '',
-  serviceCategoryId: '', // EXACTLY AS BEFORE
+  serviceCategoryId: '',
   workExperience: '',
   certificate: null,
   password: '',
@@ -556,7 +524,7 @@ const fieldErrors = ref({
   email: '',
   phonenumber: '',
   location: '',
-  serviceCategoryId: '', // EXACTLY AS BEFORE
+  serviceCategoryId: '',
   password: '',
   confirmPassword: '',
   accept: '',
@@ -565,7 +533,7 @@ const fieldErrors = ref({
 // File input ref
 const fileInput = ref(null);
 
-// ========== VALIDATION FUNCTIONS - EXACTLY AS BEFORE ==========
+// ========== VALIDATION FUNCTIONS ==========
 const validateField = (field) => {
   const value = signup.value[field];
   
@@ -608,7 +576,7 @@ const validateForm = () => {
   return !Object.values(fieldErrors.value).some(error => error !== '');
 };
 
-// ========== FILE HANDLING - EXACTLY AS BEFORE ==========
+// ========== FILE HANDLING ==========
 const triggerFileInput = () => {
   fileInput.value?.click();
 };
@@ -632,7 +600,7 @@ const handleCertificateUpload = (event) => {
   }
 };
 
-// ========== HELPER FUNCTIONS - EXACTLY AS BEFORE ==========
+// ========== HELPER FUNCTIONS ==========
 const togglePassword = () => {
   showPassword.value = !showPassword.value;
 };
@@ -663,7 +631,7 @@ const formattedPhoneNumber = computed(() => {
   return digits;
 });
 
-// ========== CATEGORIES LOADING - EXACTLY AS BEFORE ==========
+// ========== CATEGORIES LOADING ==========
 const loadCategoriesIfNeeded = () => {
   if (!categoriesLoaded.value && categories.value.length === 0) {
     http.get("/categories")
@@ -870,21 +838,20 @@ const verifyOTPAndRegister = async () => {
     
     const formData = new FormData();
     
-    // ✅ REQUIRED FIELDS - EXACTLY AS BEFORE
+    // REQUIRED FIELDS
     formData.append('fullname', signup.value.fullname.trim());
     formData.append('email', signup.value.email.trim());
     formData.append('phonenumber', formattedPhoneNumber.value);
     formData.append('otp', otp);
     formData.append('location', signup.value.location.trim());
     
-    // ✅ OPTIONAL FIELDS - EXACTLY AS BEFORE
+    // OPTIONAL FIELDS
     if (signup.value.FIN) formData.append('FIN', signup.value.FIN.trim());
     
-    // ✅ SERVICE CATEGORY - EXACTLY AS BEFORE
+    // SERVICE CATEGORY
     if (signup.value.serviceCategoryId) {
       const selectedCategory = categories.value.find(cat => cat._id === signup.value.serviceCategoryId);
       if (selectedCategory) {
-        // EXACTLY AS BEFORE - sending category name
         formData.append('serviceCategories', selectedCategory.name);
       }
     }
@@ -907,7 +874,7 @@ const verifyOTPAndRegister = async () => {
     console.log('✅ Registration Response:', response.data);
 
     if (response.data.success || response.data.token) {
-      successMessage.value = "🎉 Registration successful! Your account is now under review. You'll receive an email notification once approved.";
+      successMessage.value = "🎉 Registration successful! Your account is now under review. You'll able to login after your information is reviewed.";
       
       if (response.data.token) {
         localStorage.setItem('provider_token', response.data.token);
@@ -945,14 +912,61 @@ const verifyOTPAndRegister = async () => {
   } catch (error) {
     console.error('❌ Registration error:', error);
     
-    if (error.response?.data?.message) {
-      const errorMsg = Array.isArray(error.response.data.message) 
-        ? error.response.data.message.join(', ')
-        : error.response.data.message;
+    // FIXED: Better error messages
+    if (error.response?.data) {
+      const errorData = error.response.data;
       
-      errorMessage.value = errorMsg;
+      // Check for phone number conflict (409)
+      if (error.response.status === 409) {
+        errorMessage.value = "📱 This phone number is already registered. Please use a different number or try logging in.";
+      }
+      // Check for email conflict (might be 409 or 400)
+      else if (errorData.message?.toLowerCase().includes('email') || 
+               errorData.error?.toLowerCase().includes('email')) {
+        errorMessage.value = "📧 This email address is already registered. Please use a different email or try logging in.";
+      }
+      // Check for phone format errors
+      else if (errorData.message?.toLowerCase().includes('phone') || 
+               errorData.error?.toLowerCase().includes('phone')) {
+        errorMessage.value = "📱 Invalid phone number format. Please use a valid Ethiopian number like +251912345678.";
+      }
+      // Check for OTP errors
+      else if (errorData.message?.toLowerCase().includes('otp') || 
+               errorData.error?.toLowerCase().includes('otp') ||
+               errorData.message?.toLowerCase().includes('code') ||
+               errorData.message?.toLowerCase().includes('verification')) {
+        errorMessage.value = "🔢 Invalid or expired OTP code. Please try again or request a new code.";
+      }
+      // Show backend error message if available
+      else if (errorData.message) {
+        const errorMsg = Array.isArray(errorData.message) 
+          ? errorData.message.join(', ')
+          : errorData.message;
+        
+        // Make error messages more user-friendly
+        if (errorMsg.includes('already exists') || errorMsg.includes('already registered')) {
+          errorMessage.value = "⚠️ This account already exists. Please try logging in or use different information.";
+        } else {
+          errorMessage.value = errorMsg;
+        }
+      }
+      // Show status-based messages
+      else if (error.response.status === 400) {
+        errorMessage.value = "⚠️ Please check your information and try again.";
+      } else if (error.response.status === 500) {
+        errorMessage.value = "🚨 Server error. Please try again in a few moments.";
+      } else {
+        errorMessage.value = "⚠️ Registration failed. Please try again.";
+      }
     } else {
-      errorMessage.value = 'Registration failed. Please try again.';
+      // Network or other errors
+      if (error.code === 'NETWORK_ERROR' || error.message?.includes('network')) {
+        errorMessage.value = "🌐 Network error. Please check your internet connection.";
+      } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        errorMessage.value = "⏱️ Request timeout. Please try again.";
+      } else {
+        errorMessage.value = "⚠️ Registration failed. Please try again.";
+      }
     }
   } finally {
     verificationLoading.value = false;
@@ -1599,7 +1613,7 @@ const verifyOTPAndRegister = async () => {
   text-decoration: underline;
 }
 
-/* ===== TELEGRAM MODAL ===== */
+/* ===== FIXED TELEGRAM MODAL STYLES ===== */
 .telegram-modal-overlay {
   position: fixed;
   top: 0;
@@ -1618,12 +1632,14 @@ const verifyOTPAndRegister = async () => {
 .telegram-modal {
   background: white;
   border-radius: 16px;
-  max-width: 500px;
+  max-width: 450px;
   width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-height: 90vh; /* FIX: Limit height for scrolling */
+  display: flex;
+  flex-direction: column;
   animation: slideUp 0.3s ease;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden; /* FIX: Prevent content overflow */
 }
 
 .telegram-modal-header {
@@ -1635,16 +1651,18 @@ const verifyOTPAndRegister = async () => {
   align-items: center;
   gap: 12px;
   position: relative;
+  flex-shrink: 0; /* FIX: Prevent header from shrinking */
 }
 
 .telegram-modal-icon {
-  font-size: 2rem;
+  font-size: 1.8rem;
 }
 
 .telegram-modal-header h3 {
   margin: 0;
   flex: 1;
-  font-size: 1.3rem;
+  font-size: 1.2rem;
+  line-height: 1.3;
 }
 
 .telegram-modal-close {
@@ -1659,6 +1677,7 @@ const verifyOTPAndRegister = async () => {
   justify-content: center;
   cursor: pointer;
   font-size: 1.2rem;
+  flex-shrink: 0;
 }
 
 .telegram-modal-close:hover {
@@ -1667,57 +1686,53 @@ const verifyOTPAndRegister = async () => {
 
 .telegram-modal-content {
   padding: 24px;
+  text-align: center;
+  flex: 1;
+  overflow-y: auto; /* FIX: Make content scrollable */
+  min-height: 0; /* FIX: Allow shrinking */
 }
 
-.telegram-steps {
-  margin: 24px 0;
-}
-
-.telegram-step {
-  display: flex;
-  gap: 16px;
+.telegram-modal-text {
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.5;
   margin-bottom: 20px;
-  align-items: flex-start;
 }
 
-.telegram-step .step-number {
-  background: #667eea;
-  color: white;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+.telegram-phone-display {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  flex-shrink: 0;
+  gap: 8px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
 }
 
-.telegram-step .step-content h4 {
-  margin: 0 0 4px 0;
+.telegram-phone-display .phone-icon {
+  font-size: 1.3rem;
+}
+
+.telegram-phone-display .phone-number {
+  font-size: 1.1rem;
+  font-weight: 500;
   color: #333;
-  font-size: 1rem;
-}
-
-.telegram-step .step-content p {
-  margin: 0;
-  color: #666;
-  font-size: 0.9rem;
+  font-family: 'Monaco', 'Courier New', monospace;
+  word-break: break-all;
 }
 
 .telegram-modal-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 24px;
+  margin-bottom: 16px;
 }
 
 .telegram-open-btn {
   background: #0088cc;
   color: white;
   border: none;
-  padding: 16px;
-  border-radius: 8px;
+  padding: 16px 20px;
+  border-radius: 10px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -1725,48 +1740,30 @@ const verifyOTPAndRegister = async () => {
   align-items: center;
   justify-content: center;
   gap: 12px;
+  width: 100%;
   transition: all 0.2s ease;
+  margin-bottom: 8px;
 }
 
 .telegram-open-btn:hover {
   background: #0077b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 136, 204, 0.3);
 }
 
-.telegram-copy-btn {
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
-  color: #0369a1;
-  padding: 14px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-}
-
-.telegram-copy-btn:hover {
-  background: #e0f2fe;
-}
-
-.tg-icon, .copy-icon {
-  font-size: 1.2rem;
+.tg-icon {
+  font-size: 1.3rem;
 }
 
 .telegram-modal-note {
-  background: #fefce8;
-  border: 1px solid #fde047;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
   border-radius: 8px;
   padding: 16px;
-  margin-top: 24px;
-}
-
-.telegram-modal-note p {
-  margin: 0;
-  color: #854d0e;
   font-size: 0.9rem;
+  color: #0369a1;
+  margin-top: 16px;
+  line-height: 1.5;
 }
 
 .telegram-modal-footer {
@@ -1775,14 +1772,16 @@ const verifyOTPAndRegister = async () => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex-shrink: 0; /* FIX: Prevent footer from shrinking */
+  background: white;
 }
 
 .telegram-continue-btn {
   background: #10b981;
   color: white;
   border: none;
-  padding: 14px 24px;
-  border-radius: 8px;
+  padding: 16px 20px;
+  border-radius: 10px;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -1792,15 +1791,17 @@ const verifyOTPAndRegister = async () => {
 
 .telegram-continue-btn:hover {
   background: #0da271;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .telegram-cancel-btn {
   background: transparent;
   border: 1px solid #d1d5db;
   color: #6b7280;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 0.9rem;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.2s ease;
   width: 100%;
@@ -1808,6 +1809,7 @@ const verifyOTPAndRegister = async () => {
 
 .telegram-cancel-btn:hover {
   background: #f9fafb;
+  border-color: #9ca3af;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
@@ -1824,6 +1826,10 @@ const verifyOTPAndRegister = async () => {
   .otp-digit {
     width: 45px;
     height: 55px;
+  }
+  
+  .telegram-modal {
+    max-width: 400px;
   }
 }
 
@@ -1859,7 +1865,24 @@ const verifyOTPAndRegister = async () => {
   }
   
   .telegram-modal {
-    max-height: 80vh;
+    max-height: 85vh;
+    max-width: 90%;
+  }
+  
+  .telegram-modal-header {
+    padding: 20px;
+  }
+  
+  .telegram-modal-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .telegram-modal-content {
+    padding: 20px;
+  }
+  
+  .telegram-modal-footer {
+    padding: 20px;
   }
 }
 
@@ -1900,14 +1923,75 @@ const verifyOTPAndRegister = async () => {
     gap: 12px;
   }
   
+  .telegram-modal {
+    max-width: 95%;
+    max-height: 90vh;
+  }
+  
   .telegram-modal-header {
     flex-direction: column;
     text-align: center;
     gap: 8px;
+    padding: 16px;
   }
   
   .telegram-modal-header h3 {
     font-size: 1.1rem;
+  }
+  
+  .telegram-modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+  }
+  
+  .telegram-modal-content {
+    padding: 16px;
+  }
+  
+  .telegram-phone-display {
+    padding: 12px;
+  }
+  
+  .telegram-open-btn,
+  .telegram-continue-btn,
+  .telegram-cancel-btn {
+    padding: 14px 16px;
+    font-size: 0.9rem;
+  }
+  
+  .telegram-modal-footer {
+    padding: 16px;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 360px) {
+  .telegram-modal {
+    max-width: 100%;
+    max-height: 95vh;
+    border-radius: 12px;
+  }
+  
+  .telegram-modal-header {
+    padding: 14px;
+  }
+  
+  .telegram-modal-content {
+    padding: 14px;
+  }
+  
+  .telegram-modal-footer {
+    padding: 14px;
+  }
+  
+  .telegram-open-btn,
+  .telegram-continue-btn,
+  .telegram-cancel-btn {
+    padding: 12px 14px;
+    font-size: 0.85rem;
   }
 }
 
@@ -1931,5 +2015,24 @@ const verifyOTPAndRegister = async () => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Custom scrollbar for modal */
+.telegram-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.telegram-modal-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.telegram-modal-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.telegram-modal-content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 </style>

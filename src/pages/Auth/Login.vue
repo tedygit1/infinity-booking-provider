@@ -131,7 +131,7 @@ import http from "@/api/index.js";
 
 const router = useRouter();
 
-// Reactive data - CHANGED: loginPhone instead of loginEmail
+// Reactive data
 const loginPhone = ref("");
 const loginPassword = ref("");
 const showPassword = ref(false);
@@ -139,17 +139,16 @@ const loginLoading = ref(false);
 const loginError = ref("");
 const statusMessage = ref("");
 const statusType = ref("");
-const phoneError = ref(""); // CHANGED: phoneError instead of emailError
+const phoneError = ref("");
 const passwordError = ref("");
 
-// Validation functions - UPDATED for phone validation
+// Validation functions
 const validatePhone = () => {
   const phone = loginPhone.value.trim();
   
   if (!phone) {
     phoneError.value = "Phone number is required";
   } else {
-    // Check for at least 10 digits (allowing any format)
     const phoneDigits = phone.replace(/\D/g, '');
     if (phoneDigits.length < 10) {
       phoneError.value = "Please enter a valid phone number (at least 10 digits)";
@@ -167,7 +166,7 @@ const validatePassword = () => {
   }
 };
 
-// Form submission - UPDATED to use phone instead of email
+// Form submission - FIXED: Check approval status properly
 async function handleLogin() {
   // Clear previous messages
   loginError.value = "";
@@ -190,51 +189,115 @@ async function handleLogin() {
 
     console.log('🔐 Attempting login with phone:', phone);
 
-    // FIXED: Use 'phonenumber' instead of 'phone' to match backend expectation
     const response = await http.post("/auth/login", { 
-      phonenumber: phone, // CORRECTED: Backend expects 'phonenumber' field
+      phonenumber: phone,
       password 
     }, {
-      // Disable throwing on error - we'll handle it manually
       validateStatus: function (status) {
-        return status >= 200 && status < 500; // Accept all 2xx and 4xx responses
+        // Accept all responses, we'll handle them
+        return true;
       }
     });
     
-    console.log('📥 Raw response:', response);
+    console.log('📥 Login Response:', response);
+    console.log('📥 Response data:', response.data);
+    
+    // Clear password field for security (always do this)
+    loginPassword.value = "";
     
     // Check if it's a success (200-299)
     if (response.status >= 200 && response.status < 300) {
-      // Successful login
+      // Successful API response
       const { token, user } = response.data;
 
-      if (!token || !user?._id) {
-        throw new Error("Invalid response from server");
+      if (!token) {
+        throw new Error("Invalid response from server - no token received");
       }
 
-      // Handle user status
-      const status = user.status?.toLowerCase().trim();
+      if (!user) {
+        throw new Error("Invalid response from server - no user data received");
+      }
 
-      // Case 1: Account is pending/under review
-      if (status === 'pending' || status === 'under review' || status === 'unapproved') {
-        statusMessage.value = "Your account is under review. You'll receive an SMS notification once approved.";
+      // Handle user status - FIXED: Check for approval status
+      const status = user.status?.toLowerCase().trim();
+      const isApproved = user.isApproved;
+      const isConfirmed = user.isConfirmed;
+      const approvedByAdmin = user.approvedByAdmin;
+      const accountStatus = user.accountStatus?.toLowerCase().trim();
+
+      console.log('👤 User status:', status);
+      console.log('👤 User data:', user);
+      console.log('👤 Account status:', accountStatus);
+
+      // FIXED: Better logic for checking approval
+      const isAccountApproved = () => {
+        // Check if ANY approval flag is explicitly true
+        if (isApproved === true || isConfirmed === true || approvedByAdmin === true) {
+          console.log('✅ Approved by boolean flag');
+          return true;
+        }
+        
+        // Check status field for approved statuses
+        if (status) {
+          const approvedStatuses = ['approved', 'active', 'confirmed', 'verified'];
+          if (approvedStatuses.includes(status)) {
+            console.log('✅ Approved by status:', status);
+            return true;
+          }
+        }
+        
+        // Check accountStatus field
+        if (accountStatus) {
+          const approvedAccountStatuses = ['approved', 'active', 'confirmed', 'verified'];
+          if (approvedAccountStatuses.includes(accountStatus)) {
+            console.log('✅ Approved by accountStatus:', accountStatus);
+            return true;
+          }
+        }
+        
+        // Check if ANY disapproval flag is explicitly false
+        if (isApproved === false || isConfirmed === false || approvedByAdmin === false) {
+          console.log('❌ Not approved - false flag found');
+          return false;
+        }
+        
+        // Check for pending/unapproved statuses
+        const pendingStatuses = ['pending', 'unapproved', 'under review', 'in review'];
+        if (status && pendingStatuses.includes(status)) {
+          console.log('❌ Not approved - pending status:', status);
+          return false;
+        }
+        
+        if (accountStatus && pendingStatuses.includes(accountStatus)) {
+          console.log('❌ Not approved - pending accountStatus:', accountStatus);
+          return false;
+        }
+        
+        // If we have no clear approval/disapproval indicators
+        // and the login succeeded (we got a token), assume approved
+        console.log('✅ No clear status - assuming approved since login succeeded');
+        return true;
+      };
+
+      const accountIsApproved = isAccountApproved();
+      
+      console.log('✅ Final account approved check:', accountIsApproved);
+
+      if (!accountIsApproved) {
+        // Account is NOT approved - DO NOT REDIRECT
+        statusMessage.value = "⏳ Your account is pending admin approval. You will be able to access your dashboard once approved.";
         statusType.value = "pending";
         
-        // Clear password field for security
-        loginPassword.value = "";
+        // Store minimal data if needed (but not redirect)
+        localStorage.setItem("provider_token", token);
+        localStorage.setItem("provider_id", user._id);
+        localStorage.setItem("user_status", status || "pending");
         
-      // Case 2: Account was rejected
-      } else if (status === 'rejected' || status === 'denied') {
-        statusMessage.value = "Your account application was not approved. Please contact our support team for more information.";
-        statusType.value = "rejected";
-        
-        // Clear password field for security
-        loginPassword.value = "";
-        
-      // Case 3: Account is approved/active - SUCCESS!
-      } else if (status === 'approved' || status === 'active' || status === 'confirmed' || !status) {
-        // Successful login - Account is confirmed
-        statusMessage.value = "Successfully signed in! Redirecting to your dashboard...";
+        // DO NOT redirect to dashboard
+        return;
+      } else {
+        // Account IS approved - SUCCESS!
+        statusMessage.value = "✅ Successfully signed in! Redirecting to your dashboard...";
         statusType.value = "success";
 
         // Store auth data
@@ -244,10 +307,14 @@ async function handleLogin() {
         localStorage.setItem("loggedProvider", JSON.stringify({
           _id: user._id,
           email: user.email,
-          phone: user.phonenumber, // ADDED: Store phone number
+          phone: user.phonenumber,
           fullname: user.fullname,
           role: user.role,
           status: user.status,
+          accountStatus: user.accountStatus,
+          isApproved: user.isApproved,
+          isConfirmed: user.isConfirmed,
+          approvedByAdmin: user.approvedByAdmin,
           serviceCategoryId: user.serviceCategoryId,
           categoryId: user.categoryId,
           categoryName: user.categoryName,
@@ -258,11 +325,6 @@ async function handleLogin() {
         setTimeout(() => {
           router.push({ name: "ProviderHome" });
         }, 1500);
-        
-      // Case 4: Unknown status
-      } else {
-        statusMessage.value = "Your account status needs verification. Please contact support.";
-        statusType.value = "pending";
       }
     } 
     // It's an error response (400-499)
@@ -274,42 +336,52 @@ async function handleLogin() {
       console.log('⚠️ Error response:', errorData);
       console.log('⚠️ Status code:', errorStatus);
       
-      // Clear password for security
-      loginPassword.value = "";
-      
       // Handle 401 Unauthorized specifically
       if (errorStatus === 401) {
-        if (errorMessage.includes('not approved') || 
-            errorMessage.includes('admin') ||
-            errorMessage.includes('confirmation') ||
-            errorMessage.includes('wait')) {
+        if (errorMessage.toLowerCase().includes('not approved') || 
+            errorMessage.toLowerCase().includes('admin') ||
+            errorMessage.toLowerCase().includes('confirmation') ||
+            errorMessage.toLowerCase().includes('wait') ||
+            errorMessage.toLowerCase().includes('pending') ||
+            errorMessage.toLowerCase().includes('review')) {
           
           // Show the EXACT backend message for unapproved accounts
-          statusMessage.value = errorMessage || "Your account is under review. Please wait for admin approval.";
+          statusMessage.value = "⏳ " + (errorMessage || "Your account is pending admin approval. Please wait for approval notification.");
           statusType.value = "pending";
           loginError.value = "";
           
-        } else if (errorMessage.includes('credentials') || 
-                   errorMessage.includes('invalid') ||
-                   errorMessage.includes('Unauthorized')) {
+        } else if (errorMessage.toLowerCase().includes('credentials') || 
+                   errorMessage.toLowerCase().includes('invalid') ||
+                   errorMessage.toLowerCase().includes('unauthorized')) {
           
           // Invalid credentials
-          loginError.value = "Invalid phone number or password. Please try again."; // UPDATED: Phone instead of email
+          loginError.value = "❌ Invalid phone number or password. Please try again.";
           
         } else {
           // Generic 401
-          loginError.value = errorMessage || "Authentication failed. Please check your credentials.";
+          loginError.value = errorMessage || "❌ Authentication failed. Please check your credentials.";
+        }
+      }
+      // Handle 403 Forbidden (might be used for unapproved accounts)
+      else if (errorStatus === 403) {
+        if (errorMessage.toLowerCase().includes('not approved') || 
+            errorMessage.toLowerCase().includes('pending') ||
+            errorMessage.toLowerCase().includes('admin')) {
+          statusMessage.value = "⏳ " + (errorMessage || "Your account is pending admin approval.");
+          statusType.value = "pending";
+        } else {
+          loginError.value = "🔒 Access denied. " + errorMessage;
         }
       }
       // Handle other error statuses
       else if (errorStatus === 400) {
-        loginError.value = errorMessage || "Bad request. Please check your input.";
+        loginError.value = "⚠️ " + (errorMessage || "Bad request. Please check your input.");
       } else if (errorStatus === 404) {
-        loginError.value = "User not found. Please check your phone number or register."; // UPDATED: Phone instead of email
+        loginError.value = "📱 User not found. Please check your phone number or register.";
       } else if (errorStatus >= 500) {
-        loginError.value = "Server error. Please try again later.";
+        loginError.value = "🚨 Server error. Please try again later.";
       } else {
-        loginError.value = errorMessage || "Login failed. Please try again.";
+        loginError.value = "❌ " + (errorMessage || "Login failed. Please try again.");
       }
     }
     
@@ -321,11 +393,11 @@ async function handleLogin() {
     
     // This catch is only for network/unknown errors
     if (error.code === 'ECONNABORTED') {
-      loginError.value = "Request timeout. Please check your connection and try again.";
+      loginError.value = "⏱️ Request timeout. Please check your connection and try again.";
     } else if (error.message?.includes('Network Error') || !error.response) {
-      loginError.value = "Network error. Please check your internet connection.";
+      loginError.value = "🌐 Network error. Please check your internet connection.";
     } else {
-      loginError.value = "An unexpected error occurred. Please try again.";
+      loginError.value = "❌ An unexpected error occurred. Please try again.";
     }
   } finally {
     loginLoading.value = false;
@@ -342,7 +414,6 @@ function goToRegister() {
 }
 
 function goToForgotPassword() {
-  // Note: You may need to update the forgot password page to handle phone numbers
   router.push("/forgot-password");
 }
 </script>

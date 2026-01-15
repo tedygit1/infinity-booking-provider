@@ -14,7 +14,7 @@ import HowItWorks from "@/pages/HowItWorks.vue";
 import Login from "@/pages/Auth/Login.vue";
 import Register from "@/pages/Auth/Register.vue";
 import ForgotPassword from "@/pages/Auth/ForgotPassword.vue";
-import ResetPassword from "@/pages/Auth/ResetPassword.vue";
+
 
 // Provider Dashboard
 import Dashboard from "@/pages/Providers/Dashboard.vue";
@@ -24,7 +24,7 @@ import ServiceSection from "@/pages/Providers/Services/ServiceSection.vue";
 import BookingsSection from "@/pages/Providers/BookingsSection.vue";
 
 import ReviewsSection from "@/pages/Providers/ReviewsSection.vue";
-import SettingsSection from "@/pages/Providers/SettingsSection.vue";
+
 import NotificationsSection from "@/pages/Providers/NotificationsSection.vue";
 
 // Footer pages
@@ -52,7 +52,7 @@ const routes = [
       { path: "login", name: "Login", component: Login },
       { path: "register", name: "Register", component: Register },
       { path: "forgot-password", name: "ForgotPassword", component: ForgotPassword },
-      { path: "reset-password/:token", name: "ResetPassword", component: ResetPassword },
+     
 
       // Footer pages
       { path: "features", name: "Features", component: Features },
@@ -79,7 +79,7 @@ const routes = [
       { path: "bookings", name: "ProviderBookings", component: BookingsSection },
       
       { path: "reviews", name: "ProviderReviews", component: ReviewsSection },
-      { path: "settings", name: "ProviderSettings", component: SettingsSection },
+      
       { path: "notifications", name: "ProviderNotifications", component: NotificationsSection },
     ],
   },
