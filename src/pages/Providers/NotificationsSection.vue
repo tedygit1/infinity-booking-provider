@@ -1215,8 +1215,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* All your existing CSS styles from the previous version */
-/* Only add these new styles: */
+
 
 .real-booking-details {
   background: #f8fafc;
